@@ -1,6 +1,8 @@
 package org.endeavourhealth.hl7receiver.model.exceptions;
 
 public class ConfigurationException extends Hl7ReceiverException {
+    static final long serialVersionUID = 1L;
+
     public ConfigurationException() {
         super();
     }
