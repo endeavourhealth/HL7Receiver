@@ -13,6 +13,7 @@
 
         <eds-common.version>2.00</eds-common.version>
         <commons-lang3.version>3.5</commons-lang3.version>
+        <fhir-dstu2.version>1.0.1.7108</fhir-dstu2.version>
         <hapi.version>2.2</hapi.version>
         <httpcore.version>4.4.6</httpcore.version>
         <keycloak.version>2.0.0.Final</keycloak.version>
@@ -28,6 +29,7 @@
 
     <modules>
         <module>src/hl7receiver</module>
+        <module>src/hl7test</module>
     </modules>
 
     <build>
