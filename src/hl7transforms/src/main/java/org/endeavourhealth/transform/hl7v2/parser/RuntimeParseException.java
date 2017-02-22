@@ -1,6 +1,8 @@
 package org.endeavourhealth.transform.hl7v2.parser;
 
 public class RuntimeParseException extends RuntimeException {
+    final static long serialVersionUID = 1L;
+
     public RuntimeParseException() {
         super();
     }

@@ -40,7 +40,12 @@ public class Message {
     }
 
     public <T extends Segment> T getSegment(String segmentName, Class<T> segmentClass) {
-        return (T)getSegment(segmentName);
+        Segment segment = getSegment(segmentName);
+
+        if ((segment == null) || (segmentClass.isAssignableFrom(segment.getClass())))
+            return segmentClass.cast(segment);
+
+        throw new ClassCastException("Failed cast from " + segment.getClass().toString() + " to " + segmentClass.getClass().toString());
     }
 
     public List<Segment> getSegments() {
@@ -50,6 +55,11 @@ public class Message {
     public Segment getSegment(String segmentName) {
         List<? extends Segment> segments = getSegments(segmentName);
         return Helpers.getSafely(segments, FIRST);
+    }
+
+    public <T extends Segment> List<T> getSegments(String segmentName, Class<T> segmentClass) {
+        List<? extends Segment> segments = getSegments(segmentName);
+        return (List<T>)segments;
     }
 
     public List<? extends Segment> getSegments(String segmentName) {

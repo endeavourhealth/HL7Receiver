@@ -12,6 +12,7 @@ import java.util.*;
 
 public class LocationTransform {
 
+    @SuppressWarnings("serial")
     private static final Map<String, String> locationMap = Collections.unmodifiableMap(new HashMap<String, String>() {{
         put("bu", " Building");
         put("wi", " Department");

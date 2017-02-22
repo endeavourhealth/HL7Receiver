@@ -40,19 +40,19 @@ public class AdtMessage extends Message {
 
 
     public MshSegment getMshSegment() {
-        return (MshSegment) super.getSegment(SegmentName.MSH);
+        return super.getSegment(SegmentName.MSH, MshSegment.class);
     }
-    public EvnSegment getEvnSegment() { return (EvnSegment) super.getSegment(SegmentName.EVN); }
-    public PidSegment getPidSegment() { return (PidSegment) super.getSegment(SegmentName.PID); }
-    public Pd1Segment getPd1Segment() { return (Pd1Segment) super.getSegment(SegmentName.PD1); }
-    public List<Nk1Segment> getNk1Segments() { return (List<Nk1Segment>)super.getSegments(SegmentName.NK1); }
-    public Pv1Segment getPv1Segment() { return (Pv1Segment) super.getSegment(SegmentName.PV1); }
-    public Pv2Segment getPv2Segment() { return (Pv2Segment) super.getSegment(SegmentName.PV2); }
-    public List<ObxSegment> getObxSegments() { return (List<ObxSegment>)super.getSegments(SegmentName.OBX); }
-    public List<Dg1Segment> getDg1Segments() { return (List<Dg1Segment>)super.getSegments(SegmentName.DG1); }
-    public AccSegment getAccSegment() { return (AccSegment) super.getSegment(SegmentName.ACC); }
+    public EvnSegment getEvnSegment() { return super.getSegment(SegmentName.EVN, EvnSegment.class); }
+    public PidSegment getPidSegment() { return super.getSegment(SegmentName.PID, PidSegment.class); }
+    public Pd1Segment getPd1Segment() { return super.getSegment(SegmentName.PD1, Pd1Segment.class); }
+    public List<Nk1Segment> getNk1Segments() { return super.getSegments(SegmentName.NK1, Nk1Segment.class); }
+    public Pv1Segment getPv1Segment() { return super.getSegment(SegmentName.PV1, Pv1Segment.class); }
+    public Pv2Segment getPv2Segment() { return super.getSegment(SegmentName.PV2, Pv2Segment.class); }
+    public List<ObxSegment> getObxSegments() { return super.getSegments(SegmentName.OBX, ObxSegment.class); }
+    public List<Dg1Segment> getDg1Segments() { return super.getSegments(SegmentName.DG1, Dg1Segment.class); }
+    public AccSegment getAccSegment() { return super.getSegment(SegmentName.ACC, AccSegment.class); }
 
-    public ZpiSegment getZpiSegment() { return (ZpiSegment) super.getSegment(SegmentName.ZPI); }
-    public ZqaSegment getZqaSegment() { return (ZqaSegment) super.getSegment(SegmentName.ZQA); }
-    public ZviSegment getZviSegment() { return (ZviSegment) super.getSegment(SegmentName.ZVI); }
+    public ZpiSegment getZpiSegment() { return super.getSegment(SegmentName.ZPI, ZpiSegment.class); }
+    public ZqaSegment getZqaSegment() { return super.getSegment(SegmentName.ZQA, ZqaSegment.class); }
+    public ZviSegment getZviSegment() { return super.getSegment(SegmentName.ZVI, ZviSegment.class); }
 }
