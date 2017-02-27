@@ -42,6 +42,10 @@ public class AdtMessageTransform {
                 encounter = AdditionalVisitTransform.addAdditionalInformation(encounter, sourceMessage.getZviSegment());
             }
 
+            if (sourceMessage.hasAccSegment()){
+                encounter = AdditionalVisitTransform.addAccidentInformation(encounter, sourceMessage.getAccSegment());
+            }
+
             targetResources.add(encounter);
         }
 
@@ -66,14 +70,6 @@ public class AdtMessageTransform {
         if (sourceMessage.hasZqaSegment()) {
             targetResources.add(QuestionnaireTransform.fromHl7v2(sourceMessage.getZqaSegment()));
         }
-
-
-        if (sourceMessage.hasAccSegment()){
-
-        }
-
-
-
 
         return createBundle(targetResources);
     }

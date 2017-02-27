@@ -20,6 +20,8 @@ public class PatientVisitTransform {
     public static Encounter fromHl7v2(Pv1Segment source, String sendingFacility) throws ParseException, TransformException {
         Encounter target = new Encounter();
 
+        target.addIdentifier().setValue(IdentifierHelper.generateId(source.getVisitNumber()));
+
         target.setClass_(convertPatientClass(source.getPatientClass()));
 
         if (target.getClass_() == Encounter.EncounterClass.OTHER) {

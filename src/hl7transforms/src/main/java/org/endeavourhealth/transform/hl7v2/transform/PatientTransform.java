@@ -125,6 +125,9 @@ public class PatientTransform {
 
         if (identifier != null)
             target.addIdentifier(identifier);
+
+        if (identifier.getSystem().equals("http://endeavourhealth.org/fhir/v2-id-assigning-auth/HOMERTON/CNN"))
+            target.addIdentifier().setValue(IdentifierHelper.generateId(identifier.getValue()));
     }
 
     private static void addPatientContact(Nk1Segment sourceNk1, Patient target) throws TransformException, ParseException  {

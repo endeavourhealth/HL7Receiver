@@ -1,6 +1,5 @@
 package org.endeavourhealth.transform.hl7v2.transform;
 
-import org.endeavourhealth.common.fhir.schema.EncounterParticipantType;
 import org.endeavourhealth.transform.hl7v2.parser.ParseException;
 import org.endeavourhealth.transform.hl7v2.parser.datatypes.Xcn;
 import org.endeavourhealth.transform.hl7v2.parser.messages.AdtMessage;
@@ -11,6 +10,7 @@ import org.endeavourhealth.transform.hl7v2.parser.segments.Pv1Segment;
 import org.endeavourhealth.transform.hl7v2.profiles.homerton.segments.ZpiSegment;
 import org.endeavourhealth.transform.hl7v2.transform.converters.CodeableConceptHelper;
 import org.endeavourhealth.transform.hl7v2.transform.converters.IdentifierConverter;
+import org.endeavourhealth.transform.hl7v2.transform.converters.IdentifierHelper;
 import org.endeavourhealth.transform.hl7v2.transform.converters.NameConverter;
 import org.hl7.fhir.instance.model.*;
 
@@ -42,7 +42,7 @@ public class PractitionerTransform {
 
             if (pv1Segment.getReferringDoctor() != null)
                 for (Xcn xcn : pv1Segment.getReferringDoctor())
-                practitioners.add(transform(xcn, sendingFacility));
+                    practitioners.add(transform(xcn, sendingFacility));
 
             if (pv1Segment.getConsultingDoctor() != null)
                 for (Xcn xcn : pv1Segment.getConsultingDoctor())
@@ -86,6 +86,7 @@ public class PractitionerTransform {
             return null;
 
         Practitioner practitioner = new Practitioner();
+        practitioner.addIdentifier().setValue(IdentifierHelper.generateId(xcn));
 
         practitioner.setName(NameConverter.convert(xcn));
 
