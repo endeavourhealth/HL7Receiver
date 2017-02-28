@@ -13,7 +13,7 @@ public class DiagnosisTransform {
     public static Observation fromHl7v2(Dg1Segment source) throws ParseException, TransformException {
         Observation observation = new Observation();
 
-        observation.addIdentifier().setValue(IdentifierHelper.generateId(source.getDiagnosisCode().getAsString(), source.getDiagnosisDateTime().toString()));
+        observation.setIdElement(new IdType().setValue(IdentifierHelper.generateId(source.getDiagnosisCode().getAsString(), source.getDiagnosisDateTime().toString())));
 
         CodeableConcept cc = new CodeableConcept();
         Coding coding = new Coding();

@@ -86,7 +86,7 @@ public class PractitionerTransform {
             return null;
 
         Practitioner practitioner = new Practitioner();
-        practitioner.addIdentifier().setValue(IdentifierHelper.generateId(xcn));
+        practitioner.setIdElement(new IdType().setValue(IdentifierHelper.generateId(xcn)));
 
         practitioner.setName(NameConverter.convert(xcn));
 

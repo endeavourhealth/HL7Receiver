@@ -6,6 +6,7 @@ import org.endeavourhealth.transform.hl7v2.parser.Helpers;
 import org.endeavourhealth.transform.hl7v2.parser.ParseException;
 import org.endeavourhealth.transform.hl7v2.parser.segments.MshSegment;
 import org.endeavourhealth.transform.hl7v2.transform.converters.ExtensionHelper;
+import org.endeavourhealth.transform.hl7v2.transform.converters.IdentifierHelper;
 import org.hl7.fhir.instance.model.*;
 
 import java.time.LocalDateTime;
@@ -15,6 +16,7 @@ public class MessageHeaderTransform {
         MessageHeader target = new MessageHeader();
 
         LocalDateTime sourceMessageDateTime = source.getDateTimeOfMessage();
+        target.setIdElement(new IdType().setValue(IdentifierHelper.generateId(sourceMessageDateTime)));
 
         if (sourceMessageDateTime != null)
             target.setTimestamp(Helpers.toDate(sourceMessageDateTime));

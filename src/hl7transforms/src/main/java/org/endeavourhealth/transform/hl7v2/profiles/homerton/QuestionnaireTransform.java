@@ -13,8 +13,8 @@ public class QuestionnaireTransform {
     public static Questionnaire fromHl7v2(ZqaSegment source) throws ParseException, TransformException {
         Questionnaire questionnaire = new Questionnaire();
 
+        questionnaire.setIdElement(new IdType().setValue(IdentifierHelper.generateId(source.getQuestionnaireId())));
         questionnaire.addIdentifier(new Identifier().setValue(source.getQuestionnaireId()));
-        questionnaire.addIdentifier(new Identifier().setValue(IdentifierHelper.generateId(source.getQuestionnaireId())));
         Questionnaire.GroupComponent group = new Questionnaire.GroupComponent();
 
         for (Questionnaire.QuestionComponent question : QuestionConverter.convert(source.getQuestionAndAnswer())) {

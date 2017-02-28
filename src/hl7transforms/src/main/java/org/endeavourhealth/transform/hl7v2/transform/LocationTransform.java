@@ -92,6 +92,7 @@ public class LocationTransform {
     private static Location createStandaloneLocationFromString(String locationName, String type) throws TransformException {
         Location location = new Location();
         location.addIdentifier().setValue(IdentifierHelper.generateId(locationName, locationName));
+        location.setIdElement(new IdType().setValue(IdentifierHelper.generateId(locationName, locationName)));
         location.setPhysicalType(CodeableConceptHelper.getCodeableConceptFromString(type));
         location.setDescription(locationName);
         location.setName(locationName);
