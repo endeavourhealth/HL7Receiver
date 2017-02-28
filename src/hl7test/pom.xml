@@ -20,6 +20,11 @@
             <artifactId>hl7transforms</artifactId>
             <version>1.0-SNAPSHOT</version>
         </dependency>
+        <dependency>
+            <groupId>com.github.endeavourhealth.Common</groupId>
+            <artifactId>postgres</artifactId>
+            <version>${eds-common.version}</version>
+        </dependency>
     </dependencies>
 
     <build>
