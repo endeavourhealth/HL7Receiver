@@ -3,6 +3,7 @@ package org.endeavourhealth.transform.hl7v2.parser;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Validate;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
@@ -31,16 +32,34 @@ public abstract class DateParser {
         if (dateTime == "")
             return null;
 
+        /*
         if (!isValidTs(dateTime))
             throw new ParseException("Invalid date/time");
-
+        */
         String timeZone = getTimeZone(dateTime);
         dateTime = removeTimeZone(dateTime);
+
+        if (dateTime.length() < 8)
+            dateTime = handleShortDates(dateTime);
 
         String pattern = getPattern(dateTime);
 
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern(pattern);
+
+        if (dateTime.length() == 8)
+            return LocalDate.parse(dateTime, formatter).atStartOfDay();
+
         return LocalDateTime.parse(dateTime, formatter);
+    }
+
+    private static String handleShortDates(String dateTime) {
+        if (dateTime.length() == 4)
+            return dateTime + "0101";
+
+        if (dateTime.length() == 6)
+            return dateTime + "01";
+
+        return dateTime;
     }
 
     private static String getTimeZonePattern(String timeZone) {
