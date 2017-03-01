@@ -8,10 +8,19 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class BulkTransformTester {
-    public static void processStoredMessages() throws Exception {
+    public static void processStoredMessages(Integer limit, String mode) throws Exception {
         System.out.println("Starting transform Process");
         System.out.println("Getting messages to transform");
-        List<Integer> messageList = getMessages();
+        if (limit > 0)
+            System.out.println("Limited to " + limit.toString() + " messages");
+        System.out.println("Mode = " + mode);
+
+        if (mode.equals("reset")) {
+            System.out.println("Resetting all progress");
+            resetProgress();
+        }
+
+        List<Integer> messageList = getMessages(limit, mode);
         System.out.println("List of messages obtained : " + messageList.size() + " messages");
         processMessages(messageList);
 
@@ -50,13 +59,42 @@ public class BulkTransformTester {
         Connection conn = getConnection();
         PreparedStatement ps = null;
 
+        String statement = "UPDATE log.test_transform SET hl7_payload = ?, fhir_payload = ?, error_message= ? WHERE message_id=?;";
+        statement += " INSERT INTO log.test_transform (message_id, hl7_payload, fhir_payload, error_message)";
+        statement += " select ?, ?, ?, ?";
+        statement += " WHERE NOT EXISTS (SELECT message_id FROM log.test_transform WHERE message_id=?);";
         try
         {
-            ps = conn.prepareStatement("INSERT INTO log.test_transform (message_id, hl7_payload, fhir_payload, error_message) values (?, ?, ?, ?);");
-            ps.setInt(1, messageId);
-            ps.setString(2, hl7Message);
-            ps.setString(3, fhirMessage);
-            ps.setString(4, errorMessage);
+            ps = conn.prepareStatement(statement);
+            ps.setString(1, hl7Message);
+            ps.setString(2, fhirMessage);
+            ps.setString(3, errorMessage);
+            ps.setInt(4, messageId);
+            ps.setInt(5, messageId);
+            ps.setString(6, hl7Message);
+            ps.setString(7, fhirMessage);
+            ps.setString(8, errorMessage);
+            ps.setInt(9, messageId);
+            ps.executeUpdate();
+        }
+        finally
+        {
+            if (ps != null)
+            {
+                ps.close();
+            }
+            conn.close();
+        }
+    }
+
+    private static void resetProgress() throws Exception {
+        Connection conn = getConnection();
+        PreparedStatement ps = null;
+
+        try
+        {
+            ps = conn.prepareStatement("truncate table log.test_transform;");
+
             // Get data from Oracle Database
             ps.executeUpdate();
         }
@@ -101,18 +139,33 @@ public class BulkTransformTester {
         return inbound_message;
     }
 
-    private static List<Integer> getMessages() throws Exception{
+    private static List<Integer> getMessages(Integer limit, String mode) throws Exception{
 
         List<Integer> list = new ArrayList<>();
 
         Connection conn = getConnection();
         PreparedStatement ps = null;
+        String statement = "select m.message_id from log.message m";
+        statement += " left outer join log.test_transform tt on tt.message_id = m.message_id";
+
+        if (mode.equals("errors"))
+            statement += " where tt.error_message is not null";
+        else
+            statement += " where tt.message_id is null";
+        statement += " order by message_id";
+
+        if (limit > 0) {
+            statement += " limit ?;";
+        }
+        else
+            statement += ";";
 
         try
         {
-            ps = conn.prepareStatement("select message_id from log.message;");
+            ps = conn.prepareStatement(statement);
 
-//            ps.setString(1, user);
+            if (limit > 0)
+                ps.setInt(1, limit);
             // Get data from Oracle Database
             ResultSet result = ps.executeQuery();
             while (result.next())
@@ -139,9 +192,11 @@ public class BulkTransformTester {
             e1.printStackTrace();
         }
 
+
         String url = "jdbc:postgresql://localhost:5432/hl7receiver";
         String user = "postgres";
         String pass = "admin";
+
         Connection db = null;
         try {
             db = DriverManager.getConnection(url,user,pass);
