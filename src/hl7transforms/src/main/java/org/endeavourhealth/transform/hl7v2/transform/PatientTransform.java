@@ -123,11 +123,12 @@ public class PatientTransform {
     private static void addIdentifier(Patient target, Cx cx, String sendingFacility) {
         Identifier identifier = IdentifierConverter.convert(cx, sendingFacility);
 
-        if (identifier != null)
+        if (identifier != null) {
             target.addIdentifier(identifier);
 
-        if (identifier.getSystem().equals("http://endeavourhealth.org/fhir/v2-id-assigning-auth/HOMERTON/CNN"))
-            target.setIdElement(new IdType().setValue(IdentifierHelper.generateId(identifier.getValue())));
+            if (identifier.getSystem().equals("http://endeavourhealth.org/fhir/v2-id-assigning-auth/HOMERTON/CNN"))
+                target.setIdElement(new IdType().setValue(IdentifierHelper.generateId(identifier.getValue())));
+        }
     }
 
     private static void addPatientContact(Nk1Segment sourceNk1, Patient target) throws TransformException, ParseException  {

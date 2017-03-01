@@ -17,8 +17,10 @@ public class QuestionnaireTransform {
         questionnaire.addIdentifier(new Identifier().setValue(source.getQuestionnaireId()));
         Questionnaire.GroupComponent group = new Questionnaire.GroupComponent();
 
-        for (Questionnaire.QuestionComponent question : QuestionConverter.convert(source.getQuestionAndAnswer())) {
-            group.addQuestion(question);
+        if (source.getQuestionAndAnswer() != null) {
+            for (Questionnaire.QuestionComponent question : QuestionConverter.convert(source.getQuestionAndAnswer())) {
+                group.addQuestion(question);
+            }
         }
 
         questionnaire.setGroup(group);

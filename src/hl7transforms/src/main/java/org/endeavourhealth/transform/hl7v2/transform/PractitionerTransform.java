@@ -29,8 +29,9 @@ public class PractitionerTransform {
 
         String sendingFacility = mshSegment.getSendingFacility();
 
-        for (Xcn xcn : evnSegment.getOperators())
-            practitioners.add(transform(xcn, sendingFacility));
+        if (evnSegment.getOperators() != null)
+            for (Xcn xcn : evnSegment.getOperators())
+                practitioners.add(transform(xcn, sendingFacility));
 
         for (Xcn xcn : pd1Segment.getPatientPrimaryCareProvider())
             practitioners.add(transform(xcn, sendingFacility));

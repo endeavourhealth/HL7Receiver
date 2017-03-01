@@ -69,6 +69,12 @@ public class AddressConverter {
             case "home": return Address.AddressUse.HOME;
             case "temporary": return Address.AddressUse.TEMP;
             case "previous": return Address.AddressUse.OLD;
+
+            //Homerton Specific
+            case "mailing": return Address.AddressUse.HOME;
+            case "alternate": return Address.AddressUse.TEMP;
+            case "birth": return Address.AddressUse.OLD;
+
             default: throw new TransformException(addressType + " address type not recognised");
         }
     }

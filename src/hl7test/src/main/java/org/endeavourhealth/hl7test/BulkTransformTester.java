@@ -47,7 +47,7 @@ public class BulkTransformTester {
                 success++;
             }
             catch (Exception e) {
-                error = e.getMessage();
+                error = constructExceptionMessage(e);
                 fail++;
             }
             saveTransformResult(id, messageText, fhirMessage, error );
@@ -59,6 +59,7 @@ public class BulkTransformTester {
                 System.out.println(fail + " Failed transforms");
             }
             i++;
+            Thread.sleep(100);
         }
     }
 
@@ -207,4 +208,27 @@ public class BulkTransformTester {
 
         return db;
     }
+
+    private static String constructExceptionMessage(Throwable exception) {
+        if (exception == null)
+            return "";
+
+        String message = "[" + exception.getClass().getName() + "]  " + exception.getMessage();
+        message += "[Stack Trace] " + getFirstLineStackTrace(exception);
+
+        if (exception.getCause() != null)
+            if (exception.getCause() != exception)
+                message += "\r\n" + constructExceptionMessage(exception.getCause());
+
+        return message;
+    }
+
+    private static String getFirstLineStackTrace(Throwable exception) {
+        if (exception.getStackTrace() != null)
+            if (exception.getStackTrace().length > 0)
+                return exception.getStackTrace()[0].toString();
+
+        return "";
+    }
+
 }
