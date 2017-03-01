@@ -8,22 +8,29 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class BulkTransformTester {
+    private static Connection conn;
+
     public static void processStoredMessages(Integer limit, String mode) throws Exception {
-        System.out.println("Starting transform Process");
-        System.out.println("Getting messages to transform");
-        if (limit > 0)
-            System.out.println("Limited to " + limit.toString() + " messages");
-        System.out.println("Mode = " + mode);
+        conn = getConnection();
+        try {
+            System.out.println("Starting transform Process");
+            System.out.println("Getting messages to transform");
+            if (limit > 0)
+                System.out.println("Limited to " + limit.toString() + " messages");
+            System.out.println("Mode = " + mode);
 
-        if (mode.equals("reset")) {
-            System.out.println("Resetting all progress");
-            resetProgress();
+            if (mode.equals("reset")) {
+                System.out.println("Resetting all progress");
+                resetProgress();
+            }
+
+            List<Integer> messageList = getMessages(limit, mode);
+            System.out.println("List of messages obtained : " + messageList.size() + " messages");
+            processMessages(messageList);
         }
-
-        List<Integer> messageList = getMessages(limit, mode);
-        System.out.println("List of messages obtained : " + messageList.size() + " messages");
-        processMessages(messageList);
-
+        finally {
+            conn.close();
+        }
     }
 
     private static void processMessages(List<Integer> messageList) throws Exception {
@@ -56,7 +63,7 @@ public class BulkTransformTester {
     }
 
     private static void saveTransformResult(Integer messageId, String hl7Message, String fhirMessage, String errorMessage) throws Exception {
-        Connection conn = getConnection();
+
         PreparedStatement ps = null;
 
         String statement = "UPDATE log.test_transform SET hl7_payload = ?, fhir_payload = ?, error_message= ? WHERE message_id=?;";
@@ -83,12 +90,11 @@ public class BulkTransformTester {
             {
                 ps.close();
             }
-            conn.close();
         }
     }
 
     private static void resetProgress() throws Exception {
-        Connection conn = getConnection();
+
         PreparedStatement ps = null;
 
         try
@@ -104,7 +110,6 @@ public class BulkTransformTester {
             {
                 ps.close();
             }
-            conn.close();
         }
     }
 
@@ -113,7 +118,7 @@ public class BulkTransformTester {
     }
 
     private static String getMessage(Integer message_id) throws Exception {
-        Connection conn = getConnection();
+
         PreparedStatement ps = null;
         String inbound_message = "";
 
@@ -134,7 +139,6 @@ public class BulkTransformTester {
             {
                 ps.close();
             }
-            conn.close();
         }
         return inbound_message;
     }
@@ -143,7 +147,6 @@ public class BulkTransformTester {
 
         List<Integer> list = new ArrayList<>();
 
-        Connection conn = getConnection();
         PreparedStatement ps = null;
         String statement = "select m.message_id from log.message m";
         statement += " left outer join log.test_transform tt on tt.message_id = m.message_id";
@@ -179,7 +182,6 @@ public class BulkTransformTester {
             {
                 ps.close();
             }
-            conn.close();
         }
 
         return list;
@@ -192,10 +194,9 @@ public class BulkTransformTester {
             e1.printStackTrace();
         }
 
-
-        String url = "jdbc:postgresql://localhost:5432/hl7receiver";
-        String user = "postgres";
-        String pass = "admin";
+        String url = "jdbc:postgresql://" + System.getProperty("ipaddress") + ":5432/hl7receiver";
+        String user = System.getProperty("user");
+        String pass = System.getProperty("password");
 
         Connection db = null;
         try {
