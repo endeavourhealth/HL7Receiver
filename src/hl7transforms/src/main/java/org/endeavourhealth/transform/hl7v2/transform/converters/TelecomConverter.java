@@ -46,6 +46,8 @@ public class TelecomConverter {
             //Homerton Specific
             case "TEL": return ContactPoint.ContactPointSystem.PHONE;
             case "EMAIL": return ContactPoint.ContactPointSystem.EMAIL;
+            case "TEXT PHONE": return ContactPoint.ContactPointSystem.PHONE;
+            case "FAX": return ContactPoint.ContactPointSystem.FAX;
 
             default: throw new TransformException(systemType + " system type not recognised");
         }
@@ -73,6 +75,8 @@ public class TelecomConverter {
             case "TEMPORARY": return ContactPoint.ContactPointUse.TEMP;
             case "HOME PHONE": return ContactPoint.ContactPointUse.HOME;
             case "TEMP PHONE": return ContactPoint.ContactPointUse.TEMP;
+            case "EMERGENCY NUMBER": return ContactPoint.ContactPointUse.TEMP;
+            case "PAGER NUMBER": return ContactPoint.ContactPointUse.WORK;
             default: throw new TransformException(useCode + " use code not recognised");
         }
     }

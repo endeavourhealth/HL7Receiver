@@ -182,6 +182,7 @@ public class PatientVisitTransform {
             case "PENDING ARRIVAL": return Encounter.EncounterState.PLANNED;
             case "ACTIVE": return Encounter.EncounterState.INPROGRESS;
             case "PREADMIT": return Encounter.EncounterState.ARRIVED;
+            case "CANCELLED PENDING ARRIVAL": return Encounter.EncounterState.CANCELLED;
 
             default: throw new TransformException(state + " state not recognised");
         }

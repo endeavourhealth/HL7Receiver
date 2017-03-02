@@ -33,8 +33,11 @@ public class PractitionerTransform {
             for (Xcn xcn : evnSegment.getOperators())
                 practitioners.add(transform(xcn, sendingFacility));
 
-        for (Xcn xcn : pd1Segment.getPatientPrimaryCareProvider())
-            practitioners.add(transform(xcn, sendingFacility));
+
+        if (pd1Segment != null)
+            if (pd1Segment.getPatientPrimaryCareProvider() != null)
+                for (Xcn xcn : pd1Segment.getPatientPrimaryCareProvider())
+                    practitioners.add(transform(xcn, sendingFacility));
 
         if (pv1Segment != null) {
             if (pv1Segment.getAttendingDoctor() != null)
