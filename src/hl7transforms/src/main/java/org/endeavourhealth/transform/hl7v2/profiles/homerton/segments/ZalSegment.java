@@ -4,8 +4,7 @@ import org.endeavourhealth.transform.hl7v2.parser.ParseException;
 import org.endeavourhealth.transform.hl7v2.parser.Segment;
 import org.endeavourhealth.transform.hl7v2.parser.Seperators;
 import org.endeavourhealth.transform.hl7v2.parser.datatypes.Xcn;
-
-import java.time.LocalDateTime;
+import org.endeavourhealth.transform.hl7v2.transform.Hl7DateTime;
 
 public class ZalSegment extends Segment {
     public ZalSegment(String segmentText, Seperators seperators) throws ParseException {
@@ -13,7 +12,7 @@ public class ZalSegment extends Segment {
     }
 
     public String getActionCode() { return this.getFieldAsString(1); }
-    public LocalDateTime getActivateDateTime() throws ParseException { return this.getFieldAsDate(2); }
+    public Hl7DateTime getActivateDateTime() throws ParseException { return this.getFieldAsHl7Date(2); }
     public String getAllergyInstanceId() { return this.getFieldAsString(3); }
     public String getAllergyId() { return this.getFieldAsString(4); }
     public String getReactionClass() { return this.getFieldAsString(5); }
@@ -24,7 +23,7 @@ public class ZalSegment extends Segment {
     public String getSourceOfInformation() { return this.getFieldAsString(8); }
     public String getCancelReasonCode() { return this.getFieldAsString(9); }
     public String getCancelReasonPersonnel() { return this.getFieldAsString(10); }
-    public LocalDateTime getReviewedDateTime() throws ParseException { return this.getFieldAsDate(11); }
+    public Hl7DateTime getReviewedDateTime() throws ParseException { return this.getFieldAsHl7Date(11); }
     public Xcn getReviewedPersonnel() { return this.getFieldAsDatatype(12, Xcn.class); }
     public String getVerifiedStatusFlag() { return this.getFieldAsString(13); }
 }

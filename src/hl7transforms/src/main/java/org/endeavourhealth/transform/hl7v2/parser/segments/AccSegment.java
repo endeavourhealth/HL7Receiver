@@ -6,15 +6,14 @@ import org.endeavourhealth.transform.hl7v2.parser.Seperators;
 import org.endeavourhealth.transform.hl7v2.parser.datatypes.Ce;
 import org.endeavourhealth.transform.hl7v2.parser.datatypes.Xad;
 import org.endeavourhealth.transform.hl7v2.parser.datatypes.Xcn;
-
-import java.time.LocalDateTime;
+import org.endeavourhealth.transform.hl7v2.transform.Hl7DateTime;
 
 public class AccSegment extends Segment {
     public AccSegment(String segmentText, Seperators seperators) throws ParseException {
         super(segmentText, seperators);
     }
 
-    public LocalDateTime getAccidentDateTime() throws ParseException { return this.getFieldAsDate(1); }
+    public Hl7DateTime getAccidentDateTime() throws ParseException { return this.getFieldAsHl7Date(1); }
     public Ce getAccidentCode() { return this.getFieldAsDatatype(2, Ce.class); }
     public String getAccidentLocation() { return this.getFieldAsString(3); }
     public Ce getAutoAccidentState() { return this.getFieldAsDatatype(4, Ce.class); }

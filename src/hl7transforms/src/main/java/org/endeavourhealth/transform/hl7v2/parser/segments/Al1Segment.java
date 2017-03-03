@@ -4,8 +4,8 @@ import org.endeavourhealth.transform.hl7v2.parser.ParseException;
 import org.endeavourhealth.transform.hl7v2.parser.Segment;
 import org.endeavourhealth.transform.hl7v2.parser.Seperators;
 import org.endeavourhealth.transform.hl7v2.parser.datatypes.Ce;
+import org.endeavourhealth.transform.hl7v2.transform.Hl7DateTime;
 
-import java.time.LocalDateTime;
 import java.util.List;
 
 public class Al1Segment extends Segment {
@@ -17,5 +17,5 @@ public class Al1Segment extends Segment {
     public String getAlleryType() { return this.getFieldAsString(2); }
     public Ce getAllergyCode() { return this.getFieldAsDatatype(3, Ce.class); }
     public List<String> getAllergyReaction() { return this.getFieldAsStringList(4); }
-    public LocalDateTime getIdentificationDate() throws ParseException { return this.getFieldAsDate(5); }
+    public Hl7DateTime getIdentificationDate() throws ParseException { return this.getFieldAsHl7Date(5); }
 }

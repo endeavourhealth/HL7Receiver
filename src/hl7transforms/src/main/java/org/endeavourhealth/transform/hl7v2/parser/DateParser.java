@@ -16,10 +16,10 @@ public abstract class DateParser {
     private static final int YYYYMMDD = 8;
     private static final int YYYYMMDDHHMM = 12;
     private static final int YYYYMMDDHHMMSS = 14;
-    private static final int YYYYMMDDHHMMSST = 15;
-    private static final int YYYYMMDDHHMMSSTT = 16;
-    private static final int YYYYMMDDHHMMSSTTT = 17;
-    private static final int YYYYMMDDHHMMSSTTTT = 18;
+    private static final int YYYYMMDDHHMMSS_T = 16;
+    private static final int YYYYMMDDHHMMSS_TT = 17;
+    private static final int YYYYMMDDHHMMSS_TTT = 18;
+    private static final int YYYYMMDDHHMMSS_TTTT = 19;
 
 
     public static LocalDateTime parse(String dateTime) throws ParseException {
@@ -43,7 +43,6 @@ public abstract class DateParser {
             dateTime = handleShortDates(dateTime);
 
         String pattern = getPattern(dateTime);
-
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern(pattern);
 
         if (dateTime.length() == 8)
@@ -69,17 +68,17 @@ public abstract class DateParser {
         return "";
     }
 
-    private static String getPattern(String dateTime) throws ParseException {
+    public static String getPattern(String dateTime) throws ParseException {
         switch (dateTime.length()) {
             case YYYY: return "yyyy";
-            case YYYYMM: return "yyyyMM";
+            case YYYYMM: return "yyyy-MM";
             case YYYYMMDD: return "yyyyMMdd";
             case YYYYMMDDHHMM: return "yyyyMMddHHmm";
             case YYYYMMDDHHMMSS: return "yyyyMMddHHmmss";
-            case YYYYMMDDHHMMSST: return "yyyyMMddHHmmssS";
-            case YYYYMMDDHHMMSSTT: return "yyyyMMddHHmmssSS";
-            case YYYYMMDDHHMMSSTTT: return "yyyyMMddHHmmssSSS";
-            case YYYYMMDDHHMMSSTTTT: return "yyyyMMddHHmmssSSSS";
+            case YYYYMMDDHHMMSS_T: return "yyyyMMddHHmmss.S";
+            case YYYYMMDDHHMMSS_TT: return "yyyyMMddHHmmss.SS";
+            case YYYYMMDDHHMMSS_TTT: return "yyyyMMddHHmmss.SSS";
+            case YYYYMMDDHHMMSS_TTTT: return "yyyyMMddHHmmss.SSSS";
             default: throw new ParseException("Could not parse date time");
         }
     }

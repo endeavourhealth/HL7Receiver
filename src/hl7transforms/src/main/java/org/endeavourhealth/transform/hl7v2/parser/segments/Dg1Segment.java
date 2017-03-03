@@ -4,8 +4,8 @@ import org.endeavourhealth.transform.hl7v2.parser.ParseException;
 import org.endeavourhealth.transform.hl7v2.parser.Segment;
 import org.endeavourhealth.transform.hl7v2.parser.Seperators;
 import org.endeavourhealth.transform.hl7v2.parser.datatypes.*;
+import org.endeavourhealth.transform.hl7v2.transform.Hl7DateTime;
 
-import java.time.LocalDateTime;
 import java.util.List;
 
 public class Dg1Segment extends Segment {
@@ -17,7 +17,7 @@ public class Dg1Segment extends Segment {
     public String getDiagnosisCodingMethod() { return this.getFieldAsString(2); }
     public Ce getDiagnosisCode() { return this.getFieldAsDatatype(3, Ce.class); }
     public String getDiagnosisDescription() { return this.getFieldAsString(4); }
-    public LocalDateTime getDiagnosisDateTime() throws ParseException { return this.getFieldAsDate(5); }
+    public Hl7DateTime getDiagnosisDateTime() throws ParseException { return this.getFieldAsHl7Date(5); }
     public String getDiagnosisType() { return this.getFieldAsString(6); }
     public Ce getMajorDiagnosticCategory() { return this.getFieldAsDatatype(7, Ce.class); }
     public Ce getDiagnosticRelatedGroup() { return this.getFieldAsDatatype(8, Ce.class); }
@@ -31,7 +31,7 @@ public class Dg1Segment extends Segment {
     public List<Xcn> getDiagnosingClinician() { return this.getFieldAsDatatypes(16, Xcn.class); }
     public String getDiagnosisClassification() { return this.getFieldAsString(17); }
     public String getConfidentialIndicator() { return this.getFieldAsString(18); }
-    public LocalDateTime getAttestationDateTime() throws ParseException { return this.getFieldAsDate(19); }
+    public Hl7DateTime getAttestationDateTime() throws ParseException { return this.getFieldAsHl7Date(19); }
     public String getDiagnosisIdentifier() { return this.getFieldAsString(20); }
     public String getDiagnosisActionCode() { return this.getFieldAsString(21); }
 }

@@ -1,10 +1,6 @@
 package org.endeavourhealth.transform.hl7v2.transform.converters;
 
-import org.hl7.fhir.instance.model.DateTimeType;
-import org.hl7.fhir.instance.model.Extension;
-import org.hl7.fhir.instance.model.IntegerType;
-import org.hl7.fhir.instance.model.StringType;
-import java.util.Date;
+import org.hl7.fhir.instance.model.*;
 
 public class ExtensionHelper {
 
@@ -20,9 +16,9 @@ public class ExtensionHelper {
                 .setValue(new IntegerType(value));
     }
 
-    public static Extension createDateTimeExtension(String uri, Date value) {
+    public static Extension createDateTimeTypeExtension(String uri, Type value) {
         return new Extension()
                 .setUrl(uri)
-                .setValue(new DateTimeType(value));
+                .setValue(value);
     }
 }

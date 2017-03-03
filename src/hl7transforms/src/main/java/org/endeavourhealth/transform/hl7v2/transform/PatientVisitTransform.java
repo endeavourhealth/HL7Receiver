@@ -116,9 +116,9 @@ public class PatientVisitTransform {
         if (source.getAdmitDateTime() != null || source.getDischargeDateTime() != null) {
             Period period = new Period();
             if (source.getAdmitDateTime() != null)
-                period.setStart(DateHelper.fromLocalDateTime(source.getAdmitDateTime()));
+                period.setStart(source.getAdmitDateTime().asDate());
             if (source.getDischargeDateTime() != null)
-                period.setEnd(DateHelper.fromLocalDateTime(source.getDischargeDateTime()));
+                period.setEnd(source.getDischargeDateTime().asDate());
             target.setPeriod(period);
         }
 
@@ -162,9 +162,9 @@ public class PatientVisitTransform {
             shc.setStatus(Encounter.EncounterState.PLANNED);
             Period period = new Period();
             if (source.getExpectedAdmitDateTime() != null)
-                period.setStart(DateHelper.fromLocalDateTime(source.getExpectedAdmitDateTime()));
+                period.setStart(source.getExpectedAdmitDateTime().asDate());
             if (source.getExpectedDischargeDateTime() != null)
-                period.setEnd(DateHelper.fromLocalDateTime(source.getExpectedDischargeDateTime()));
+                period.setEnd(source.getExpectedDischargeDateTime().asDate());
             shc.setPeriod(period);
             target.addStatusHistory(shc);
         }

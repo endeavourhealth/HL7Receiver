@@ -2,8 +2,8 @@ package org.endeavourhealth.transform.hl7v2.profiles.homerton.segments;
 
 import org.endeavourhealth.transform.hl7v2.parser.*;
 import org.endeavourhealth.transform.hl7v2.parser.datatypes.*;
+import org.endeavourhealth.transform.hl7v2.transform.Hl7DateTime;
 
-import java.time.LocalDateTime;
 import java.util.List;
 
 public class ZpiSegment extends Segment {
@@ -15,8 +15,8 @@ public class ZpiSegment extends Segment {
     public int getSetId() throws ParseException { return this.getFieldAsInteger(1); }
     public List<Xad> getPatientTemporaryAddress() { return this.getFieldAsDatatypes(2, Xad.class); }
     public String getBirthPlace() { return this.getFieldAsString(4); }
-    public LocalDateTime getConceptionDate() throws ParseException { return this.getFieldAsDate(6); }
-    public LocalDateTime getDeathDate() throws ParseException { return this.getFieldAsDate(7); }
+    public Hl7DateTime getConceptionDate() throws ParseException { return this.getFieldAsHl7Date(6); }
+    public Hl7DateTime getDeathDate() throws ParseException { return this.getFieldAsHl7Date(7); }
     public List<Xcn> getFamilyDoctor() { return this.getFieldAsDatatypes(8, Xcn.class); }
     public String getPatientConfidentiality() { return this.getFieldAsString(9); }
     public List<Xcn> getOtherProvider() { return this.getFieldAsDatatypes(10, Xcn.class); }

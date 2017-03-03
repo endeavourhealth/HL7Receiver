@@ -3,10 +3,9 @@ package org.endeavourhealth.transform.hl7v2.parser;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Validate;
 import org.endeavourhealth.transform.hl7v2.parser.segments.SegmentName;
+import org.endeavourhealth.transform.hl7v2.transform.Hl7DateTime;
 
 import java.lang.reflect.Constructor;
-import java.lang.reflect.InvocationTargetException;
-import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -112,13 +111,13 @@ public class Segment {
         return field.getComponentAsString(componentNumber);
     }
 
-    public LocalDateTime getFieldAsDate(int fieldNumber) throws ParseException {
+    public Hl7DateTime getFieldAsHl7Date(int fieldNumber) throws ParseException {
         String field = getFieldAsString(fieldNumber);
 
         if (StringUtils.isBlank(field))
             return null;
 
-        return DateParser.parse(field);
+        return new Hl7DateTime(field);
     }
 
     public Integer getFieldAsInteger(int fieldNumber) throws ParseException {

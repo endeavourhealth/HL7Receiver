@@ -2,8 +2,8 @@ package org.endeavourhealth.transform.hl7v2.parser.segments;
 
 import org.endeavourhealth.transform.hl7v2.parser.*;
 import org.endeavourhealth.transform.hl7v2.parser.datatypes.*;
+import org.endeavourhealth.transform.hl7v2.transform.Hl7DateTime;
 
-import java.time.LocalDateTime;
 import java.util.List;
 
 public class Pv1Segment extends Segment {
@@ -35,17 +35,17 @@ public class Pv1Segment extends Segment {
     public String getCourtesyCode() { return this.getFieldAsString(22); }
     public String getCreditRating() { return this.getFieldAsString(23); }
     public List<String> getContractCode() { return this.getFieldAsStringList(24); }
-    public LocalDateTime getContractEffectiveDate() throws ParseException { return this.getFieldAsDate(25); }
+    public Hl7DateTime getContractEffectiveDate() throws ParseException { return this.getFieldAsHl7Date(25); }
     public String getContractAmount() { return this.getFieldAsString(26); }
     public String getContractPeriod() { return this.getFieldAsString(27); }
     public String getInterestCode() { return this.getFieldAsString(28); }
     public String getTransferToBadDebtCode() { return this.getFieldAsString(29); }
-    public LocalDateTime getTransferToBadDebtDate() throws ParseException { return this.getFieldAsDate(30); }
+    public Hl7DateTime getTransferToBadDebtDate() throws ParseException { return this.getFieldAsHl7Date(30); }
     public String getBadDebtAgencyCode() { return this.getFieldAsString(31); }
     public String getBadDebtTransferAmount() { return this.getFieldAsString(32); }
     public String getBadDebtRecoveryAmount() { return this.getFieldAsString(33); }
     public String getDeleteAccountIndicator() { return this.getFieldAsString(34); }
-    public LocalDateTime getDeleteAccountDate() throws ParseException { return this.getFieldAsDate(35); }
+    public Hl7DateTime getDeleteAccountDate() throws ParseException { return this.getFieldAsHl7Date(35); }
     public String getDischargeDisposition() { return this.getFieldAsString(36); }
     public String getDischargedToLocation() { return this.getFieldAsString(37); }
     public Ce getDietType() { return this.getFieldAsDatatype(38, Ce.class); }
@@ -54,8 +54,8 @@ public class Pv1Segment extends Segment {
     public String getAccountStatus() { return this.getFieldAsString(41); }
     public Pl getPendingLocation() { return this.getFieldAsDatatype(42, Pl.class); }
     public Pl getPriorTemporaryLocation() { return this.getFieldAsDatatype(43, Pl.class); }
-    public LocalDateTime getAdmitDateTime() throws ParseException { return this.getFieldAsDate(44); }
-    public LocalDateTime getDischargeDateTime() throws ParseException { return this.getFieldAsDate(45); }
+    public Hl7DateTime getAdmitDateTime() throws ParseException { return this.getFieldAsHl7Date(44); }
+    public Hl7DateTime getDischargeDateTime() throws ParseException { return this.getFieldAsHl7Date(45); }
     public String getCurrentPatientBalance() { return this.getFieldAsString(46); }
     public String getTotalCharges() { return this.getFieldAsString(47); }
     public String getTotalAdjustments() { return this.getFieldAsString(48); }

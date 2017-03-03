@@ -4,8 +4,8 @@ import org.endeavourhealth.transform.hl7v2.parser.ParseException;
 import org.endeavourhealth.transform.hl7v2.parser.Segment;
 import org.endeavourhealth.transform.hl7v2.parser.Seperators;
 import org.endeavourhealth.transform.hl7v2.parser.datatypes.*;
+import org.endeavourhealth.transform.hl7v2.transform.Hl7DateTime;
 
-import java.time.LocalDateTime;
 import java.util.List;
 
 public class Nk1Segment extends Segment {
@@ -20,15 +20,15 @@ public class Nk1Segment extends Segment {
     public List<Xtn> getPhoneNumber() { return this.getFieldAsDatatypes(5, Xtn.class); }
     public List<Xtn> getBusinessPhoneNumber() { return this.getFieldAsDatatypes(6, Xtn.class); }
     public Ce getContactRole() { return this.getFieldAsDatatype(7, Ce.class); }
-    public LocalDateTime getStartDate() throws ParseException { return this.getFieldAsDate(8); }
-    public LocalDateTime getEndDate() throws ParseException { return this.getFieldAsDate(9); }
+    public Hl7DateTime getStartDate() throws ParseException { return this.getFieldAsHl7Date(8); }
+    public Hl7DateTime getEndDate() throws ParseException { return this.getFieldAsHl7Date(9); }
     public String getNextOfKinAssociatedPartiesJobTitle() { return this.getFieldAsString(10); }
     public Jcc getNextOKinAssociatedPartiesJobCodeClass() { return this.getFieldAsDatatype(11, Jcc.class); }
     public Cx getNextOfKinAssociatedPartiesEmployeeNumber() { return this.getFieldAsDatatype(12, Cx.class); }
     public List<Xon> getOrganizationNameNK1() { return this.getFieldAsDatatypes(13, Xon.class); }
     public Ce getMaritalStatus() { return this.getFieldAsDatatype(14, Ce.class); }
     public String getSex() { return this.getFieldAsString(15); }
-    public LocalDateTime getDateTimeOfBirth() throws ParseException { return this.getFieldAsDate(16); }
+    public Hl7DateTime getDateTimeOfBirth() throws ParseException { return this.getFieldAsHl7Date(16); }
     public String getLivingDependency() { return this.getFieldAsString(17); }
     public String getAmbulatoryStatus() { return this.getFieldAsString(18); }
     public List<Ce> getCitizenship() { return this.getFieldAsDatatypes(19, Ce.class); }

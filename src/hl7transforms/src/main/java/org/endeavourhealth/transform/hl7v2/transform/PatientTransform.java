@@ -3,7 +3,6 @@ package org.endeavourhealth.transform.hl7v2.transform;
 import org.apache.commons.lang3.StringUtils;
 import org.endeavourhealth.common.fhir.FhirExtensionUri;
 import org.endeavourhealth.transform.hl7v2.parser.ParseException;
-import org.endeavourhealth.transform.hl7v2.parser.Segment;
 import org.endeavourhealth.transform.hl7v2.parser.datatypes.*;
 import org.endeavourhealth.transform.hl7v2.parser.messages.AdtMessage;
 import org.endeavourhealth.transform.hl7v2.parser.segments.MshSegment;
@@ -13,7 +12,6 @@ import org.endeavourhealth.transform.hl7v2.transform.converters.*;
 import org.endeavourhealth.transform.hl7v2.transform.converters.ExtensionHelper;
 import org.hl7.fhir.instance.model.*;
 
-import java.util.ArrayList;
 import java.util.List;
 
 public class PatientTransform {
@@ -70,12 +68,17 @@ public class PatientTransform {
     }
 
     private static void setBirthAndDeath(PidSegment sourcePid, Patient target) throws ParseException, TransformException {
-        if (sourcePid.getDateOfBirth() != null)
-            target.setBirthDate(DateHelper.fromLocalDateTime(sourcePid.getDateOfBirth()));
+        if (sourcePid.getDateOfBirth() != null) {
+            target.setBirthDate(sourcePid.getDateOfBirth().asDate());
+            //ADD EXTENSION FOR TIME OF BIRTH
+            if (sourcePid.getDateOfBirth().hasTimeComponent) {
+                target.addExtension(ExtensionHelper.createDateTimeTypeExtension(FhirExtensionUri.PATIENT_BIRTH_DATE_TIME, sourcePid.getDateOfBirth().getDateTimeType()));
+            }
+        }
 
-        if (sourcePid.getDateOfDeath() != null)
-            target.setDeceased(new DateTimeType(DateHelper.fromLocalDateTime(sourcePid.getDateOfDeath())));
-        else if (isDeceased(sourcePid.getDeathIndicator()))
+        if (sourcePid.getDateOfDeath() != null) {
+            target.setDeceased(sourcePid.getDateOfDeath().getDateTimeType());
+        } else if (isDeceased(sourcePid.getDeathIndicator()))
             target.setDeceased(new BooleanType(true));
     }
 
@@ -157,8 +160,8 @@ public class PatientTransform {
             contactComponent.addRelationship(getCodeableConcept(sourceNk1.getContactRole()));
 
         if (sourceNk1.getDateTimeOfBirth() != null)
-            contactComponent.addExtension(ExtensionHelper.createDateTimeExtension(FhirExtensionUri.PATIENT_CONTACT_DOB,
-                    DateHelper.fromLocalDateTime(sourceNk1.getDateTimeOfBirth())));
+            contactComponent.addExtension(ExtensionHelper.createDateTimeTypeExtension(FhirExtensionUri.PATIENT_CONTACT_DOB,
+                    sourceNk1.getDateTimeOfBirth().getDateTimeType()));
 
         if (sourceNk1.getPrimaryLanguage() != null)
             contactComponent.addExtension(ExtensionHelper.createStringExtension(FhirExtensionUri.PATIENT_CONTACT_MAIN_LANGUAGE, sourceNk1.getPrimaryLanguage().getAsString()));

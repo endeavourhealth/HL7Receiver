@@ -6,7 +6,6 @@ import org.endeavourhealth.transform.hl7v2.parser.segments.AccSegment;
 import org.endeavourhealth.transform.hl7v2.profiles.homerton.segments.ZviSegment;
 import org.endeavourhealth.transform.hl7v2.transform.TransformException;
 import org.endeavourhealth.transform.hl7v2.transform.converters.CodeableConceptHelper;
-import org.endeavourhealth.transform.hl7v2.transform.converters.DateHelper;
 import org.hl7.fhir.instance.model.Encounter;
 import org.hl7.fhir.instance.model.Period;
 
@@ -25,7 +24,7 @@ public class AdditionalVisitTransform {
 
             shc.setStatus(Encounter.EncounterState.ARRIVED);
             Period period = new Period();
-            period.setStart(DateHelper.fromLocalDateTime(source.getAssignToLocationDate()));
+            period.setStart(source.getAssignToLocationDate().asDate());
             shc.setPeriod(period);
             target.addStatusHistory(shc);
         }
@@ -40,7 +39,7 @@ public class AdditionalVisitTransform {
 
             shc.setStatus(Encounter.EncounterState.ARRIVED);
             Period period = new Period();
-            period.setStart(DateHelper.fromLocalDateTime(source.getAccidentDateTime()));
+            period.setStart(source.getAccidentDateTime().asDate());
             shc.setPeriod(period);
             target.addStatusHistory(shc);
         }

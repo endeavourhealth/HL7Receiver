@@ -5,8 +5,8 @@ import org.endeavourhealth.transform.hl7v2.parser.Segment;
 import org.endeavourhealth.transform.hl7v2.parser.Seperators;
 import org.endeavourhealth.transform.hl7v2.parser.datatypes.Ce;
 import org.endeavourhealth.transform.hl7v2.parser.datatypes.Xcn;
+import org.endeavourhealth.transform.hl7v2.transform.Hl7DateTime;
 
-import java.time.LocalDateTime;
 import java.util.List;
 
 public class ObxSegment extends Segment {
@@ -25,9 +25,9 @@ public class ObxSegment extends Segment {
     public String getProbability() { return this.getFieldAsString(9); }
     public String getNatureOfAbnormalTest() { return this.getFieldAsString(10); }
     public String getObservationResultStatus() { return this.getFieldAsString(11); }
-    public LocalDateTime getDateLastObsNormalValues() throws ParseException { return this.getFieldAsDate(12); }
+    public Hl7DateTime getDateLastObsNormalValues() throws ParseException { return this.getFieldAsHl7Date(12); }
     public String getUserDefinedAccessChecks() { return this.getFieldAsString(13); }
-    public LocalDateTime getDateTimeOfTheObservation() throws ParseException { return this.getFieldAsDate(14); }
+    public Hl7DateTime getDateTimeOfTheObservation() throws ParseException { return this.getFieldAsHl7Date(14); }
     public Ce getProducersID() { return this.getFieldAsDatatype(15, Ce.class); }
     public List<Xcn> getResponsibleObserver() { return this.getFieldAsDatatypes(16, Xcn.class); }
     public Ce getObservationMethod() { return this.getFieldAsDatatype(17, Ce.class); }

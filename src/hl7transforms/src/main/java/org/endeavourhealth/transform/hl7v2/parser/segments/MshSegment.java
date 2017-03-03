@@ -1,8 +1,7 @@
 package org.endeavourhealth.transform.hl7v2.parser.segments;
 
 import org.endeavourhealth.transform.hl7v2.parser.*;
-
-import java.time.LocalDateTime;
+import org.endeavourhealth.transform.hl7v2.transform.Hl7DateTime;
 
 public class MshSegment extends Segment {
     public MshSegment(String segment, Seperators seperators) throws ParseException {
@@ -19,7 +18,7 @@ public class MshSegment extends Segment {
     public String getSendingFacility() { return this.getComponentAsString(4, 1); }
     public String getReceivingApplication() { return this.getComponentAsString(5, 1); };
     public String getReceivingFacility() { return this.getComponentAsString(6, 1); };
-    public LocalDateTime getDateTimeOfMessage() { try { return this.getFieldAsDate(7); } catch (ParseException e) { throw new RuntimeParseException(e); } }
+    public Hl7DateTime getDateTimeOfMessage() { try { return this.getFieldAsHl7Date(7); } catch (ParseException e) { throw new RuntimeParseException(e); } }
     public String getSecurity() { return this.getFieldAsString(8); }
     public String getMessageType() { return this.getFieldAsString(9); }
     public Field getMessageTypeField() { return this.getField(9); }

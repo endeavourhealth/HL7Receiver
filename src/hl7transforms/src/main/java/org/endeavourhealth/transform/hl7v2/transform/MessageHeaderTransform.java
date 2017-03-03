@@ -15,7 +15,7 @@ public class MessageHeaderTransform {
     public static MessageHeader fromHl7v2(MshSegment source) throws ParseException {
         MessageHeader target = new MessageHeader();
 
-        LocalDateTime sourceMessageDateTime = source.getDateTimeOfMessage();
+        LocalDateTime sourceMessageDateTime = source.getDateTimeOfMessage().localDateTime;
         target.setIdElement(new IdType().setValue(IdentifierHelper.generateId(sourceMessageDateTime)));
 
         if (sourceMessageDateTime != null)

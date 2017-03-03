@@ -2,8 +2,8 @@ package org.endeavourhealth.transform.hl7v2.parser.segments;
 
 import org.endeavourhealth.transform.hl7v2.parser.*;
 import org.endeavourhealth.transform.hl7v2.parser.datatypes.*;
+import org.endeavourhealth.transform.hl7v2.transform.Hl7DateTime;
 
-import java.time.LocalDateTime;
 import java.util.List;
 
 public class PidSegment extends Segment {
@@ -17,7 +17,7 @@ public class PidSegment extends Segment {
     public List<Cx> getAlternatePatientId() { return this.getFieldAsDatatypes(4, Cx.class); }
     public List<Xpn> getPatientNames() { return this.getFieldAsDatatypes(5, Xpn.class); }
     public List<Xpn> getMothersMaidenNames() { return this.getFieldAsDatatypes(6, Xpn.class); }
-    public LocalDateTime getDateOfBirth() throws ParseException { return this.getFieldAsDate(7); }
+    public Hl7DateTime getDateOfBirth() throws ParseException { return this.getFieldAsHl7Date(7); }
     public String getSex() { return this.getFieldAsString(8); }
     public List<Xpn> getPatientAlias() { return this.getFieldAsDatatypes(9, Xpn.class); }
     public Ce getRace() { return this.getFieldAsDatatype(10, Ce.class); }
@@ -39,7 +39,7 @@ public class PidSegment extends Segment {
     public List<Ce> getCitizenship() { return this.getFieldAsDatatypes(26, Ce.class); }
     public List<Ce> getVeteransMilitaryStatus() { return this.getFieldAsDatatypes(27, Ce.class); }
     public Ce getNationality() { return this.getFieldAsDatatype(28, Ce.class); }
-    public LocalDateTime getDateOfDeath() throws ParseException { return this.getFieldAsDate(29); }
+    public Hl7DateTime getDateOfDeath() throws ParseException { return this.getFieldAsHl7Date(29); }
     public String getDeathIndicator() { return this.getFieldAsString(30); }
     public Ce getTraceStatus() { return this.getFieldAsDatatype(32, Ce.class); }
 }
