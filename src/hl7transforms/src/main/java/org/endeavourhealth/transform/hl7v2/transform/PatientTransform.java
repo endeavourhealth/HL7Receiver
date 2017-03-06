@@ -7,6 +7,7 @@ import org.endeavourhealth.transform.hl7v2.parser.datatypes.*;
 import org.endeavourhealth.transform.hl7v2.parser.messages.AdtMessage;
 import org.endeavourhealth.transform.hl7v2.parser.segments.MshSegment;
 import org.endeavourhealth.transform.hl7v2.parser.segments.Nk1Segment;
+import org.endeavourhealth.transform.hl7v2.parser.segments.Pd1Segment;
 import org.endeavourhealth.transform.hl7v2.parser.segments.PidSegment;
 import org.endeavourhealth.transform.hl7v2.transform.converters.*;
 import org.endeavourhealth.transform.hl7v2.transform.converters.ExtensionHelper;
@@ -19,6 +20,8 @@ public class PatientTransform {
     public static Patient fromHl7v2(AdtMessage source) throws ParseException, TransformException {
         MshSegment sourceMsh = source.getMshSegment();
         PidSegment sourcePid = source.getPidSegment();
+        Pd1Segment sourcePd1 = source.getPd1Segment();
+
         List<Nk1Segment> sourceNk1Segments = source.getNk1Segments();
 
         Patient target = new Patient();
@@ -56,6 +59,16 @@ public class PatientTransform {
         if (sourcePid.getMaritalStatus() != null)
             target.setMaritalStatus(getCodeableConcept(sourcePid.getMaritalStatus()));
 
+        if (sourcePd1 != null) {
+            if (sourcePd1.getPatientPrimaryCareProvider() != null) {
+                for (Xcn xcn : sourcePd1.getPatientPrimaryCareProvider()){
+                    Reference reference = new Reference();
+                    reference.setReference(xcn.getId());
+                    reference.setDisplay(NameConverter.getNameAsString(xcn));
+                    target.addCareProvider(reference);
+                }
+            }
+        }
 
         for (Nk1Segment nk1 : sourceNk1Segments)
             addPatientContact(nk1, target);

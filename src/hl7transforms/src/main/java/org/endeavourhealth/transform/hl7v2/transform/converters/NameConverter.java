@@ -144,4 +144,19 @@ public class NameConverter {
 
         return stringBuilder.toString();
     }
+
+    public static String getNameAsString(XpnInterface source) {
+        String name = "";
+
+        if (StringUtils.isNotBlank(source.getPrefix()))
+            name += formatTitle(source.getPrefix()) + " ";
+
+        if (StringUtils.isNotBlank(source.getFamilyName()))
+            name += formatSurname(source.getFamilyName()) + ", ";
+
+        if (StringUtils.isNotBlank(source.getGivenName()))
+            name += formatName(source.getGivenName());
+
+        return name;
+    }
 }
