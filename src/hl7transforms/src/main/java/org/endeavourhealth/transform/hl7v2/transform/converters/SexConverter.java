@@ -18,6 +18,8 @@ public class SexConverter {
             //Homerton Specific
             //not known (n)
             case "n": return Enumerations.AdministrativeGender.UNKNOWN;
+            //indeterminate
+            case "i": return Enumerations.AdministrativeGender.UNKNOWN;
             default: throw new TransformException(sex + " not recognised as a sex value");
         }
     }
