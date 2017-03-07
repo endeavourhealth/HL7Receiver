@@ -5,6 +5,7 @@ create or replace function helper.get_homerton_pids
 )
 returns table
 (
+	message_id integer,
 	message_type varchar,
 	message_type_description varchar,
 	message_date varchar,
@@ -18,6 +19,7 @@ begin
 
 	return query
 	select 
+		m.message_id,
 		mt.message_type, 
 		mt.description as message_type_description, 
 		to_char(m.log_date, 'YYYY-MM-DD HH:mm') as message_date, 
