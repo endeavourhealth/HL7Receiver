@@ -8,11 +8,11 @@ returns table
 	message_id integer,
 	message_type varchar,
 	message_type_description varchar,
-	message_date varchar,
+	message_date text,
 	nhs_number varchar,
 	cnn_number varchar,
-	encounter_number varchar,
-	attendance_number varchar
+	encounter_number text,
+	attendance_number text
 )
 as $$
 begin
