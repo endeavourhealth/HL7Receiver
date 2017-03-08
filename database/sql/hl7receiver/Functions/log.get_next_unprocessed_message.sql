@@ -30,7 +30,7 @@ begin
 		raise exception 'instance_id % does not have channel processor lock', _instance_id;
 		return;
 	end if;
-	select * from dictionary.message_status_type	
+	
 	select
 		m.message_id into _message_id
 	from log.message m
