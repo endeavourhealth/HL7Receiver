@@ -29,16 +29,16 @@ create table mapping.code_context
 
 create table mapping.code
 (
-	code_id integer not null,
+	code_id serial not null,
 	code_set_id integer not null,
 	code_context_id integer not null,
 	original_code varchar(100) not null,
 	original_system varchar(100) not null,
 	original_term varchar(1000) not null,
-	is_mapped boolean not null,
-	mapped_code varchar(100) not null,
-	mapped_system varchar(100) not null,
-	mapped_term varchar(100) not null,
+	is_mapped boolean not null constraint mapping_code_ismapped_df default (false),
+	mapped_code varchar(100) null,
+	mapped_system varchar(100) null,
+	mapped_term varchar(100) null,
 	
 	constraint mapping_code_codeid_pk primary key (code_id),
 	constraint mapping_code_codesetid_fk foreign key (code_set_id) references mapping.code_set (code_set_id),
