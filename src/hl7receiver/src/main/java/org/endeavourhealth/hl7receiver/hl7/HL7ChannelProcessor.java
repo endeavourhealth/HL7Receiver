@@ -30,6 +30,7 @@ public class HL7ChannelProcessor implements Runnable {
     private static final int LOCK_RECLAIM_INTERVAL_SECONDS = 60;
     private static final int LOCK_BREAK_OTHERS_SECONDS = 360;
     private static final int THREAD_SLEEP_TIME_MILLIS = 1000;
+    private static final int THREAD_STOP_WAIT_TIMEOUT_MILLIS = 10000;
     private static final int KEYCLOAK_REINITIALISATION_WINDOW_HOURS = 1;
     private static final Integer[] DEFAULT_RETRY_INTERVALS_SECONDS = new Integer[] { 0, 10, 60 };
 
@@ -63,7 +64,7 @@ public class HL7ChannelProcessor implements Runnable {
         stopRequested = true;
         try {
             LOG.info("Stopping channel processor {}", dbChannel.getChannelName());
-            thread.join(10000);
+            thread.join(THREAD_STOP_WAIT_TIMEOUT_MILLIS);
         } catch (Exception e) {
             LOG.error("Error stopping channel processor for channel", e);
         }
@@ -256,7 +257,7 @@ public class HL7ChannelProcessor implements Runnable {
         try {
             return dataLayer.getNextUnprocessedMessage(dbChannel.getChannelId(), configuration.getInstanceId());
         } catch (Exception e) {
-            LOG.error("Error getting next unnotified message in channel processor {} for instance {} ", new Object[] { dbChannel.getChannelName(), configuration.getInstanceId(), e });
+            LOG.error("Error getting next unprocessed message in channel processor {} for instance {} ", new Object[] { dbChannel.getChannelName(), configuration.getInstanceId(), e });
         }
 
         return null;

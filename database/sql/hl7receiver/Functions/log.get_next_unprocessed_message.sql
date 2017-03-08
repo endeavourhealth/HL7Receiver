@@ -40,15 +40,18 @@ begin
 	order by m.message_date asc, m.log_date asc
 	limit 1;
 	
-	perform log.add_message_status
-	(
-		_message_id := _message_id,
-		_instance_id := _instance_id,
-		_message_status_type_id := 2, -- retrieved for processing
-		_message_status_content := null,
-		_in_error := false,
-		_error_message := null
-	);
+	if (_message_id is not null)
+	then
+		perform log.add_message_status
+		(
+			_message_id := _message_id,
+			_instance_id := _instance_id,
+			_message_status_type_id := 2, -- retrieved for processing
+			_message_status_content := null,
+			_in_error := false,
+			_error_message := null
+		);
+	end if;
 	
 	return query
 	select 

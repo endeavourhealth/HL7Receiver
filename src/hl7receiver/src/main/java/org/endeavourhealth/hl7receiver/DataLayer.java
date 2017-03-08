@@ -209,7 +209,7 @@ public class DataLayer implements IDBDigestLogger {
                 .addParameter("_instance_id", instanceId)
                 .addParameter("_break_others_lock_seconds", breakOthersLockSeconds);
 
-        return pgStoredProc.executeSingleRow((resultSet) -> resultSet.getBoolean("get_channel_forwarder_lock"));
+        return pgStoredProc.executeSingleRow((resultSet) -> resultSet.getBoolean("get_channel_processor_lock"));
     }
 
     public void releaseChannelProcessorLock(int channelId, int instanceId) throws PgStoredProcException {
