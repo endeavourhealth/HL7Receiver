@@ -81,7 +81,7 @@ class HL7MessageReceiver implements ReceivingApplication {
 
             try {
                 UUID deadLetterUuid = UUID.randomUUID();
-                LOG.error("Exception while processing message", HL7ExceptionHandler.constructLogbackDeadLetterArgs(deadLetterUuid, e1));
+                LOG.error("Exception while receiving message", HL7ExceptionHandler.constructLogbackDeadLetterArgs(deadLetterUuid, e1));
 
                 Message negativeResponse = null;
                 HL7KeyFields negativeResponseKeyFields = null;
