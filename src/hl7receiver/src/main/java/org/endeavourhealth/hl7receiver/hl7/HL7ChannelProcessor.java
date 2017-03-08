@@ -308,7 +308,7 @@ public class HL7ChannelProcessor implements Runnable {
         } catch (Exception e) {
             LOG.error("Exception releasing lock in channel processor for channel {} for instance {}", new Object[] { e, dbChannel.getChannelName(), configuration.getMachineName() });
         }
-    }   
+    }
 
     private void initialiseKeycloak() throws HL7Exception {
 
