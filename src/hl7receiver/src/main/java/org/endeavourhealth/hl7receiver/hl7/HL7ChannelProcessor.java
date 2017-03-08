@@ -149,7 +149,7 @@ public class HL7ChannelProcessor implements Runnable {
         if (attemptScheduleSeconds == null) {
             attemptScheduleSeconds = configuration
                     .getDbConfiguration()
-                    .getDbNotificationAttemptIntervalsSeconds();
+                    .getDbProcessingAttemptIntervalsSeconds();
 
             if (attemptScheduleSeconds.size() == 0)
                 attemptScheduleSeconds = Arrays.asList(DEFAULT_RETRY_INTERVALS_SECONDS);

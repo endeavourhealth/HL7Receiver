@@ -11,7 +11,7 @@ declare
 	configuration_channel refcursor;
 	configuration_channel_message_type refcursor;
 	configuration_eds refcursor;
-	configuration_notification_attempt_interval refcursor;
+	configuration_processing_attempt_interval refcursor;
 begin
 
 	insert into log.instance
@@ -96,15 +96,15 @@ begin
 	return next configuration_eds;
 	
 	------------------------------------------------------
-	configuration_notification_attempt_interval = 'configuration_notification_attempt_interval';
+	configuration_processing_attempt_interval = 'configuration_processing_attempt_interval';
 	
-	open configuration_notification_attempt_interval for
+	open configuration_processing_attempt_interval for
 	select
 		interval_seconds
-	from configuration.notification_attempt_interval
+	from configuration.processing_attempt_interval
 	order by interval_seconds asc;
 	
-	return next configuration_notification_attempt_interval;
+	return next configuration_processing_attempt_interval;
 	
 	------------------------------------------------------
 	

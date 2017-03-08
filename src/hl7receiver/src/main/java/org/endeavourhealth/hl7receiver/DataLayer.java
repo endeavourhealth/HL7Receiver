@@ -68,7 +68,7 @@ public class DataLayer implements IDBDigestLogger {
                     .setKeycloakPassword(resultSet.getString("keycloak_password"))
                     .setKeycloakClientId(resultSet.getString("keycloak_clientid")));
 
-        List<Integer> dbNotificationAttemptIntervalsSeconds = pgStoredProc.executeMultiQuery((resultSet) ->
+        List<Integer> dbProcessingAttemptIntervalsSeconds = pgStoredProc.executeMultiQuery((resultSet) ->
                 resultSet.getInt("interval_seconds"));
 
         // assemble data
@@ -82,7 +82,7 @@ public class DataLayer implements IDBDigestLogger {
         return dbConfiguration
                 .setDbChannels(dbChannels)
                 .setDbEds(dbEds)
-                .setDbNotificationAttemptIntervalsSeconds(dbNotificationAttemptIntervalsSeconds);
+                .setDbProcessingAttemptIntervalsSeconds(dbProcessingAttemptIntervalsSeconds);
     }
 
     public int openConnection(int instanceId, int channelId, int localPort, String remoteHost, int remotePort) throws PgStoredProcException {
