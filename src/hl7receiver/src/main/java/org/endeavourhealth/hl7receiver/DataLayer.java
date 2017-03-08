@@ -201,10 +201,10 @@ public class DataLayer implements IDBDigestLogger {
         pgStoredProc.execute();
     }
 
-    public boolean getChannelForwarderLock(int channelId, int instanceId, int breakOthersLockSeconds) throws PgStoredProcException {
+    public boolean getChannelProcessorLock(int channelId, int instanceId, int breakOthersLockSeconds) throws PgStoredProcException {
 
         PgStoredProc pgStoredProc = new PgStoredProc(dataSource)
-                .setName("log.get_channel_forwarder_lock")
+                .setName("log.get_channel_processor_lock")
                 .addParameter("_channel_id", channelId)
                 .addParameter("_instance_id", instanceId)
                 .addParameter("_break_others_lock_seconds", breakOthersLockSeconds);
@@ -212,20 +212,20 @@ public class DataLayer implements IDBDigestLogger {
         return pgStoredProc.executeSingleRow((resultSet) -> resultSet.getBoolean("get_channel_forwarder_lock"));
     }
 
-    public void releaseChannelForwarderLock(int channelId, int instanceId) throws PgStoredProcException {
+    public void releaseChannelProcessorLock(int channelId, int instanceId) throws PgStoredProcException {
 
         PgStoredProc pgStoredProc = new PgStoredProc(dataSource)
-                .setName("log.release_channel_forwarder_lock")
+                .setName("log.release_channel_processor_lock")
                 .addParameter("_channel_id", channelId)
                 .addParameter("_instance_id", instanceId);
 
         pgStoredProc.execute();
     }
 
-    public DbMessage getNextUnnotifiedMessage(int channelId, int instanceId) throws PgStoredProcException {
+    public DbMessage getNextUnprocessedMessage(int channelId, int instanceId) throws PgStoredProcException {
 
         PgStoredProc pgStoredProc = new PgStoredProc(dataSource)
-                .setName("log.get_next_unnotified_message")
+                .setName("log.get_next_unprocessed_message")
                 .addParameter("_channel_id", channelId)
                 .addParameter("_instance_id", instanceId);
 
@@ -237,21 +237,36 @@ public class DataLayer implements IDBDigestLogger {
                                 .setMessageDate(resultSet.getTimestamp("message_date").toLocalDateTime())
                                 .setInboundMessageType(resultSet.getString("inbound_message_type"))
                                 .setInboundPayload(resultSet.getString("inbound_payload"))
-                                .setRequestMessageUuid(UUID.fromString(resultSet.getString("request_message_uuid"))));
+                                .setMessageUuid(UUID.fromString(resultSet.getString("message_uuid"))));
     }
 
-    public void addNotificationStatus(int messageId, boolean wasSuccess, int instanceId, UUID requestMessageUuid, String requestMessage, String responseMessage, String exceptionMessage) throws PgStoredProcException {
-
+    public void addMessageStatus(int messageId, int instanceId, DbMessageStatusType messageStatusType, String messageStatusContent, boolean inError, String errorMessage) throws PgStoredProcException {
         PgStoredProc pgStoredProc = new PgStoredProc(dataSource)
-                .setName("log.add_notification_status")
+                .setName("log.add_message_status")
                 .addParameter("_message_id", messageId)
-                .addParameter("_was_success", wasSuccess)
                 .addParameter("_instance_id", instanceId)
-                .addParameter("_request_message_uuid", requestMessageUuid)
-                .addParameter("_request_message", requestMessage)
-                .addParameter("_response_message", responseMessage)
-                .addParameter("_exception_message", exceptionMessage);
+                .addParameter("_message_status_type_id", messageStatusType.getValue())
+                .addParameter("_message_status_content", messageStatusContent)
+                .addParameter("_in_error", inError)
+                .addParameter("_error_message", errorMessage);
 
         pgStoredProc.execute();
+    }
+
+    public DbCode getCode(String codeSetName, String codeContextName, String originalCode, String originalSystem, String originalTerm) throws PgStoredProcException {
+
+        PgStoredProc pgStoredProc = new PgStoredProc(dataSource)
+                .setName("mapping.code")
+                .addParameter("_code_set_name", codeSetName)
+                .addParameter("_code_context_name", codeContextName)
+                .addParameter("_original_code", originalCode)
+                .addParameter("_original_system", originalSystem)
+                .addParameter("_original_term", originalTerm);
+
+        return pgStoredProc.executeSingleOrEmptyRow((resultSet) ->
+                new DbCode()
+                        .setCode(resultSet.getString("mapped_code"))
+                        .setSystem(resultSet.getString("mapped_system"))
+                        .setTerm("mapped_term"));
     }
 }

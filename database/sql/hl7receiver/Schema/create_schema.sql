@@ -158,27 +158,44 @@ create table log.message
 	constraint log_message_messageuuid_uq unique (message_uuid)
 );
 
-create table log.message_notification_status
+create table dictionary.message_status_type
 (
-	message_id integer not null,
-	attempt_id integer not null,
-	was_success boolean not null,
-	instance_id integer not null,
-	log_date timestamp not null,
-	request_message_uuid uuid not null,
-	request_message varchar null,
-	response_message varchar null,
-	exception_message varchar null,
-
-	constraint log_messagenotificationstatus_messageid_attemptid_pk primary key (message_id, attempt_id),
-	constraint log_messagenotificationstatus_messageid_fk foreign key (message_id) references log.message (message_id),
-	constraint log_messagenotificationstatus_attemptid_ck check (attempt_id > 0),
-	constraint log_messagenotificationstatus_instanceid_fk foreign key (instance_id) references log.instance (instance_id)
+	message_status_type_id smallint,
+	is_success boolean,
+	description varchar(100),
+	
+	constraint dictionary_messagestatustype_messagestatustypeid_pk primary key (message_status_type_id),
+	constraint dictionary_messagestatustype_issuccess_uq unique (message_status_type_id, is_success),
+	constraint dictionary_messagestatustype_description_uq unique (description),
+	constraint dictionary_messagestatustype_description_ck check (char_length(trim(description)) > 0)
 );
 
-create unique index log_messagenotificationstatus_messageid_wassuccess_uq 
-on log.message_notification_status (message_id, was_success) 
-where was_success = true;
+create table log.message_status
+(
+	message_status_id serial not null,
+	message_id integer not null,
+	instance_id integer not null,
+	message_status_date timestamp not null,
+	message_status_type_id smallint not null,
+	is_success boolean not null,
+	error_message varchar null,
+	
+	constraint log_messagestatus_messagestatusid_pk primary key (message_status_id),
+	constraint log_messagestatus_messageid_fk foreign key (message_id) references log.message (message_id),
+	constraint log_messagestatus_instanceid_fk foreign key (instance_id) references log.instance (instance_id),
+	constraint log_messagestatus_messagestatustypeid_issuccess_fk foreign key (message_status_type_id, is_success) references dictionary.message_status_type (message_status_type_id, is_success),
+	constraint log_messagestatus_issuccess_errormessage_ck check ((is_success and error_message is null) or ((not is_success) and error_message is not null))
+);
+
+create table log.message_status_content
+(
+	message_status_id integer not null,
+	message_status_content text not null,
+	
+	constraint log_messagestatuscontent_messagestatusid_pk primary key (message_status_id),
+	constraint log_messagestatuscontent_messagestatusid_fk foreign key (message_status_id) references log.message_status (message_status_id),
+	constraint log_messagestatuscontent_messagestatuscontent_ck check (char_length(trim(message_status_content)) > 0)
+);
 
 create table log.dead_letter
 (
@@ -229,15 +246,15 @@ create table log.error_digest
 	constraint log_errordigest_logclass_logmethod_logmessage_exception_uq unique (log_class, log_method, log_message, exception)
 );
 
-create table log.channel_forwarder_lock
+create table log.channel_processor_lock
 (
 	channel_id integer not null,
 	instance_id integer not null,
 	heartbeat_date timestamp not null,
 	
-	constraint log_channelforwarderlock_channelid_pk primary key (channel_id),
-	constraint log_channelforwarderlock_channelid_fk foreign key (channel_id) references configuration.channel (channel_id),
-	constraint log_channelforwarderlock_instanceid_fk foreign key (instance_id) references log.instance (instance_id)
+	constraint log_channelprocessorlock_channelid_pk primary key (channel_id),
+	constraint log_channelprocessorlock_channelid_fk foreign key (channel_id) references configuration.channel (channel_id),
+	constraint log_channelprocessorlock_instanceid_fk foreign key (instance_id) references log.instance (instance_id)
 );
 
 /*
@@ -347,6 +364,23 @@ insert into dictionary.message_type (message_type, description) values
 ('ACK^A49', 'Acknowledgement to change patient account number'),
 ('ACK^A50', 'Acknowledgement to change visit number'),
 ('ACK^A51', 'Acknowledgement to change alternate visit ID');
+
+insert into dictionary.message_status_type
+(
+	message_status_type_id,
+	is_success,
+	description
+)
+values
+(1, true, 'Received'),
+(2, true, 'Retrieved for processing'),
+(3, true, 'Transformed'),
+(-3, false, 'Transform error'),
+(4, true, 'Notification created'),
+(-4, false, 'Notification creation error'),
+(5, true, 'Notification sent'),
+(-5, false, 'Notification send error'),
+(-9, false, 'Unexpected processing error');
 
 insert into configuration.notification_attempt_interval (interval_seconds) values 
 (0),

@@ -24,7 +24,7 @@ class HL7Channel {
     private HL7ConnectionManager connectionManager;
     private HL7MessageReceiver messageReceiver;
     private HL7ExceptionHandler exceptionHandler;
-    private HL7ChannelForwarder channelForwarder;
+    private HL7ChannelProcessor channelProcessor;
 
     private HL7Channel() {
     }
@@ -45,7 +45,7 @@ class HL7Channel {
         messageReceiver = new HL7MessageReceiver(configuration, dbChannel, connectionManager);
         exceptionHandler = new HL7ExceptionHandler(configuration, dbChannel, connectionManager);
         service = context.newServer(dbChannel.getPortNumber(), false);
-        channelForwarder = new HL7ChannelForwarder(configuration, dbChannel);
+        channelProcessor = new HL7ChannelProcessor(configuration, dbChannel);
 
         service.registerApplication("*", "*", messageReceiver);
         service.registerConnectionListener(connectionManager);
@@ -54,13 +54,13 @@ class HL7Channel {
 
     public void start() throws InterruptedException {
         LOG.info("Starting channel {} on port {}", dbChannel.getChannelName(), dbChannel.getPortNumber());
-        channelForwarder.start();
+        channelProcessor.start();
         service.startAndWait();
     }
 
     public void stop() {
         LOG.info("Stopping channel {} on port {}", dbChannel.getChannelName(), dbChannel.getPortNumber());
-        channelForwarder.stop();
+        channelProcessor.stop();
         connectionManager.closeConnections();
         service.stopAndWait();
     }

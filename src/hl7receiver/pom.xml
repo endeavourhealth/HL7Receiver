@@ -18,6 +18,13 @@
     </properties>
 
     <dependencies>
+        <!-- this project -->
+        <dependency>
+            <groupId>org.endeavourhealth</groupId>
+            <artifactId>hl7transforms</artifactId>
+            <version>1.0-SNAPSHOT</version>
+        </dependency>
+
         <!-- endeavourhealth -->
         <dependency>
             <groupId>com.github.endeavourhealth.Common</groupId>

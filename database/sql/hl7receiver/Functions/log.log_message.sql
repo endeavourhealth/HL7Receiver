@@ -17,7 +17,10 @@ returns integer
 as $$
 declare
 	_message_id integer;
+	_log_date timestamp;
 begin
+
+	_log_date = now();
 
 	insert into log.message
 	(
@@ -39,7 +42,7 @@ begin
 	(
 		_channel_id,
 		_connection_id,
-		now(),
+		_log_date,
 		_message_control_id,
 		_message_sequence_number,
 		_message_date,
@@ -52,6 +55,16 @@ begin
 		uuid_generate_v4()
 	)
 	returning message_id into _message_id;
+	
+	perform log.add_message_status
+	(
+		_message_id := _message_id,
+		_instance_id := _instance_id,
+		_message_status_type_id := 1, -- message received
+		_message_status_content := null,
+		_in_error := false,
+		_error_message := null
+	);
 	
 	return _message_id;
 	

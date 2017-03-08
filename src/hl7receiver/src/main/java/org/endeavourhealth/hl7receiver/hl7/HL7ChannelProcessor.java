@@ -12,6 +12,8 @@ import org.endeavourhealth.hl7receiver.DataLayer;
 import org.endeavourhealth.hl7receiver.model.db.DbChannel;
 import org.endeavourhealth.hl7receiver.model.db.DbEds;
 import org.endeavourhealth.hl7receiver.model.db.DbMessage;
+import org.endeavourhealth.hl7receiver.model.db.DbMessageStatusType;
+import org.endeavourhealth.transform.hl7v2.Hl7v2Transform;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -22,9 +24,9 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
 
-public class HL7ChannelForwarder implements Runnable {
+public class HL7ChannelProcessor implements Runnable {
 
-    private static final Logger LOG = LoggerFactory.getLogger(HL7ChannelForwarder.class);
+    private static final Logger LOG = LoggerFactory.getLogger(HL7ChannelProcessor.class);
     private static final int LOCK_RECLAIM_INTERVAL_SECONDS = 60;
     private static final int LOCK_BREAK_OTHERS_SECONDS = 360;
     private static final int THREAD_SLEEP_TIME_MILLIS = 1000;
@@ -40,18 +42,18 @@ public class HL7ChannelForwarder implements Runnable {
     private LocalDateTime lastInitialisedKeycloak = LocalDateTime.MIN;
     private List<Integer> attemptScheduleSeconds = null;
 
-    public HL7ChannelForwarder(Configuration configuration, DbChannel dbChannel) throws SQLException {
+    public HL7ChannelProcessor(Configuration configuration, DbChannel dbChannel) throws SQLException {
         this.configuration = configuration;
         this.dbChannel = dbChannel;
         this.dataLayer = new DataLayer(configuration.getDatabaseConnection());
     }
 
     public void start() {
-        LOG.info("Starting channel forwarder {}", dbChannel.getChannelName());
+        LOG.info("Starting channel processor {}", dbChannel.getChannelName());
 
         if (thread == null) {
             thread = new Thread(this);
-            thread.setName(dbChannel.getChannelName() + "-HL7ChannelForward");
+            thread.setName(dbChannel.getChannelName() + "-HL7ChannelProcessor");
         }
 
         thread.start();
@@ -60,10 +62,10 @@ public class HL7ChannelForwarder implements Runnable {
     public void stop() {
         stopRequested = true;
         try {
-            LOG.info("Stopping channel forwarder {}", dbChannel.getChannelName());
+            LOG.info("Stopping channel processor {}", dbChannel.getChannelName());
             thread.join(10000);
         } catch (Exception e) {
-            LOG.error("Error stopping channel forwarder for channel", e);
+            LOG.error("Error stopping channel processor for channel", e);
         }
     }
 
@@ -120,7 +122,7 @@ public class HL7ChannelForwarder implements Runnable {
             }
         }
         catch (Exception e) {
-            LOG.error("Fatal exception in channel forwarder {} for instance {}", new Object[] { dbChannel.getChannelName(), configuration.getInstanceId(), e });
+            LOG.error("Fatal exception in channel processor {} for instance {}", new Object[] { dbChannel.getChannelName(), configuration.getInstanceId(), e });
         }
 
         releaseLock(gotLock);
@@ -156,55 +158,105 @@ public class HL7ChannelForwarder implements Runnable {
     }
 
     private boolean processMessage(DbMessage dbMessage) {
-        String requestNotification = null;
-        String responseNotification = null;
-        UUID messageUuid = dbMessage.getRequestMessageUuid();
-
         try {
-            initialiseKeycloak();
+            // can this be split into generic mesage processing steps?
+
+            String transformedMessage = null;
+
+            ////////////////////////////////////////////////////////////////////////////////////////////////////////////
+            // transform
+            ////////////////////////////////////////////////////////////////////////////////////////////////////////////
+            try {
+                transformedMessage = transformMessage(dbMessage);
+                addMessageStatus(dbMessage.getMessageId(), DbMessageStatusType.TRANSFORMED, transformedMessage);
+
+            } catch (Exception e) {
+                addMessageStatus(dbMessage.getMessageId(), DbMessageStatusType.TRANSFORM_ERROR, null, e);
+                LOG.error("Error transforming message - {}", e.getMessage());
+                return false;
+            }
 
             if (stopRequested)
                 return false;
 
-            requestNotification = buildEnvelope(dbMessage, messageUuid);
+            String messageEnvelope = null;
+
+            ////////////////////////////////////////////////////////////////////////////////////////////////////////////
+            // build envelope
+            ////////////////////////////////////////////////////////////////////////////////////////////////////////////
+            try {
+                messageEnvelope = buildEnvelope(dbMessage, transformedMessage);
+                addMessageStatus(dbMessage.getMessageId(), DbMessageStatusType.NOTIFICATION_CREATED, messageEnvelope);
+
+            } catch (Exception e) {
+                addMessageStatus(dbMessage.getMessageId(), DbMessageStatusType.NOTIFICATION_CREATION_ERROR, null, e);
+                LOG.error("Error building message envelope - {}", e.getMessage());
+                return false;
+            }
 
             if (stopRequested)
                 return false;
 
-            responseNotification = sendMessage(requestNotification);
+            ////////////////////////////////////////////////////////////////////////////////////////////////////////////
+            // send envelope
+            ////////////////////////////////////////////////////////////////////////////////////////////////////////////
+            try {
+                initialiseKeycloak();
 
-            addNotificationStatus(dbMessage, messageUuid, requestNotification, responseNotification, true, null);
+                if (stopRequested)
+                    return false;
+
+                String responseMessage = sendMessage(messageEnvelope);
+                addMessageStatus(dbMessage.getMessageId(), DbMessageStatusType.NOTIFICATION_SENT, responseMessage);
+
+            } catch (Exception e) {
+                addMessageStatus(dbMessage.getMessageId(), DbMessageStatusType.NOTIFICATION_SEND_ERROR, e);
+                LOG.error("Error sending message - {}", e.getMessage());
+                return false;
+            }
 
             return true;
 
         } catch (Exception e) {
-            LOG.error("Error processing message id {} in channel forwarder {} for instance {}", new Object[] { dbMessage.getMessageId(), dbChannel.getChannelName(), configuration.getInstanceId(), e });
-
-            addNotificationStatus(dbMessage, messageUuid, requestNotification, responseNotification, false, e);
+            addMessageStatus(dbMessage.getMessageId(), DbMessageStatusType.UNEXPECTED_PROCESSING_ERROR, e);
+            LOG.error("Unexpected processing error - {}", e.getMessage());
+            return false;
         }
-
-        return false;
     }
 
-    private void addNotificationStatus(DbMessage dbMessage, UUID requestMessageUuid, String requestMessage, String responseMessage, boolean wasSuccess, Exception exception) {
+    private String transformMessage(DbMessage dbMessage) throws Exception {
+        return Hl7v2Transform.transform(dbMessage.getInboundPayload());
+    }
+
+    private void addMessageStatus(int messageId, DbMessageStatusType dbMessageStatusType, String messageStatusContent) {
+        addMessageStatus(messageId, dbMessageStatusType, messageStatusContent,null);
+    }
+
+    private void addMessageStatus(int messageId, DbMessageStatusType dbMessageStatusType, Exception e) {
+        addMessageStatus(messageId, dbMessageStatusType, null, e);
+    }
+
+    private void addMessageStatus(int messageId, DbMessageStatusType dbMessageStatusType, String messageStatusContent, Exception exception) {
         try {
+            boolean inError = (exception != null);
+
             String exceptionMessage = HL7ExceptionHandler.constructFormattedException(exception);
 
             if (StringUtils.isBlank(exceptionMessage))
                 exceptionMessage = null;
 
-            dataLayer.addNotificationStatus(dbMessage.getMessageId(), wasSuccess, configuration.getInstanceId(), requestMessageUuid, requestMessage, responseMessage, exceptionMessage);
+            dataLayer.addMessageStatus(messageId, configuration.getInstanceId(), dbMessageStatusType, messageStatusContent, inError, exceptionMessage);
 
         } catch (Exception e) {
-            LOG.error("Error adding {} notification status for message id {} in channel forwarder {} for instance {}", new Object[] { (true ? "SUCCESS" : "FAIL"), dbMessage.getMessageId(), dbChannel.getChannelName(), configuration.getInstanceId(), e });
+            LOG.error("Error adding {} message status for message id {} in channel processor {} for instance {}", new Object[] { (true ? "SUCCESS" : "FAIL"), messageId, dbChannel.getChannelName(), configuration.getInstanceId(), e });
         }
     }
 
     private DbMessage getNextMessage() {
         try {
-            return dataLayer.getNextUnnotifiedMessage(dbChannel.getChannelId(), configuration.getInstanceId());
+            return dataLayer.getNextUnprocessedMessage(dbChannel.getChannelId(), configuration.getInstanceId());
         } catch (Exception e) {
-            LOG.error("Error getting next unnotified message in channel forwarder {} for instance {} ", new Object[] { dbChannel.getChannelName(), configuration.getInstanceId(), e });
+            LOG.error("Error getting next unnotified message in channel processor {} for instance {} ", new Object[] { dbChannel.getChannelName(), configuration.getInstanceId(), e });
         }
 
         return null;
@@ -219,19 +271,20 @@ public class HL7ChannelForwarder implements Runnable {
         return edsSenderResponse.getStatusLine() + "\r\n" + edsSenderResponse.getResponseBody();
     }
 
-    private String buildEnvelope(DbMessage dbMessage, UUID messageUuid) throws IOException {
+    private String buildEnvelope(DbMessage dbMessage, String transformedMessage) throws IOException {
 
+        UUID messageUuid = dbMessage.getMessageUuid();
         String organisationId = dbChannel.getEdsServiceIdentifier();
         String sourceSoftware = configuration.getDbConfiguration().getDbEds().getSoftwareContentType();
         String sourceSoftwareVersion = configuration.getDbConfiguration().getDbEds().getSoftwareVersion();
-        String payload = dbMessage.getInboundPayload();
+        String payload = transformedMessage;
 
         return EdsSender.buildEnvelope(messageUuid, organisationId, sourceSoftware, sourceSoftwareVersion, payload);
     }
 
     private boolean getLock(boolean currentlyHaveLock) {
         try {
-            boolean gotLock = dataLayer.getChannelForwarderLock(dbChannel.getChannelId(), configuration.getInstanceId(), LOCK_BREAK_OTHERS_SECONDS);
+            boolean gotLock = dataLayer.getChannelProcessorLock(dbChannel.getChannelId(), configuration.getInstanceId(), LOCK_BREAK_OTHERS_SECONDS);
 
             if (firstLockAttempt || (currentlyHaveLock != gotLock))
                 LOG.info((gotLock ? "G" : "Not g") + "ot lock on channel {} for instance {}", dbChannel.getChannelName(), configuration.getMachineName());
@@ -240,7 +293,7 @@ public class HL7ChannelForwarder implements Runnable {
 
             return gotLock;
         } catch (Exception e) {
-            LOG.error("Exception getting lock in channel forwarder for channel {} for instance {}", new Object[] { dbChannel.getChannelName(), configuration.getMachineName(), e });
+            LOG.error("Exception getting lock in channel processor for channel {} for instance {}", new Object[] { dbChannel.getChannelName(), configuration.getMachineName(), e });
         }
 
         return false;
@@ -251,11 +304,11 @@ public class HL7ChannelForwarder implements Runnable {
             if (currentlyHaveLock)
                 LOG.info("Releasing lock on channel {} for instance {}", dbChannel.getChannelName(), configuration.getMachineName());
 
-            dataLayer.releaseChannelForwarderLock(dbChannel.getChannelId(), configuration.getInstanceId());
+            dataLayer.releaseChannelProcessorLock(dbChannel.getChannelId(), configuration.getInstanceId());
         } catch (Exception e) {
-            LOG.error("Exception releasing lock in channel forwarder for channel {} for instance {}", new Object[] { e, dbChannel.getChannelName(), configuration.getMachineName() });
+            LOG.error("Exception releasing lock in channel processor for channel {} for instance {}", new Object[] { e, dbChannel.getChannelName(), configuration.getMachineName() });
         }
-    }
+    }   
 
     private void initialiseKeycloak() throws HL7Exception {
 

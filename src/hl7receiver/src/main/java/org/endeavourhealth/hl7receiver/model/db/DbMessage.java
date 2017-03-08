@@ -10,7 +10,7 @@ public class DbMessage {
     private LocalDateTime messageDate;
     private String inboundMessageType;
     private String inboundPayload;
-    private UUID requestMessageUuid;
+    private UUID messageUuid;
 
     public int getMessageId() {
         return messageId;
@@ -66,12 +66,12 @@ public class DbMessage {
         return this;
     }
 
-    public UUID getRequestMessageUuid() {
-        return requestMessageUuid;
+    public UUID getMessageUuid() {
+        return messageUuid;
     }
 
-    public DbMessage setRequestMessageUuid(UUID requestMessageUuid) {
-        this.requestMessageUuid = requestMessageUuid;
+    public DbMessage setMessageUuid(UUID requestMessageUuid) {
+        this.messageUuid = requestMessageUuid;
         return this;
     }
 }
