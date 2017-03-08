@@ -211,7 +211,15 @@ public class HL7ChannelProcessor implements Runnable {
                 addMessageStatus(dbMessage.getMessageId(), DbMessageStatusType.NOTIFICATION_SENT, responseMessage);
 
             } catch (Exception e) {
-                addMessageStatus(dbMessage.getMessageId(), DbMessageStatusType.NOTIFICATION_SEND_ERROR, e);
+
+                String messageStatusContent = null;
+
+                if (e instanceof EdsSenderHttpErrorResponseException) {
+                    EdsSenderResponse edsSenderResponse = ((EdsSenderHttpErrorResponseException)e).getEdsSenderResponse();
+                    messageStatusContent = getFormattedEdsSenderResponse(edsSenderResponse);
+                }
+
+                addMessageStatus(dbMessage.getMessageId(), DbMessageStatusType.NOTIFICATION_SEND_ERROR, messageStatusContent, e);
                 LOG.error("Error sending message - {}", e.getMessage());
                 return false;
             }
@@ -269,6 +277,10 @@ public class HL7ChannelProcessor implements Runnable {
         boolean useKeycloak = configuration.getDbConfiguration().getDbEds().isUseKeycloak();
 
         EdsSenderResponse edsSenderResponse = EdsSender.notifyEds(edsUrl, useKeycloak, envelope);
+        return getFormattedEdsSenderResponse(edsSenderResponse);
+    }
+
+    private static String getFormattedEdsSenderResponse(EdsSenderResponse edsSenderResponse) {
         return edsSenderResponse.getStatusLine() + "\r\n" + edsSenderResponse.getResponseBody();
     }
 

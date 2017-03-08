@@ -48,6 +48,8 @@ begin
 		);
 	end if;
 	
+	return _message_status_id;
+	
 end;
 $$ language plpgsql;
 

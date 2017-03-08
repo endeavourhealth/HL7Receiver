@@ -18,6 +18,7 @@ as $$
 declare
 	_message_id integer;
 	_log_date timestamp;
+	_instance_id integer;
 begin
 
 	_log_date = now();
@@ -55,6 +56,11 @@ begin
 		uuid_generate_v4()
 	)
 	returning message_id into _message_id;
+	
+	select
+		instance_id into _instance_id
+	from log.connection
+	where connection_id = _connection_id;
 	
 	perform log.add_message_status
 	(
