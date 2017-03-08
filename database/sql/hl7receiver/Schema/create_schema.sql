@@ -148,12 +148,14 @@ create table log.message
 	inbound_payload varchar not null,
 	outbound_message_type varchar(100) not null,
 	outbound_payload varchar not null,
+	message_uuid uuid not null,
 	
 	constraint log_message_messageid_pk primary key (message_id),
 	constraint log_message_channelid_connectionid_fk foreign key (channel_id, connection_id) references log.connection (channel_id, connection_id),
 	constraint log_message_inboundmessagetype_fk foreign key (channel_id, inbound_message_type) references configuration.channel_message_type (channel_id, message_type),
 	constraint log_message_outboundmessagetype_fk foreign key (channel_id, outbound_message_type) references configuration.channel_message_type (channel_id, message_type),
-	constraint log_message_messagecontrolid_ck check (char_length(trim(message_control_id)) > 0)
+	constraint log_message_messagecontrolid_ck check (char_length(trim(message_control_id)) > 0),
+	constraint log_message_messageuuid_uq unique (message_uuid)
 );
 
 create table log.message_notification_status

@@ -32,7 +32,8 @@ begin
 		inbound_message_type,
 		inbound_payload,
 		outbound_message_type,
-		outbound_payload
+		outbound_payload,
+		message_uuid
 	)
 	values
 	(
@@ -47,7 +48,8 @@ begin
 		_inbound_message_type,
 		_inbound_payload,
 		_outbound_message_type,
-		_outbound_payload
+		_outbound_payload,
+		uuid_generate_v4()
 	)
 	returning message_id into _message_id;
 	
