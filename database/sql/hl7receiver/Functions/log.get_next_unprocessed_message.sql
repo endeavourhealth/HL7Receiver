@@ -31,30 +31,8 @@ begin
 		return;
 	end if;
 	
-	select
-		m.message_id into _message_id
-	from log.message m
-	left outer join log.message_status ms on m.message_id = ms.message_id and ms.message_status_type_id = 4  -- notification success
-	where m.channel_id = _channel_id
-	and ms.message_id is null
-	order by m.message_date asc, m.log_date asc
-	limit 1;
-	
-	if (_message_id is not null)
-	then
-		perform log.add_message_status
-		(
-			_message_id := _message_id,
-			_instance_id := _instance_id,
-			_message_status_type_id := 2, -- retrieved for processing
-			_message_status_content := null,
-			_in_error := false,
-			_error_message := null
-		);
-	end if;
-	
 	return query
-	select 
+	select
 		m.message_id,
 		m.message_control_id,
 		m.message_sequence_number,
@@ -63,7 +41,15 @@ begin
 		m.inbound_payload,
 		m.message_uuid
 	from log.message m
-	where m.message_id = _message_id;
+	left outer join log.current_message_processing_status s on m.message_id = s.message_id
+	where m.channel_id = _channel_id
+	and
+	(
+		(s.message_id is null) 				                        -- has not been processed yet
+		or (s.is_complete = false and s.next_attempt_date < now())  -- or isn't complete and is ready for retry
+	)
+	order by m.message_date asc, m.log_date asc
+	limit 1;
 	
 end;
 $$ language plpgsql;

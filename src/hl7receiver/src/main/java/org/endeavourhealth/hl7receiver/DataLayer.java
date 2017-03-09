@@ -240,15 +240,31 @@ public class DataLayer implements IDBDigestLogger {
                                 .setMessageUuid(UUID.fromString(resultSet.getString("message_uuid"))));
     }
 
-    public void addMessageStatus(int messageId, int instanceId, DbMessageStatusType messageStatusType, String messageStatusContent, boolean inError, String errorMessage) throws PgStoredProcException {
+    public int startMessageProcessing(int messageId, int processingInstanceId) throws PgStoredProcException {
         PgStoredProc pgStoredProc = new PgStoredProc(dataSource)
-                .setName("log.add_message_status")
+                .setName("log.start_message_processing")
                 .addParameter("_message_id", messageId)
-                .addParameter("_instance_id", instanceId)
-                .addParameter("_message_status_type_id", messageStatusType.getValue())
-                .addParameter("_message_status_content", messageStatusContent)
-                .addParameter("_in_error", inError)
+                .addParameter("_instance_id", processingInstanceId);
+
+        return pgStoredProc.executeSingleRow((resultSet) -> resultSet.getInt("attempt_id"));
+    }
+
+    public void updateMessageProcessingStatus(int messageId, int attemptId, DbProcessingStatus processingStatusId, String errorMessage) throws PgStoredProcException {
+        PgStoredProc pgStoredProc = new PgStoredProc(dataSource)
+                .setName("log.update_message_processing_status")
+                .addParameter("_message_id", messageId)
+                .addParameter("_attempt_id", attemptId)
+                .addParameter("_processing_status_id", processingStatusId.getValue())
                 .addParameter("_error_message", errorMessage);
+
+        pgStoredProc.execute();
+    }
+
+    public void completeMessageProcessing(int messageId, int attemptId) throws PgStoredProcException {
+        PgStoredProc pgStoredProc = new PgStoredProc(dataSource)
+                .setName("log.start_message_processing")
+                .addParameter("_message_id", messageId)
+                .addParameter("_attempt_id", attemptId);
 
         pgStoredProc.execute();
     }

@@ -198,7 +198,8 @@ create table log.message_processing_status
 	next_attempt_date timestamp null,
 	processing_instance_id integer not null,
 		
-	constraint log_messageprocessingstatus_messageid_pk primary key (message_id, attempt_id),
+	constraint log_messageprocessingstatus_messageid_attemptid_pk primary key (message_id, attempt_id),
+	constraint log_messageprocessingstatus_messageid_fk foreign key (message_id) references log.message (message_id), 
 	constraint log_messageprocessingstatus_attemptid_fk foreign key (attempt_id) references configuration.processing_attempt_interval (attempt_id),
 	constraint log_messageprocessingstatus_processingstatusid_iscomplete_fk foreign key (processing_status_id, is_complete) references dictionary.processing_status (processing_status_id, is_complete),
 	constraint log_messageprocessingstatus_iscomplete_errormessage_ck check ((is_complete and error_message is null) or ((not is_complete) and error_message is not null)),
