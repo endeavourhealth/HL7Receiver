@@ -1,4 +1,4 @@
-package org.endeavourhealth.hl7receiver.hl7;
+package org.endeavourhealth.hl7receiver.engine;
 
 import ca.uhn.hl7v2.app.Connection;
 import org.apache.commons.lang3.builder.EqualsBuilder;

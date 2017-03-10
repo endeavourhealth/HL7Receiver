@@ -1,4 +1,4 @@
-package org.endeavourhealth.hl7receiver.hl7;
+package org.endeavourhealth.hl7receiver.engine;
 
 import org.endeavourhealth.hl7receiver.Configuration;
 import org.endeavourhealth.hl7receiver.model.db.DbChannel;

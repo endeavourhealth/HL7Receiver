@@ -1,9 +1,10 @@
-package org.endeavourhealth.hl7receiver.hl7;
+package org.endeavourhealth.hl7receiver.engine;
 
 import org.apache.commons.lang3.StringUtils;
 import org.endeavourhealth.common.postgres.PgStoredProcException;
 import org.endeavourhealth.hl7receiver.Configuration;
 import org.endeavourhealth.hl7receiver.DataLayer;
+import org.endeavourhealth.hl7receiver.messageprocessor.HL7MessageProcessor;
 import org.endeavourhealth.hl7receiver.model.db.*;
 import org.endeavourhealth.hl7receiver.model.exceptions.HL7MessageProcessorException;
 import org.slf4j.Logger;
@@ -101,7 +102,9 @@ public class HL7ChannelProcessor implements Runnable {
         int attemptId = dataLayer.startMessageProcessing(message.getMessageId(), configuration.getInstanceId());
 
         try {
-            HL7MessageProcessor messageProcessor = new HL7MessageProcessor(configuration, dbChannel);
+            HL7MessageProcessor messageProcessor = new HL7MessageProcessor(configuration, dbChannel, (contentType, content) -> {
+                dataLayer.addMessageProcessingContent(message.getMessageId(), attemptId, contentType, content);
+            });
 
             if (messageProcessor.processMessage(message))
                 dataLayer.completeMessageProcessing(message.getMessageId(), attemptId);

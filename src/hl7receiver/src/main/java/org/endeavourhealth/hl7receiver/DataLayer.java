@@ -269,6 +269,17 @@ public class DataLayer implements IDBDigestLogger {
         pgStoredProc.execute();
     }
 
+    public void addMessageProcessingContent(int messageId, int attemptId, DbProcessingContentType processingContentTypeId, String content) throws PgStoredProcException {
+        PgStoredProc pgStoredProc = new PgStoredProc(dataSource)
+                .setName("log.add_message_processing_content")
+                .addParameter("_message_id", messageId)
+                .addParameter("_attempt_id", attemptId)
+                .addParameter("_processing_content_type_id", processingContentTypeId.getValue())
+                .addParameter("_content", content);
+
+        pgStoredProc.execute();
+    }
+
     public DbCode getCode(String codeSetName, String codeContextName, String originalCode, String originalSystem, String originalTerm) throws PgStoredProcException {
 
         PgStoredProc pgStoredProc = new PgStoredProc(dataSource)

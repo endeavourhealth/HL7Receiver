@@ -1,4 +1,4 @@
-package org.endeavourhealth.hl7receiver.hl7;
+package org.endeavourhealth.hl7receiver.messageprocessor;
 
 import ca.uhn.hl7v2.HL7Exception;
 import org.apache.http.Header;
@@ -7,6 +7,7 @@ import org.endeavourhealth.common.eds.EdsSenderHttpErrorResponseException;
 import org.endeavourhealth.common.eds.EdsSenderResponse;
 import org.endeavourhealth.common.security.keycloak.client.KeycloakClient;
 import org.endeavourhealth.hl7receiver.Configuration;
+import org.endeavourhealth.hl7receiver.engine.HL7ContentSaver;
 import org.endeavourhealth.hl7receiver.model.db.*;
 import org.endeavourhealth.hl7receiver.model.exceptions.HL7MessageProcessorException;
 import org.endeavourhealth.transform.hl7v2.Hl7v2Transform;
@@ -25,11 +26,13 @@ public class HL7MessageProcessor {
 
     private Configuration configuration;
     private DbChannel dbChannel;
+    private HL7ContentSaver contentSaver;
     private boolean stopRequested = false;
 
-    public HL7MessageProcessor(Configuration configuration, DbChannel dbChannel) {
+    public HL7MessageProcessor(Configuration configuration, DbChannel dbChannel, HL7ContentSaver contentSaver) {
         this.configuration = configuration;
         this.dbChannel = dbChannel;
+        this.contentSaver = contentSaver;
     }
 
     public boolean processMessage(DbMessage dbMessage) throws HL7MessageProcessorException {
@@ -40,6 +43,7 @@ public class HL7MessageProcessor {
 
             try {
                 transformedMessage = transformMessage(dbMessage);
+                contentSaver.save(DbProcessingContentType.FHIR, transformedMessage);
             } catch (Exception e) {
                 throw new HL7MessageProcessorException(DbProcessingStatus.TRANSFORM_FAILURE, e);
             }
@@ -51,6 +55,7 @@ public class HL7MessageProcessor {
 
             try {
                 requestMessage = buildEnvelope(dbMessage, transformedMessage);
+                contentSaver.save(DbProcessingContentType.ONWARD_REQUEST_MESSAGE, requestMessage);
             } catch (Exception e) {
                 throw new HL7MessageProcessorException(DbProcessingStatus.ENVELOPE_GENERATION_FAILURE, e);
             }
@@ -67,12 +72,14 @@ public class HL7MessageProcessor {
                     return false;
 
                 responseMessage = sendMessage(requestMessage);
+                contentSaver.save(DbProcessingContentType.ONWARD_RESPONSE_MESSAGE, responseMessage);
 
             } catch (Exception e) {
 
                 if (e instanceof EdsSenderHttpErrorResponseException) {
                     EdsSenderResponse edsSenderResponse = ((EdsSenderHttpErrorResponseException)e).getEdsSenderResponse();
                     responseMessage = getFormattedEdsSenderResponse(edsSenderResponse);
+                    contentSaver.save(DbProcessingContentType.ONWARD_RESPONSE_MESSAGE, responseMessage);
                 }
 
                 throw new HL7MessageProcessorException(DbProcessingStatus.SEND_FAILURE, e);

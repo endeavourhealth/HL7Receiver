@@ -1,9 +1,7 @@
-package org.endeavourhealth.hl7receiver.hl7;
+package org.endeavourhealth.hl7receiver.engine;
 
 import ca.uhn.hl7v2.HL7Exception;
 import ca.uhn.hl7v2.protocol.ReceivingApplicationExceptionHandler;
-import ch.qos.logback.classic.spi.ILoggingEvent;
-import ch.qos.logback.classic.spi.IThrowableProxy;
 import org.endeavourhealth.hl7receiver.Configuration;
 import org.endeavourhealth.hl7receiver.DataLayer;
 import org.endeavourhealth.hl7receiver.model.db.DbChannel;

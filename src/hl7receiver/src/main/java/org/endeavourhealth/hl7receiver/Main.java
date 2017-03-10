@@ -1,7 +1,7 @@
 package org.endeavourhealth.hl7receiver;
 
 import org.endeavourhealth.common.config.ConfigManagerException;
-import org.endeavourhealth.hl7receiver.hl7.HL7Service;
+import org.endeavourhealth.hl7receiver.engine.HL7Service;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
