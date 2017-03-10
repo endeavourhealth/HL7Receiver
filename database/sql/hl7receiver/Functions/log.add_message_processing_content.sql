@@ -24,13 +24,7 @@ begin
 		_processing_content_type_id,
 		_content
 	);
-	
---	-- remove previous attempt's content for this processing_content_type_id
---	delete from log.message_processing_content
---	where message_id = _message_id
---	and processing_content_type_id = _processing_content_type_id
---	and attempt_id < _attempt_id;
-		
+				
 end;
 $$ language plpgsql;
 

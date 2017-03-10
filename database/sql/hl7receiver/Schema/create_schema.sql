@@ -24,6 +24,15 @@ create table dictionary.message_type
 	constraint dictionary_messagetype_description_ck check (char_length(trim(description)) > 0)
 );
 
+create table dictionary.channel_option_type
+(
+	channel_option_type varchar(100) not null,
+	description varchar(1000) not null,
+	
+	constraint dictionary_channeloptiontype_channeloptiontype_pk primary key (channel_option_type),
+	constraint dictionary_channeloptiontype_channeloptiontype_ck check (char_length(trim(channel_option_type)) > 0)
+);
+
 create table dictionary.processing_status
 (
 	processing_status_id smallint not null,
@@ -89,6 +98,17 @@ create table configuration.channel_message_type
 	constraint configuration_channelmessagetype_channelid_messagetype_pk primary key (channel_id, message_type),
 	constraint configuration_channelmessagetype_channelid_fk foreign key (channel_id) references configuration.channel (channel_id),
 	constraint configuration_channelmessagetype_messagetype_fk foreign key (message_type) references dictionary.message_type (message_type)
+);
+
+create table configuration.channel_option
+(
+	channel_id integer not null,
+	channel_option_type varchar(100) not null,
+	channel_option_value varchar(100) not null,
+	
+	constraint configuration_channeloption_channelid_channeloptiontype_pk primary key (channel_id, channel_option_type),
+	constraint configuration_channeloption_channelid_fk foreign key (channel_id) references configuration.channel (channel_id),
+	constraint configuration_channeloption_channeloptiontypeid_fk foreign key (channel_option_type) references dictionary.channel_option_type (channel_option_type)
 );
 
 create table configuration.eds
@@ -409,6 +429,14 @@ values
 (1, 'FHIR representation'),
 (2, 'Onward request message'),
 (3, 'Onward response message');
+
+insert into dictionary.channel_option_type
+(
+	channel_option_type,
+	description
+)
+values
+('KeepOnlyCurrentMessageProcessingContentAttempt', 'Set to TRUE to remove old entries in log.message_processing_content');
 
 insert into configuration.processing_attempt_interval 
 (
