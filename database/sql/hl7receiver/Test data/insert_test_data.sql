@@ -57,7 +57,7 @@ values
 	'HL7V2',
 	'1.0',
 	true,
-	'https://keycloak.eds.c.healthforge.io/auth',
+	'https://devauth.endeavourhealth.net/auth',
 	'endeavour',
 	'hl7user',
 	'hl7password',
