@@ -32,24 +32,41 @@ begin
 	end if;
 	
 	return query
-	select
-		m.message_id,
-		m.message_control_id,
-		m.message_sequence_number,
-		m.message_date,
-		m.inbound_message_type,
-		m.inbound_payload,
-		m.message_uuid
-	from log.message m
-	left outer join log.current_message_processing_status s on m.message_id = s.message_id
-	where m.channel_id = _channel_id
-	and
+	with candidates as
 	(
-		(s.message_id is null) 				                        -- has not been processed yet
-		or (s.is_complete = false and s.next_attempt_date < now())  -- or isn't complete and is ready for retry
+		select
+			m.message_id,
+			m.message_control_id,
+			m.message_sequence_number,
+			m.message_date,
+			m.log_date,
+			m.inbound_message_type,
+			m.inbound_payload,
+			m.message_uuid,
+			coalesce(s.next_attempt_date, now()) as next_attempt_date
+		from log.message m
+		left outer join log.current_message_processing_status s on m.message_id = s.message_id
+		where m.channel_id = _channel_id
+		and not coalesce(s.is_complete, false)
+		order by 
+			m.message_date asc, 
+			m.log_date asc
+		limit (select cast(configuration.get_channel_option(_channel_id, 'MaxSkippableProcessingErroredMessages') as integer) + 1)
 	)
-	order by m.message_date asc, m.log_date asc
+	select
+		c.message_id,
+		c.message_control_id,
+		c.message_sequence_number,
+		c.message_date,
+		c.inbound_message_type,
+		c.inbound_payload,
+		c.message_uuid
+	from candidates c
+	where (c.next_attempt_date <= now())
+	order by 
+		c.message_date asc, 
+		c.log_date asc
 	limit 1;
-	
+
 end;
 $$ language plpgsql;

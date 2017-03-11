@@ -13,6 +13,8 @@ declare
 	_previous_attempt_id integer;
 	_attempt_id integer;
 	_next_attempt_date timestamp;
+	_channel_id integer;
+	_keep_only_current_message_processing_content_attempt varchar(100);
 begin
 
 	/*
@@ -75,15 +77,15 @@ begin
 	/*
 		delete any previous attempt's message processing content
 	*/
-	if exists
-	(
-		select * 
-		from configuration.channel_option co
-		inner join log.message m on co.channel_id = m.channel_id
-		where m.message_id = _message_id
-		and co.channel_option_type = 'KeepOnlyCurrentMessageProcessingContentAttempt'
-		and co.channel_option_value = 'TRUE'
-	)
+	select 
+		m.channel_id into _channel_id
+	from log.message m
+	where m.message_id = _message_id;
+	
+	select 
+		configuration.get_channel_option(_channel_id, 'KeepOnlyCurrentMessageProcessingContentAttempt') into _keep_only_current_message_processing_content_attempt;
+	
+	if (_keep_only_current_message_processing_content_attempt = 'TRUE')
 	then
 		delete from log.message_processing_content mpc
 		where mpc.message_id = _message_id

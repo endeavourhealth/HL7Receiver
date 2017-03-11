@@ -27,6 +27,7 @@ create table dictionary.message_type
 create table dictionary.channel_option_type
 (
 	channel_option_type varchar(100) not null,
+	default_value varchar(100) not null,
 	description varchar(1000) not null,
 	
 	constraint dictionary_channeloptiontype_channeloptiontype_pk primary key (channel_option_type),
@@ -209,6 +210,7 @@ create table log.message
 
 create table log.message_processing_status
 (
+	message_processing_status_id serial not null,
 	message_id integer not null,
 	attempt_id smallint not null,
 	attempt_date timestamp not null,
@@ -217,8 +219,9 @@ create table log.message_processing_status
 	error_message text null,
 	next_attempt_date timestamp null,
 	processing_instance_id integer not null,
-		
-	constraint log_messageprocessingstatus_messageid_attemptid_pk primary key (message_id, attempt_id),
+	
+	constraint log_messageprocessingstatus_messageprocessingstatusid_pk primary key (message_processing_status_id),
+	constraint log_messageprocessingstatus_messageid_attemptid_uq unique (message_id, attempt_id),
 	constraint log_messageprocessingstatus_messageid_fk foreign key (message_id) references log.message (message_id), 
 	constraint log_messageprocessingstatus_attemptid_fk foreign key (attempt_id) references configuration.processing_attempt_interval (attempt_id),
 	constraint log_messageprocessingstatus_processingstatusid_iscomplete_fk foreign key (processing_status_id, is_complete) references dictionary.processing_status (processing_status_id, is_complete),
@@ -433,10 +436,12 @@ values
 insert into dictionary.channel_option_type
 (
 	channel_option_type,
+	default_value,
 	description
 )
 values
-('KeepOnlyCurrentMessageProcessingContentAttempt', 'Set to TRUE to remove old entries in log.message_processing_content');
+('KeepOnlyCurrentMessageProcessingContentAttempt', 'FALSE', 'Set to TRUE to remove old entries in log.message_processing_content'),
+('MaxSkippableProcessingErroredMessages', '0', 'Number of messages in processing error before new messages processing halts (until retries are successful)');
 
 insert into configuration.processing_attempt_interval 
 (
