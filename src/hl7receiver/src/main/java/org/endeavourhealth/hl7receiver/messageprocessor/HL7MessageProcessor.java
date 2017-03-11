@@ -65,24 +65,28 @@ public class HL7MessageProcessor {
 
             String responseMessage = null;
 
-            try {
-                initialiseKeycloak();
+            if (!skipMessageSending())
+            {
+                try {
+                    initialiseKeycloak();
 
-                if (stopRequested)
-                    return false;
+                    if (stopRequested)
+                        return false;
 
-                responseMessage = sendMessage(requestMessage);
-                contentSaver.save(DbProcessingContentType.ONWARD_RESPONSE_MESSAGE, responseMessage);
-
-            } catch (Exception e) {
-
-                if (e instanceof EdsSenderHttpErrorResponseException) {
-                    EdsSenderResponse edsSenderResponse = ((EdsSenderHttpErrorResponseException)e).getEdsSenderResponse();
-                    responseMessage = getFormattedEdsSenderResponse(edsSenderResponse);
+                    responseMessage = sendMessage(requestMessage);
                     contentSaver.save(DbProcessingContentType.ONWARD_RESPONSE_MESSAGE, responseMessage);
+
+                } catch (Exception e) {
+
+                    if (e instanceof EdsSenderHttpErrorResponseException) {
+                        EdsSenderResponse edsSenderResponse = ((EdsSenderHttpErrorResponseException) e).getEdsSenderResponse();
+                        responseMessage = getFormattedEdsSenderResponse(edsSenderResponse);
+                        contentSaver.save(DbProcessingContentType.ONWARD_RESPONSE_MESSAGE, responseMessage);
+                    }
+
+                    throw new HL7MessageProcessorException(DbProcessingStatus.SEND_FAILURE, e);
                 }
 
-                throw new HL7MessageProcessorException(DbProcessingStatus.SEND_FAILURE, e);
             }
 
             return true;
@@ -93,6 +97,15 @@ public class HL7MessageProcessor {
         } catch (Exception e) {
             throw new HL7MessageProcessorException(DbProcessingStatus.UNEXPECTED_ERROR, e);
         }
+    }
+
+    private boolean skipMessageSending() {
+        DbChannelOption channelOption = configuration.getChannelOption(dbChannel.getChannelId(), DbChannelOptionType.SKIP_ONWARD_MESSAGE_SENDING_IN_PROCESSOR);
+
+        if (channelOption == null)
+            return false;
+
+        return ("TRUE".equals(channelOption.getChannelOptionValue()));
     }
 
     private String transformMessage(DbMessage dbMessage) throws Exception {

@@ -441,7 +441,8 @@ insert into dictionary.channel_option_type
 )
 values
 ('KeepOnlyCurrentMessageProcessingContentAttempt', 'FALSE', 'Set to TRUE to remove old entries in log.message_processing_content'),
-('MaxSkippableProcessingErroredMessages', '0', 'Number of messages in processing error before new messages processing halts (until retries are successful)');
+('MaxSkippableProcessingErroredMessages', '0', 'Number of messages in processing error before new messages processing halts (until retries are successful)'),
+('SkipOnwardMessageSendingInProcessor', 'FALSE', 'Don''t send messages onward in processor (to test transform and mapping functionality');
 
 insert into configuration.processing_attempt_interval 
 (

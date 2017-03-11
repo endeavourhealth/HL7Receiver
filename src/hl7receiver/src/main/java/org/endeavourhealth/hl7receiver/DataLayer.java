@@ -71,6 +71,12 @@ public class DataLayer implements IDBDigestLogger {
         List<Integer> dbProcessingAttemptIntervalsSeconds = pgStoredProc.executeMultiQuery((resultSet) ->
                 resultSet.getInt("interval_seconds"));
 
+        List<DbChannelOption> dbChannelOptions = pgStoredProc.executeMultiQuery((resultSet) ->
+                new DbChannelOption()
+                        .setChannelId(resultSet.getInt("channel_id"))
+                        .setChannelOptionType(DbChannelOptionType.fromString(resultSet.getString("channel_option_type")))
+                        .setChannelOptionValue(resultSet.getString("channel_option_value")));
+
         // assemble data
 
         dbChannels.forEach(s ->
@@ -82,7 +88,18 @@ public class DataLayer implements IDBDigestLogger {
         return dbConfiguration
                 .setDbChannels(dbChannels)
                 .setDbEds(dbEds)
-                .setDbProcessingAttemptIntervalsSeconds(dbProcessingAttemptIntervalsSeconds);
+                .setDbProcessingAttemptIntervalsSeconds(dbProcessingAttemptIntervalsSeconds)
+                .setDbChannelOptions(dbChannelOptions);
+    }
+
+    public String getChannelOption(int channelId, DbChannelOptionType dbChannelOptionType) throws PgStoredProcException {
+
+        PgStoredProc pgStoredProc = new PgStoredProc(dataSource)
+                .setName("configuration.get_channel_option")
+                .addParameter("_channel_id", channelId)
+                .addParameter("_channel_option_type", dbChannelOptionType.getValue());
+
+        return pgStoredProc.executeSingleRow((resultSet) -> resultSet.getString("get_channel_option"));
     }
 
     public int openConnection(int instanceId, int channelId, int localPort, String remoteHost, int remotePort) throws PgStoredProcException {

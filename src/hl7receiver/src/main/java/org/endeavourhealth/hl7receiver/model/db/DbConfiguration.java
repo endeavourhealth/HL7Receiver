@@ -8,6 +8,7 @@ public class DbConfiguration {
     private List<DbChannel> dbChannels;
     private DbEds dbEds;
     private List<Integer> dbProcessingAttemptIntervalsSeconds;
+    private List<DbChannelOption> dbChannelOptions;
 
     public Integer getInstanceId() {
         return instanceId;
@@ -42,6 +43,15 @@ public class DbConfiguration {
 
     public DbConfiguration setDbProcessingAttemptIntervalsSeconds(List<Integer> dbProcessingAttemptIntervalsSeconds) {
         this.dbProcessingAttemptIntervalsSeconds = dbProcessingAttemptIntervalsSeconds;
+        return this;
+    }
+
+    public List<DbChannelOption> getDbChannelOptions() {
+        return dbChannelOptions;
+    }
+
+    public DbConfiguration setDbChannelOptions(List<DbChannelOption> dbChannelOptions) {
+        this.dbChannelOptions = dbChannelOptions;
         return this;
     }
 }

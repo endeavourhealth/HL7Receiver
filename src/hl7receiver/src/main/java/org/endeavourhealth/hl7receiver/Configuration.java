@@ -4,6 +4,8 @@ import org.endeavourhealth.common.config.ConfigManager;
 import org.endeavourhealth.common.config.ConfigManagerException;
 import org.endeavourhealth.common.postgres.PgDataSource;
 import org.endeavourhealth.common.postgres.logdigest.LogDigestAppender;
+import org.endeavourhealth.hl7receiver.model.db.DbChannelOption;
+import org.endeavourhealth.hl7receiver.model.db.DbChannelOptionType;
 import org.endeavourhealth.hl7receiver.model.db.DbConfiguration;
 import org.endeavourhealth.hl7receiver.model.exceptions.ConfigurationException;
 import org.slf4j.Logger;
@@ -12,6 +14,8 @@ import org.slf4j.LoggerFactory;
 import javax.sql.DataSource;
 import java.net.InetAddress;
 import java.sql.SQLException;
+import java.util.List;
+import java.util.stream.Collectors;
 
 public final class Configuration
 {
@@ -101,5 +105,24 @@ public final class Configuration
 
     public int getInstanceId() {
         return this.dbConfiguration.getInstanceId();
+    }
+
+    public DbChannelOption getChannelOption(int channelId, DbChannelOptionType dbChannelOptionType) {
+        if (this.dbConfiguration == null)
+            return null;
+
+        if (this.dbConfiguration.getDbChannelOptions() == null)
+            return null;
+
+        List<DbChannelOption> dbChannelOptions = this.dbConfiguration
+                .getDbChannelOptions()
+                .stream()
+                .filter(t -> t.getChannelId() == channelId && t.getChannelOptionType().equals(dbChannelOptionType))
+                .collect(Collectors.toList());
+
+        if (dbChannelOptions.size() == 0)
+            return null;
+
+        return dbChannelOptions.get(0);
     }
 }
