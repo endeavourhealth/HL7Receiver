@@ -1,5 +1,5 @@
 
-create or replace function log.start_message_processing
+create or replace function log.set_message_processing_started
 (
 	_message_id integer,
 	_instance_id integer
@@ -13,7 +13,6 @@ declare
 	_previous_attempt_id integer;
 	_attempt_id integer;
 	_next_attempt_date timestamp;
-	_channel_id integer;
 	_keep_only_current_message_processing_content_attempt varchar(100);
 begin
 
@@ -78,12 +77,7 @@ begin
 		delete any previous attempt's message processing content
 	*/
 	select 
-		m.channel_id into _channel_id
-	from log.message m
-	where m.message_id = _message_id;
-	
-	select 
-		configuration.get_channel_option(_channel_id, 'KeepOnlyCurrentMessageProcessingContentAttempt') into _keep_only_current_message_processing_content_attempt;
+		configuration.get_channel_option_by_message_id(_message_id, 'KeepOnlyCurrentMessageProcessingContentAttempt') into _keep_only_current_message_processing_content_attempt;
 	
 	if (_keep_only_current_message_processing_content_attempt = 'TRUE')
 	then

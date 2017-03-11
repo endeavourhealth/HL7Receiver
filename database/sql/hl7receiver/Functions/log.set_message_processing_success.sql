@@ -1,5 +1,5 @@
 
-create or replace function log.complete_message_processing
+create or replace function log.set_message_processing_success
 (
 	_message_id integer,
 	_attempt_id integer

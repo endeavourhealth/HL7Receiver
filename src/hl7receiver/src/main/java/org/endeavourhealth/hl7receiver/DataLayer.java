@@ -240,18 +240,18 @@ public class DataLayer implements IDBDigestLogger {
                                 .setMessageUuid(UUID.fromString(resultSet.getString("message_uuid"))));
     }
 
-    public int startMessageProcessing(int messageId, int processingInstanceId) throws PgStoredProcException {
+    public int setMessageProcessingStarted(int messageId, int processingInstanceId) throws PgStoredProcException {
         PgStoredProc pgStoredProc = new PgStoredProc(dataSource)
-                .setName("log.start_message_processing")
+                .setName("log.set_message_processing_started")
                 .addParameter("_message_id", messageId)
                 .addParameter("_instance_id", processingInstanceId);
 
         return pgStoredProc.executeSingleRow((resultSet) -> resultSet.getInt("attempt_id"));
     }
 
-    public void updateMessageProcessingStatus(int messageId, int attemptId, DbProcessingStatus processingStatusId, String errorMessage) throws PgStoredProcException {
+    public void setMessageProcessingFailure(int messageId, int attemptId, DbProcessingStatus processingStatusId, String errorMessage) throws PgStoredProcException {
         PgStoredProc pgStoredProc = new PgStoredProc(dataSource)
-                .setName("log.update_message_processing_status")
+                .setName("log.set_message_processing_failure")
                 .addParameter("_message_id", messageId)
                 .addParameter("_attempt_id", attemptId)
                 .addParameter("_processing_status_id", processingStatusId.getValue())
@@ -260,9 +260,9 @@ public class DataLayer implements IDBDigestLogger {
         pgStoredProc.execute();
     }
 
-    public void completeMessageProcessing(int messageId, int attemptId) throws PgStoredProcException {
+    public void setMessageProcessingSuccess(int messageId, int attemptId) throws PgStoredProcException {
         PgStoredProc pgStoredProc = new PgStoredProc(dataSource)
-                .setName("log.start_message_processing")
+                .setName("log.set_message_processing_success")
                 .addParameter("_message_id", messageId)
                 .addParameter("_attempt_id", attemptId);
 

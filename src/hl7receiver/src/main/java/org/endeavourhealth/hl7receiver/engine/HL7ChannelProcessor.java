@@ -80,10 +80,13 @@ public class HL7ChannelProcessor implements Runnable {
                             continue;
                         }
 
-                        processMessage(message);
+                        if (!processMessage(message)) {
 
-                        if (stopRequested)
-                            return;
+                            if (stopRequested)
+                                return;
+
+                            Thread.sleep(THREAD_SLEEP_TIME_MILLIS);
+                        }
 
                     } else {  // not gotLock
                         Thread.sleep(THREAD_SLEEP_TIME_MILLIS);
@@ -98,33 +101,58 @@ public class HL7ChannelProcessor implements Runnable {
         releaseLock(gotLock);
     }
 
-    private void processMessage(DbMessage message) throws PgStoredProcException {
-        int attemptId = dataLayer.startMessageProcessing(message.getMessageId(), configuration.getInstanceId());
+    private boolean processMessage(DbMessage message) {
+        Integer attemptId = setMessageProcessingStarted(message.getMessageId(), configuration.getInstanceId());
+
+        if (attemptId == null)
+            return false;
 
         try {
-            HL7MessageProcessor messageProcessor = new HL7MessageProcessor(configuration, dbChannel, (contentType, content) -> {
-                dataLayer.addMessageProcessingContent(message.getMessageId(), attemptId, contentType, content);
-            });
+            HL7MessageProcessor messageProcessor = new HL7MessageProcessor(configuration, dbChannel,
+                    (contentType, content) -> dataLayer.addMessageProcessingContent(message.getMessageId(), attemptId, contentType, content)
+            );
 
             if (messageProcessor.processMessage(message))
-                dataLayer.completeMessageProcessing(message.getMessageId(), attemptId);
+                return setMessageProcessingSuccess(message.getMessageId(), attemptId);
 
         } catch (HL7MessageProcessorException e) {
-            updateMessageProcessingStatus(message.getMessageId(), attemptId, e.getProcessingStatus(), e);
+            setMessageProcessingFailure(message.getMessageId(), attemptId, e.getProcessingStatus(), e);
+        }
+
+        return false;
+    }
+
+    private Integer setMessageProcessingStarted(int messageId, int instanceId) {
+        try {
+            return dataLayer.setMessageProcessingStarted(messageId, instanceId);
+        } catch (Exception e) {
+            LOG.error("Error setting message processing started for message id {} in channel processor {} for instance {}", new Object[] { messageId, dbChannel.getChannelName(), configuration.getInstanceId(), e });
+            return null;
         }
     }
 
-    private void updateMessageProcessingStatus(int messageId, int attemptId, DbProcessingStatus dbProcessingStatus, Exception exception) {
+    private boolean setMessageProcessingSuccess(int messageId, int attemptId) {
+        try {
+            dataLayer.setMessageProcessingSuccess(messageId, attemptId);
+            return true;
+        } catch (Exception e) {
+            LOG.error("Error setting message processing success for message id {} in channel processor {} for instance {}", new Object[] { messageId, dbChannel.getChannelName(), configuration.getInstanceId(), e });
+            return false;
+        }
+    }
+
+    private void setMessageProcessingFailure(int messageId, int attemptId, DbProcessingStatus dbProcessingStatus, Exception exception) {
         try {
             String exceptionMessage = HL7ExceptionHandler.constructFormattedException(exception);
 
             if (StringUtils.isBlank(exceptionMessage))
                 exceptionMessage = null;
 
-            dataLayer.updateMessageProcessingStatus(messageId, attemptId, dbProcessingStatus, exceptionMessage);
+            LOG.error("Error {} occurred while processing message {} in channel processor {} on instance {}", new Object[] { dbProcessingStatus.name(), messageId, dbChannel.getChannelName(), configuration.getInstanceId(), exception });
+            dataLayer.setMessageProcessingFailure(messageId, attemptId, dbProcessingStatus, exceptionMessage);
 
         } catch (Exception e) {
-            LOG.error("Error adding message status for message id {} in channel processor {} for instance {}", new Object[] { messageId, dbChannel.getChannelName(), configuration.getInstanceId(), e });
+            LOG.error("Error adding message status {} for message id {} in channel processor {} for instance {}", new Object[] { dbProcessingStatus.name(), messageId, dbChannel.getChannelName(), configuration.getInstanceId(), e });
         }
     }
 

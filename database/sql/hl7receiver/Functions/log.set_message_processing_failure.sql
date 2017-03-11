@@ -1,5 +1,5 @@
 
-create or replace function log.update_message_processing_status
+create or replace function log.set_message_processing_failure
 (
 	_message_id integer,
 	_attempt_id integer,
@@ -49,4 +49,3 @@ begin
 end;
 $$ language plpgsql;
 
-select * from dictionary.processing_status
