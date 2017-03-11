@@ -416,7 +416,7 @@ insert into dictionary.processing_status
 	description
 )
 values
-(1, true, 'Message processing started'),
+(1, false, 'Message processing started'),
 (9, true, 'Message processing complete'),
 (-1, false, 'Transform failure'),
 (-2, false, 'Envelope generation failure'),
