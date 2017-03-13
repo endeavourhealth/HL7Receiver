@@ -17,8 +17,12 @@ returns integer
 as $$
 declare
 	_message_id integer;
+	_instance_id integer;
+	_log_date timestamp;
 begin
 
+	_log_date = now();
+	
 	insert into log.message
 	(
 		channel_id,
@@ -33,13 +37,18 @@ begin
 		inbound_payload,
 		outbound_message_type,
 		outbound_payload,
-		message_uuid
+		message_uuid,
+		message_status_id,
+		message_status_date,
+		is_complete,
+		processing_attempt_id,
+		next_attempt_date
 	)
 	values
 	(
 		_channel_id,
 		_connection_id,
-		now(),
+		_log_date,
 		_message_control_id,
 		_message_sequence_number,
 		_message_date,
@@ -49,9 +58,40 @@ begin
 		_inbound_payload,
 		_outbound_message_type,
 		_outbound_payload,
-		uuid_generate_v4()
+		uuid_generate_v4(),
+		0,
+		_log_date,
+		false,
+		0,
+		null
 	)
 	returning message_id into _message_id;
+	
+	select
+		c.instance_id into _instance_id
+	from log.connection c
+	where c.connection_id = _connection_id;
+	
+	insert into log.message_status_history
+	(
+		message_id,
+		processing_attempt_id,
+		message_status_id,
+		message_status_date,
+		is_complete,
+		error_message,
+		instance_id
+	)
+	values
+	(
+		_message_id,
+		0,
+		0,
+		_log_date,
+		false,
+		null,
+		_instance_id
+	);
 	
 	return _message_id;
 	

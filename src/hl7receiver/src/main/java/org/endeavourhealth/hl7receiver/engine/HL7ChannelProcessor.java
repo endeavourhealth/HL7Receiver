@@ -1,7 +1,6 @@
 package org.endeavourhealth.hl7receiver.engine;
 
 import org.apache.commons.lang3.StringUtils;
-import org.endeavourhealth.common.postgres.PgStoredProcException;
 import org.endeavourhealth.hl7receiver.Configuration;
 import org.endeavourhealth.hl7receiver.DataLayer;
 import org.endeavourhealth.hl7receiver.messageprocessor.HL7MessageProcessor;
@@ -116,7 +115,7 @@ public class HL7ChannelProcessor implements Runnable {
                 return setMessageProcessingSuccess(message.getMessageId(), attemptId);
 
         } catch (HL7MessageProcessorException e) {
-            setMessageProcessingFailure(message.getMessageId(), attemptId, e.getProcessingStatus(), e);
+            setMessageProcessingFailure(message.getMessageId(), attemptId, e.getMessageStatus(), e);
         }
 
         return false;
@@ -133,7 +132,7 @@ public class HL7ChannelProcessor implements Runnable {
 
     private boolean setMessageProcessingSuccess(int messageId, int attemptId) {
         try {
-            dataLayer.setMessageProcessingSuccess(messageId, attemptId);
+            dataLayer.setMessageProcessingSuccess(messageId, attemptId, configuration.getInstanceId());
             return true;
         } catch (Exception e) {
             LOG.error("Error setting message processing success for message id {} in channel processor {} for instance {}", new Object[] { messageId, dbChannel.getChannelName(), configuration.getInstanceId(), e });
@@ -141,18 +140,18 @@ public class HL7ChannelProcessor implements Runnable {
         }
     }
 
-    private void setMessageProcessingFailure(int messageId, int attemptId, DbProcessingStatus dbProcessingStatus, Exception exception) {
+    private void setMessageProcessingFailure(int messageId, int attemptId, DbMessageStatus dbMessageStatus, Exception exception) {
         try {
             String exceptionMessage = HL7ExceptionHandler.constructFormattedException(exception);
 
             if (StringUtils.isBlank(exceptionMessage))
                 exceptionMessage = null;
 
-            LOG.error("Error {} occurred while processing message {} in channel processor {} on instance {}", new Object[] { dbProcessingStatus.name(), messageId, dbChannel.getChannelName(), configuration.getInstanceId(), exception });
-            dataLayer.setMessageProcessingFailure(messageId, attemptId, dbProcessingStatus, exceptionMessage);
+            LOG.error("Error {} occurred while processing message {} in channel processor {} on instance {}", new Object[] { dbMessageStatus.name(), messageId, dbChannel.getChannelName(), configuration.getInstanceId(), exception });
+            dataLayer.setMessageProcessingFailure(messageId, attemptId, dbMessageStatus, exceptionMessage, configuration.getInstanceId());
 
         } catch (Exception e) {
-            LOG.error("Error adding message status {} for message id {} in channel processor {} for instance {}", new Object[] { dbProcessingStatus.name(), messageId, dbChannel.getChannelName(), configuration.getInstanceId(), e });
+            LOG.error("Error adding message status {} for message id {} in channel processor {} for instance {}", new Object[] { dbMessageStatus.name(), messageId, dbChannel.getChannelName(), configuration.getInstanceId(), e });
         }
     }
 

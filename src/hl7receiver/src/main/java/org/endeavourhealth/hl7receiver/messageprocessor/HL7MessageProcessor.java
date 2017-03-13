@@ -45,7 +45,7 @@ public class HL7MessageProcessor {
                 transformedMessage = transformMessage(dbMessage);
                 contentSaver.save(DbProcessingContentType.FHIR, transformedMessage);
             } catch (Exception e) {
-                throw new HL7MessageProcessorException(DbProcessingStatus.TRANSFORM_FAILURE, e);
+                throw new HL7MessageProcessorException(DbMessageStatus.TRANSFORM_FAILURE, e);
             }
 
             if (stopRequested)
@@ -57,7 +57,7 @@ public class HL7MessageProcessor {
                 requestMessage = buildEnvelope(dbMessage, transformedMessage);
                 contentSaver.save(DbProcessingContentType.ONWARD_REQUEST_MESSAGE, requestMessage);
             } catch (Exception e) {
-                throw new HL7MessageProcessorException(DbProcessingStatus.ENVELOPE_GENERATION_FAILURE, e);
+                throw new HL7MessageProcessorException(DbMessageStatus.ENVELOPE_GENERATION_FAILURE, e);
             }
 
             if (stopRequested)
@@ -84,7 +84,7 @@ public class HL7MessageProcessor {
                         contentSaver.save(DbProcessingContentType.ONWARD_RESPONSE_MESSAGE, responseMessage);
                     }
 
-                    throw new HL7MessageProcessorException(DbProcessingStatus.SEND_FAILURE, e);
+                    throw new HL7MessageProcessorException(DbMessageStatus.SEND_FAILURE, e);
                 }
 
             }
@@ -95,7 +95,7 @@ public class HL7MessageProcessor {
             throw mpe;
 
         } catch (Exception e) {
-            throw new HL7MessageProcessorException(DbProcessingStatus.UNEXPECTED_ERROR, e);
+            throw new HL7MessageProcessorException(DbMessageStatus.UNEXPECTED_ERROR, e);
         }
     }
 

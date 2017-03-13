@@ -1,6 +1,7 @@
 package org.endeavourhealth.hl7receiver.model.db;
 
-public enum DbProcessingStatus {
+public enum DbMessageStatus {
+    MESSAGE_RECEIVED(0),
     MESSAGE_PROCESSING_STARTED(1),
     MESSAGE_PROCESSING_COMPLETE(9),
     TRANSFORM_FAILURE(-1),
@@ -10,7 +11,7 @@ public enum DbProcessingStatus {
 
     private int dbMessageStatusType;
 
-    DbProcessingStatus(int dbMessageStatusType) {
+    DbMessageStatus(int dbMessageStatusType) {
         this.dbMessageStatusType = dbMessageStatusType;
     }
 

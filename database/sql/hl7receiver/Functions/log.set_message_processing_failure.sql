@@ -3,49 +3,61 @@ create or replace function log.set_message_processing_failure
 (
 	_message_id integer,
 	_attempt_id integer,
-	_processing_status_id integer,
-	_error_message varchar
+	_message_status_id integer,
+	_error_message varchar,
+	_instance_id integer
 )
 returns void
 as $$
 declare
-	_is_complete boolean;
-	_row_count integer;
+	_message_status_date timestamp;
 begin
 
-	select
-		is_complete into _is_complete
-	from log.message_processing_status
-	where message_id = _message_id
-	and attempt_id = _attempt_id;
-	
-	if (_is_complete)
+	if exists
+	(
+		select
+			*
+		from log.message
+		where message_id = _message_id
+		and processing_attempt_id = _attempt_id
+		and (is_complete)
+	)
 	then
 		raise exception 'Cannot update message processing status for message % attempt % because this attempt is already complete', _message_id, _attempt_id;
 		return;
 	end if;
 
-	with updated_rows as
-	(
-		update log.message_processing_status
-		set
-			processing_status_id = _processing_status_id,
-			is_complete = false,
-			error_message = _error_message
-		where message_id = _message_id
-		and attempt_id = _attempt_id
-		returning message_id
-	)
-	select
-		count(*) into _row_count
-	from updated_rows;
+	_message_status_date = now();
 	
-	if (_row_count != 1)
-	then
-		raise exception 'Error updating message processing status for message %', _message_id;
-		return;
-	end if;
+	update log.message
+	set
+		message_status_id = _message_status_id,
+		message_status_date = _message_status_date,
+		is_complete = false,
+		processing_attempt_id = _attempt_id
+	where message_id = _message_id;
 		
+	insert into log.message_status_history
+	(
+		message_id,
+		processing_attempt_id,
+		message_status_id,
+		message_status_date,
+		is_complete,
+		error_message,
+		instance_id
+	)
+	values
+	(
+		_message_id,
+		_attempt_id,
+		_message_status_id,
+		_message_status_date,
+		false,
+		_error_message,
+		_instance_id
+	);
+	
 end;
 $$ language plpgsql;
 

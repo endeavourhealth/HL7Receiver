@@ -34,16 +34,16 @@ create table dictionary.channel_option_type
 	constraint dictionary_channeloptiontype_channeloptiontype_ck check (char_length(trim(channel_option_type)) > 0)
 );
 
-create table dictionary.processing_status
+create table dictionary.message_status
 (
-	processing_status_id smallint not null,
+	message_status_id smallint not null,
 	is_complete boolean not null,
 	description varchar(100) not null,
 	
-	constraint dictionary_processingstatus_processingstatusid_pk primary key (processing_status_id),
-	constraint dictionary_processingstatus_processingstatusid_iscomplete_uq unique (processing_status_id, is_complete),
-	constraint dictionary_processingstatus_description_uq unique (description),
-	constraint dictionary_processingstatus_description_ck check (char_length(trim(description)) > 0)
+	constraint dictionary_messagestatus_messagestatusid_pk primary key (message_status_id),
+	constraint dictionary_messagestatus_messagestatusid_iscomplete_uq unique (message_status_id, is_complete),
+	constraint dictionary_messagestatus_description_uq unique (description),
+	constraint dictionary_messagestatus_description_ck check (char_length(trim(description)) > 0)
 );
 
 create table dictionary.processing_content_type
@@ -140,10 +140,10 @@ create table configuration.eds
 
 create table configuration.processing_attempt_interval
 (
-	attempt_id smallint not null,
+	processing_attempt_id smallint not null,
 	interval_seconds integer not null,
 	
-	constraint configuration_processingattemptinterval_attemptid_pk primary key (attempt_id),
+	constraint configuration_processingattemptinterval_processingattemptid_pk primary key (processing_attempt_id),
 	constraint configuration_processingattemptinterval_intervalseconds_ck check (interval_seconds >= 0)
 );
 
@@ -199,46 +199,53 @@ create table log.message
 	outbound_message_type varchar(100) not null,
 	outbound_payload varchar not null,
 	message_uuid uuid not null,
+	message_status_id smallint not null,
+	message_status_date timestamp not null,
+	is_complete boolean not null,
+	processing_attempt_id smallint not null,
+	next_attempt_date timestamp null,
 	
 	constraint log_message_messageid_pk primary key (message_id),
 	constraint log_message_channelid_connectionid_fk foreign key (channel_id, connection_id) references log.connection (channel_id, connection_id),
 	constraint log_message_inboundmessagetype_fk foreign key (channel_id, inbound_message_type) references configuration.channel_message_type (channel_id, message_type),
 	constraint log_message_outboundmessagetype_fk foreign key (channel_id, outbound_message_type) references configuration.channel_message_type (channel_id, message_type),
 	constraint log_message_messagecontrolid_ck check (char_length(trim(message_control_id)) > 0),
-	constraint log_message_messageuuid_uq unique (message_uuid)
+	constraint log_message_messageuuid_uq unique (message_uuid),
+	constraint log_message_messagestatusid_iscomplete_fk foreign key (message_status_id, is_complete) references dictionary.message_status (message_status_id, is_complete),
+	constraint log_message_processingattemptid_ck check (processing_attempt_id >= 0),
+	constraint log_message_iscomplete_nextattemptdate_ck check ((is_complete and next_attempt_date is null) or (not is_complete))
 );
 
-create table log.message_processing_status
+create table log.message_status_history
 (
-	message_processing_status_id serial not null,
+	message_status_history_id serial not null,
 	message_id integer not null,
-	attempt_id smallint not null,
-	attempt_date timestamp not null,
-	processing_status_id smallint not null,
+	processing_attempt_id smallint not null,
+	message_status_id smallint not null,
+	message_status_date timestamp not null,
 	is_complete boolean not null,
 	error_message text null,
-	next_attempt_date timestamp null,
-	processing_instance_id integer not null,
+	instance_id integer not null,
 	
-	constraint log_messageprocessingstatus_messageprocessingstatusid_pk primary key (message_processing_status_id),
-	constraint log_messageprocessingstatus_messageid_attemptid_uq unique (message_id, attempt_id),
-	constraint log_messageprocessingstatus_messageid_fk foreign key (message_id) references log.message (message_id), 
-	constraint log_messageprocessingstatus_attemptid_fk foreign key (attempt_id) references configuration.processing_attempt_interval (attempt_id),
-	constraint log_messageprocessingstatus_processingstatusid_iscomplete_fk foreign key (processing_status_id, is_complete) references dictionary.processing_status (processing_status_id, is_complete),
-	constraint log_messageprocessingstatus_iscomplete_errormessage_ck check ((is_complete and error_message is null) or ((not is_complete) and error_message is not null)),
-	constraint log_messageprocessingstatus_iscomplete_nextattemptdate_ck check ((is_complete and next_attempt_date is null) or (not is_complete)),
-	constraint log_messageprocessingstatus_processinginstanceid_fk foreign key (processing_instance_id) references log.instance (instance_id)
+	constraint log_messagestatushistory_messagestatushistoryid_pk primary key (message_status_history_id),
+	constraint log_messagestatushistory_messageid_fk foreign key (message_id) references log.message (message_id), 
+	constraint log_messagestatushistory_processingattemptid_ck check (processing_attempt_id >= 0),
+	constraint log_messagestatushistory_messagestatusid_iscomplete_fk foreign key (message_status_id, is_complete) references dictionary.message_status (message_status_id, is_complete),
+	constraint log_messagestatushistory_iscomplete_errormessage_ck check ((is_complete and error_message is null) or (not is_complete)),
+	constraint log_messagestatushistory_instanceid_fk foreign key (instance_id) references log.instance (instance_id)
 );
 
 create table log.message_processing_content
 (
+	message_processing_content_id serial not null,
 	message_id integer not null,
-	attempt_id smallint not null,
+	processing_attempt_id smallint not null,
+	content_saved_date timestamp not null,
 	processing_content_type_id smallint not null,
 	content text not null,
 	
-	constraint log_messageprocessingcontent_messageid_attemptid_processingcontenttypeid_pk primary key (message_id, attempt_id, processing_content_type_id),
-	constraint log_messageprocessingcontent_messageid_attemptid_fk foreign key (message_id, attempt_id) references log.message_processing_status (message_id, attempt_id),
+	constraint log_messageprocessingcontent_messageprocessingcontentid_pk primary key (message_processing_content_id),
+	constraint log_messageprocessingcontent_messageid_fk foreign key (message_id) references log.message (message_id),
 	constraint log_messageprocessingcontent_processingcontenttypeid_fk foreign key (processing_content_type_id) references dictionary.processing_content_type (processing_content_type_id)
 );
 
@@ -409,13 +416,14 @@ insert into dictionary.message_type (message_type, description) values
 ('ACK^A50', 'Acknowledgement to change visit number'),
 ('ACK^A51', 'Acknowledgement to change alternate visit ID');
 
-insert into dictionary.processing_status
+insert into dictionary.message_status
 (
-	processing_status_id,
+	message_status_id,
 	is_complete,
 	description
 )
 values
+(0, false, 'Message received'),
 (1, false, 'Message processing started'),
 (9, true, 'Message processing complete'),
 (-1, false, 'Transform failure'),
@@ -446,7 +454,7 @@ values
 
 insert into configuration.processing_attempt_interval 
 (
-	attempt_id, 
+	processing_attempt_id, 
 	interval_seconds
 ) 
 values 
@@ -455,10 +463,6 @@ values
 (3, 30), 		-- 30 seconds
 (4, 120), 		-- 2 minutes
 (5, 600),  	-- 10 minutes
-(6, 7200), 	-- 2 hours
-(7, 18000),	-- 5 hours
-(8, 86400),	-- 1 day
-(9, 172800),	-- 2 days
-(10, 345600),	-- 4 days
-(11, 604800),	-- 7 days
-(12, 1209600);	-- 14 days
+(6, 3600), 	-- 1 hour
+(7, 7200), 	-- 2 hours
+(8, 14400)		-- 4 hours

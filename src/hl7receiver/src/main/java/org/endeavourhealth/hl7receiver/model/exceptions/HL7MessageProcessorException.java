@@ -1,18 +1,18 @@
 package org.endeavourhealth.hl7receiver.model.exceptions;
 
-import org.endeavourhealth.hl7receiver.model.db.DbProcessingStatus;
+import org.endeavourhealth.hl7receiver.model.db.DbMessageStatus;
 
 public class HL7MessageProcessorException extends Hl7ReceiverException {
     static final long serialVersionUID = 1L;
 
-    private DbProcessingStatus processingStatus;
+    private DbMessageStatus messageStatus;
 
-    public HL7MessageProcessorException(DbProcessingStatus processingStatus, Throwable cause) {
+    public HL7MessageProcessorException(DbMessageStatus messageStatus, Throwable cause) {
         super(cause);
-        this.processingStatus = processingStatus;
+        this.messageStatus = messageStatus;
     }
 
-    public DbProcessingStatus getProcessingStatus() {
-        return processingStatus;
+    public DbMessageStatus getMessageStatus() {
+        return messageStatus;
     }
 }

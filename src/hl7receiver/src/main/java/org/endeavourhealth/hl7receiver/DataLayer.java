@@ -266,22 +266,24 @@ public class DataLayer implements IDBDigestLogger {
         return pgStoredProc.executeSingleRow((resultSet) -> resultSet.getInt("attempt_id"));
     }
 
-    public void setMessageProcessingFailure(int messageId, int attemptId, DbProcessingStatus processingStatusId, String errorMessage) throws PgStoredProcException {
+    public void setMessageProcessingFailure(int messageId, int attemptId, DbMessageStatus messageStatusId, String errorMessage, int instanceId) throws PgStoredProcException {
         PgStoredProc pgStoredProc = new PgStoredProc(dataSource)
                 .setName("log.set_message_processing_failure")
                 .addParameter("_message_id", messageId)
                 .addParameter("_attempt_id", attemptId)
-                .addParameter("_processing_status_id", processingStatusId.getValue())
-                .addParameter("_error_message", errorMessage);
+                .addParameter("_message_status_id", messageStatusId.getValue())
+                .addParameter("_error_message", errorMessage)
+                .addParameter("_instance_id", instanceId);
 
         pgStoredProc.execute();
     }
 
-    public void setMessageProcessingSuccess(int messageId, int attemptId) throws PgStoredProcException {
+    public void setMessageProcessingSuccess(int messageId, int attemptId, int instanceId) throws PgStoredProcException {
         PgStoredProc pgStoredProc = new PgStoredProc(dataSource)
                 .setName("log.set_message_processing_success")
                 .addParameter("_message_id", messageId)
-                .addParameter("_attempt_id", attemptId);
+                .addParameter("_attempt_id", attemptId)
+                .addParameter("_instance_id", instanceId);
 
         pgStoredProc.execute();
     }

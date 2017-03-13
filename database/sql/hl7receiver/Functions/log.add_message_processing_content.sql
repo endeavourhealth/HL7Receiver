@@ -13,7 +13,8 @@ begin
 	insert into log.message_processing_content
 	(
 		message_id,
-		attempt_id,
+		processing_attempt_id,
+		content_saved_date,
 		processing_content_type_id,
 		content
 	)
@@ -21,10 +22,10 @@ begin
 	(
 		_message_id,
 		_attempt_id,
+		now(),
 		_processing_content_type_id,
 		_content
 	);
 				
 end;
 $$ language plpgsql;
-

@@ -10,81 +10,82 @@ returns table
 )
 as $$
 declare
-	_previous_attempt_id integer;
 	_attempt_id integer;
 	_next_attempt_date timestamp;
-	_keep_only_current_message_processing_content_attempt varchar(100);
+	_processing_started_status_id integer;
+	_processing_started_date timestamp;
 begin
 
 	/*
 		calculate current attempt id from previous attempt
 	*/
 	select
-		s.attempt_id into _previous_attempt_id
-	from log.current_message_processing_status s
-	where s.message_id = _message_id;
-	
-	_attempt_id = coalesce(_previous_attempt_id, 0) + 1;
-	
-	/*
-		determine if there are any remaining attempts allowed
-	*/
-	if not exists
-	(
-		select *
-		from configuration.processing_attempt_interval i		where i.attempt_id = _attempt_id
-	)
-	then
-		raise exception 'No more attempts to process message % left', _message_id;
-		return;
-	end if;
-	
+		(m.processing_attempt_id + 1) into _attempt_id
+	from log.message m
+	where m.message_id = _message_id;
+
 	/*
 		calculate the next attempt date
 	*/
 	select 
 		now() + interval '1 second' * i.interval_seconds into _next_attempt_date
 	from configuration.processing_attempt_interval i
-	where i.attempt_id = (_attempt_id + 1);
+	where i.processing_attempt_id = 
+	(
+		select least(max(processing_attempt_id), (_attempt_id + 1)) 
+		from configuration.processing_attempt_interval
+	);
 	
 	/*
 		add a 'started' message processing status
 	*/
-	insert into log.message_processing_status
+	_processing_started_date = now();
+	_processing_started_status_id = 1;
+	
+	update log.message
+	set
+		message_status_id = _processing_started_status_id,
+		message_status_date = _processing_started_date,
+		is_complete = false,
+		processing_attempt_id = _attempt_id,
+		next_attempt_date = _next_attempt_date
+	where message_id = _message_id;
+		
+	insert into log.message_status_history
 	(
 		message_id,
-		attempt_id,
-		attempt_date,
-		processing_status_id,
+		processing_attempt_id,
+		message_status_id,
+		message_status_date,
 		is_complete,
 		error_message,
-		next_attempt_date,
-		processing_instance_id
+		instance_id
 	)
 	values
 	(
 		_message_id,
 		_attempt_id,
-		now(),
-		1,
+		_processing_started_status_id,
+		_processing_started_date,
 		false,
-		'',
-		_next_attempt_date,
+		null,
 		_instance_id
 	);
 
 	/*
 		delete any previous attempt's message processing content
 	*/
-	select 
-		configuration.get_channel_option_by_message_id(_message_id, 'KeepOnlyCurrentMessageProcessingContentAttempt') into _keep_only_current_message_processing_content_attempt;
-	
-	if (_keep_only_current_message_processing_content_attempt = 'TRUE')
+	if exists
+	(
+		select *
+		from configuration.get_channel_option_by_message_id(_message_id, 'KeepOnlyCurrentMessageProcessingContentAttempt')
+		where get_channel_option_by_message_id = 'TRUE'
+	)
 	then
 		delete from log.message_processing_content mpc
 		where mpc.message_id = _message_id
 		and mpc.attempt_id < _attempt_id;	
-	end if;
+	end if;	
 	
 	/*
 		return the attempt id
