@@ -216,6 +216,8 @@ create table log.message
 	constraint log_message_iscomplete_nextattemptdate_ck check ((is_complete and next_attempt_date is null) or (not is_complete))
 );
 
+create index concurrently log_message_messagedate_logdate_ix on log.message (message_date, log_date);
+
 create table log.message_status_history
 (
 	message_status_history_id serial not null,
