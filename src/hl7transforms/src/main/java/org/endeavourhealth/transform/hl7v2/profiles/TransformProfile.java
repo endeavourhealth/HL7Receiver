@@ -1,8 +1,8 @@
 package org.endeavourhealth.transform.hl7v2.profiles;
 
-import org.endeavourhealth.transform.hl7v2.parser.ParseException;
-import org.endeavourhealth.transform.hl7v2.parser.Segment;
-import org.endeavourhealth.transform.hl7v2.parser.messages.AdtMessage;
+import org.endeavourhealth.hl7parser.ParseException;
+import org.endeavourhealth.hl7parser.Segment;
+import org.endeavourhealth.hl7parser.messages.AdtMessage;
 import org.endeavourhealth.transform.hl7v2.transform.TransformException;
 import org.hl7.fhir.instance.model.Encounter;
 import org.hl7.fhir.instance.model.Patient;

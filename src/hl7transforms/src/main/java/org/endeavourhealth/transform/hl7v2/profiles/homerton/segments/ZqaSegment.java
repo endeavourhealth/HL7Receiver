@@ -1,6 +1,6 @@
 package org.endeavourhealth.transform.hl7v2.profiles.homerton.segments;
 
-import org.endeavourhealth.transform.hl7v2.parser.*;
+import org.endeavourhealth.hl7parser.*;
 import org.endeavourhealth.transform.hl7v2.profiles.homerton.datatypes.Zqa;
 
 import java.util.List;

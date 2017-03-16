@@ -1,7 +1,7 @@
 package org.endeavourhealth.transform.hl7v2.transform.converters;
 
 import org.apache.commons.lang3.StringUtils;
-import org.endeavourhealth.transform.hl7v2.parser.datatypes.Xtn;
+import org.endeavourhealth.hl7parser.datatypes.Xtn;
 import org.endeavourhealth.transform.hl7v2.transform.TransformException;
 import org.hl7.fhir.instance.model.ContactPoint;
 

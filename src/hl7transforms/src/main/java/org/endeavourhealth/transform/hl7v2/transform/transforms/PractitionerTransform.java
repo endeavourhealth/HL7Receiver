@@ -7,7 +7,7 @@ import org.endeavourhealth.common.fhir.ReferenceHelper;
 import org.endeavourhealth.common.utility.StreamExtension;
 import org.endeavourhealth.transform.hl7v2.mapper.Mapper;
 import org.endeavourhealth.transform.hl7v2.mapper.MapperException;
-import org.endeavourhealth.transform.hl7v2.parser.datatypes.Xcn;
+import org.endeavourhealth.hl7parser.datatypes.Xcn;
 import org.endeavourhealth.transform.hl7v2.transform.ResourceContainer;
 import org.endeavourhealth.transform.hl7v2.transform.TransformException;
 import org.endeavourhealth.transform.hl7v2.transform.converters.NameConverter;

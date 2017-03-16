@@ -1,6 +1,6 @@
 package org.endeavourhealth.transform.hl7v2.mapper;
 
-import org.endeavourhealth.transform.hl7v2.parser.datatypes.Ce;
+import org.endeavourhealth.hl7parser.datatypes.Ce;
 
 public class Code {
     private String identifier;

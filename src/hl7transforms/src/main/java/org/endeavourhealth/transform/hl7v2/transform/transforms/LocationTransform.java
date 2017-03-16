@@ -6,7 +6,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.endeavourhealth.common.fhir.ReferenceHelper;
 import org.endeavourhealth.transform.hl7v2.mapper.Mapper;
 import org.endeavourhealth.transform.hl7v2.mapper.MapperException;
-import org.endeavourhealth.transform.hl7v2.parser.datatypes.Pl;
+import org.endeavourhealth.hl7parser.datatypes.Pl;
 import org.endeavourhealth.transform.hl7v2.transform.ResourceContainer;
 import org.hl7.fhir.instance.model.*;
 import org.hl7.fhir.instance.model.valuesets.LocationPhysicalType;
@@ -20,10 +20,10 @@ public class LocationTransform {
 
         List<Pair<LocationPhysicalType, String>> locations = new ArrayList<>();
 
-        locations.add(new Pair(LocationPhysicalType.BU, source.getBuilding()));
-        locations.add(new Pair(LocationPhysicalType.WI, source.getPointOfCare()));
-        locations.add(new Pair(LocationPhysicalType.RO, source.getRoom()));
-        locations.add(new Pair(LocationPhysicalType.BD, source.getBed()));
+        locations.add(new Pair<>(LocationPhysicalType.BU, source.getBuilding()));
+        locations.add(new Pair<>(LocationPhysicalType.WI, source.getPointOfCare()));
+        locations.add(new Pair<>(LocationPhysicalType.RO, source.getRoom()));
+        locations.add(new Pair<>(LocationPhysicalType.BD, source.getBed()));
 
         locations = locations
                 .stream()

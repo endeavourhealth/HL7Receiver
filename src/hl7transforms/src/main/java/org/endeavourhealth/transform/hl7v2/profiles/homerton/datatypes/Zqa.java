@@ -1,7 +1,7 @@
 package org.endeavourhealth.transform.hl7v2.profiles.homerton.datatypes;
 
-import org.endeavourhealth.transform.hl7v2.parser.Datatype;
-import org.endeavourhealth.transform.hl7v2.parser.GenericDatatype;
+import org.endeavourhealth.hl7parser.Datatype;
+import org.endeavourhealth.hl7parser.GenericDatatype;
 
 public class Zqa extends Datatype {
     public Zqa(GenericDatatype datatype) {

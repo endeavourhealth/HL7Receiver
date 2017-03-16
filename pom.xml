@@ -30,6 +30,7 @@
     </repositories>
 
     <modules>
+        <module>src/hl7parser</module>
         <module>src/hl7receiver</module>
         <module>src/hl7test</module>
         <module>src/hl7transforms</module>

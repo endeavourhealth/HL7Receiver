@@ -1,8 +1,8 @@
 package org.endeavourhealth.transform.hl7v2.transform;
 
 import org.apache.commons.lang3.Validate;
+import org.endeavourhealth.hl7parser.messages.AdtMessage;
 import org.endeavourhealth.transform.hl7v2.mapper.Mapper;
-import org.endeavourhealth.transform.hl7v2.parser.messages.AdtMessage;
 import org.endeavourhealth.transform.hl7v2.profiles.TransformProfile;
 import org.endeavourhealth.transform.hl7v2.transform.transforms.EncounterTransform;
 import org.endeavourhealth.transform.hl7v2.transform.transforms.MessageHeaderTransform;

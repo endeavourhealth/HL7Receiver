@@ -1,10 +1,11 @@
 package org.endeavourhealth.transform.hl7v2.transform.transforms;
 
 
-import org.endeavourhealth.transform.hl7v2.parser.ParseException;
-import org.endeavourhealth.transform.hl7v2.parser.segments.Dg1Segment;
+import org.endeavourhealth.hl7parser.ParseException;
+import org.endeavourhealth.hl7parser.segments.Dg1Segment;
 import org.endeavourhealth.transform.hl7v2.transform.TransformException;
 import org.endeavourhealth.transform.hl7v2.transform.converters.CodeableConceptHelper;
+import org.endeavourhealth.transform.hl7v2.transform.converters.DateConverter;
 import org.hl7.fhir.instance.model.*;
 
 public class DiagnosisTransform {
@@ -25,7 +26,7 @@ public class DiagnosisTransform {
 
         observation.setCode(cc);
 
-        observation.setEffective(source.getDiagnosisDateTime().getDateTimeType());
+        observation.setEffective(DateConverter.getDateType(source.getDiagnosisDateTime()));
 
         observation.setCategory(CodeableConceptHelper.getCodeableConceptFromString(source.getDiagnosisType()));
 

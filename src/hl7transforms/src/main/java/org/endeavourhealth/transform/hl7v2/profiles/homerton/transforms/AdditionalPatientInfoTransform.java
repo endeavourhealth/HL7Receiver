@@ -1,7 +1,7 @@
 package org.endeavourhealth.transform.hl7v2.profiles.homerton.transforms;
 
-import org.endeavourhealth.transform.hl7v2.parser.ParseException;
-import org.endeavourhealth.transform.hl7v2.parser.datatypes.Xcn;
+import org.endeavourhealth.hl7parser.ParseException;
+import org.endeavourhealth.hl7parser.datatypes.Xcn;
 import org.endeavourhealth.transform.hl7v2.profiles.homerton.segments.ZpiSegment;
 import org.endeavourhealth.transform.hl7v2.transform.TransformException;
 import org.endeavourhealth.transform.hl7v2.transform.converters.AddressConverter;

@@ -2,11 +2,11 @@ package org.endeavourhealth.transform.hl7v2.profiles.homerton.pretransform;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Validate;
-import org.endeavourhealth.transform.hl7v2.parser.*;
-import org.endeavourhealth.transform.hl7v2.parser.messages.AdtMessage;
-import org.endeavourhealth.transform.hl7v2.parser.segments.PidSegment;
-import org.endeavourhealth.transform.hl7v2.parser.segments.Pv1Segment;
-import org.endeavourhealth.transform.hl7v2.parser.segments.SegmentName;
+import org.endeavourhealth.hl7parser.*;
+import org.endeavourhealth.hl7parser.messages.AdtMessage;
+import org.endeavourhealth.hl7parser.segments.PidSegment;
+import org.endeavourhealth.hl7parser.segments.Pv1Segment;
+import org.endeavourhealth.hl7parser.segments.SegmentName;
 
 import java.util.List;
 

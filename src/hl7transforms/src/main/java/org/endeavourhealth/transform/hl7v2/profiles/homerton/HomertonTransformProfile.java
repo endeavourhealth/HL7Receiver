@@ -2,15 +2,12 @@ package org.endeavourhealth.transform.hl7v2.profiles.homerton;
 
 import org.apache.commons.lang3.StringUtils;
 import org.endeavourhealth.common.utility.StreamExtension;
-import org.endeavourhealth.transform.hl7v2.parser.datatypes.Cx;
+import org.endeavourhealth.hl7parser.datatypes.Cx;
 import org.endeavourhealth.transform.hl7v2.profiles.TransformProfile;
-import org.endeavourhealth.transform.hl7v2.parser.ParseException;
-import org.endeavourhealth.transform.hl7v2.parser.Segment;
-import org.endeavourhealth.transform.hl7v2.parser.messages.AdtMessage;
-import org.endeavourhealth.transform.hl7v2.profiles.homerton.segments.ZalSegment;
-import org.endeavourhealth.transform.hl7v2.profiles.homerton.segments.ZpiSegment;
-import org.endeavourhealth.transform.hl7v2.profiles.homerton.segments.ZqaSegment;
-import org.endeavourhealth.transform.hl7v2.profiles.homerton.segments.ZviSegment;
+import org.endeavourhealth.hl7parser.ParseException;
+import org.endeavourhealth.hl7parser.Segment;
+import org.endeavourhealth.hl7parser.messages.AdtMessage;
+import org.endeavourhealth.transform.hl7v2.profiles.homerton.segments.*;
 import org.endeavourhealth.transform.hl7v2.profiles.homerton.transforms.AdditionalPatientInfoTransform;
 import org.endeavourhealth.transform.hl7v2.profiles.homerton.transforms.AdditionalVisitTransform;
 import org.endeavourhealth.transform.hl7v2.profiles.homerton.pretransform.HomertonPreTransform;
@@ -90,13 +87,13 @@ public class HomertonTransformProfile implements TransformProfile {
 
     @Override
     public void postTransformPatient(AdtMessage message, Patient target) throws TransformException, ParseException {
-        if (message.hasZpiSegment())
-            AdditionalPatientInfoTransform.addAdditionalInformation(target, message.getZpiSegment());
+        if (message.hasSegment(HomertonSegmentName.ZPI))
+            AdditionalPatientInfoTransform.addAdditionalInformation(target, message.getSegment(HomertonSegmentName.ZPI, ZpiSegment.class));
     }
 
     @Override
     public void postTransformEncounter(AdtMessage message, Encounter target) throws TransformException, ParseException {
-        if (message.hasZviSegment())
-            AdditionalVisitTransform.addAdditionalInformation(target, message.getZviSegment());
+        if (message.hasSegment(HomertonSegmentName.ZVI))
+            AdditionalVisitTransform.addAdditionalInformation(target, message.getSegment(HomertonSegmentName.ZVI, ZviSegment.class));
     }
 }

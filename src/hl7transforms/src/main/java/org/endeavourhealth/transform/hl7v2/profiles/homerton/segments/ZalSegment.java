@@ -1,10 +1,10 @@
 package org.endeavourhealth.transform.hl7v2.profiles.homerton.segments;
 
-import org.endeavourhealth.transform.hl7v2.parser.ParseException;
-import org.endeavourhealth.transform.hl7v2.parser.Segment;
-import org.endeavourhealth.transform.hl7v2.parser.Seperators;
-import org.endeavourhealth.transform.hl7v2.parser.datatypes.Xcn;
-import org.endeavourhealth.transform.hl7v2.parser.Hl7DateTime;
+import org.endeavourhealth.hl7parser.ParseException;
+import org.endeavourhealth.hl7parser.Segment;
+import org.endeavourhealth.hl7parser.Seperators;
+import org.endeavourhealth.hl7parser.datatypes.Xcn;
+import org.endeavourhealth.hl7parser.Hl7DateTime;
 
 public class ZalSegment extends Segment {
     public ZalSegment(String segmentText, Seperators seperators) throws ParseException {
