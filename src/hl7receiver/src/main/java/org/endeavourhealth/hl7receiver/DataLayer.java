@@ -299,6 +299,16 @@ public class DataLayer implements IDBDigestLogger {
         pgStoredProc.execute();
     }
 
+    public UUID getResourceUuid(int channelId, String resourceType, String uniqueIdentifier) throws PgStoredProcException {
+        PgStoredProc pgStoredProc = new PgStoredProc(dataSource)
+                .setName("mapping.get_resource_uuid")
+                .addParameter("_channel_id", channelId)
+                .addParameter("_resource_type", resourceType)
+                .addParameter("_unique_identifier", uniqueIdentifier);
+
+        return pgStoredProc.executeSingleRow((resultSet) -> UUID.fromString(resultSet.getString("get_resource_uuid")));
+    }
+
     public DbCode getCode(String codeSetName, String codeContextName, String originalCode, String originalSystem, String originalTerm) throws PgStoredProcException {
 
         PgStoredProc pgStoredProc = new PgStoredProc(dataSource)

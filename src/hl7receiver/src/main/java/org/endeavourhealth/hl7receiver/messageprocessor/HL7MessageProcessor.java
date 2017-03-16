@@ -8,6 +8,7 @@ import org.endeavourhealth.common.eds.EdsSenderResponse;
 import org.endeavourhealth.common.security.keycloak.client.KeycloakClient;
 import org.endeavourhealth.hl7receiver.Configuration;
 import org.endeavourhealth.hl7receiver.engine.HL7ContentSaver;
+import org.endeavourhealth.hl7receiver.mapping.Mapper;
 import org.endeavourhealth.hl7receiver.model.db.*;
 import org.endeavourhealth.hl7receiver.model.exceptions.HL7MessageProcessorException;
 import org.endeavourhealth.transform.hl7v2.Hl7v2Transform;
@@ -27,12 +28,14 @@ public class HL7MessageProcessor {
     private Configuration configuration;
     private DbChannel dbChannel;
     private HL7ContentSaver contentSaver;
+    private Mapper mapper;
     private boolean stopRequested = false;
 
-    public HL7MessageProcessor(Configuration configuration, DbChannel dbChannel, HL7ContentSaver contentSaver) {
+    public HL7MessageProcessor(Configuration configuration, DbChannel dbChannel, HL7ContentSaver contentSaver, Mapper mapper) {
         this.configuration = configuration;
         this.dbChannel = dbChannel;
         this.contentSaver = contentSaver;
+        this.mapper = mapper;
     }
 
     public boolean processMessage(DbMessage dbMessage) throws HL7MessageProcessorException {
@@ -109,7 +112,7 @@ public class HL7MessageProcessor {
     }
 
     private String transformMessage(DbMessage dbMessage) throws Exception {
-        return Hl7v2Transform.transform(dbMessage.getInboundPayload());
+        return Hl7v2Transform.transform(dbMessage.getInboundPayload(), this.mapper);
     }
 
     private String sendMessage(String envelope) throws IOException, EdsSenderHttpErrorResponseException {

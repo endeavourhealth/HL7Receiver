@@ -9,6 +9,7 @@ create extension "uuid-ossp";
 create schema dictionary;
 create schema configuration;
 create schema log;
+create schema mapping;
 create schema helper;
 
 /*
@@ -309,6 +310,21 @@ create table log.channel_processor_lock
 	constraint log_channelprocessorlock_channelid_pk primary key (channel_id),
 	constraint log_channelprocessorlock_channelid_fk foreign key (channel_id) references configuration.channel (channel_id),
 	constraint log_channelprocessorlock_instanceid_fk foreign key (instance_id) references log.instance (instance_id)
+);
+
+/*
+	create tables - mapping
+*/
+create table mapping.resource_uuid
+(
+	channel_id integer not null,
+	resource_type varchar(100) not null,
+	unique_identifier varchar(200) not null,
+	resource_uuid uuid not null,
+	
+	constraint mapping_resourceuuid_channelid_resourcetype_uniqueidentifier_pk primary key (channel_id, resource_type, unique_identifier),
+	constraint mapping_resourceuuid_resourceuuid_uq unique (resource_uuid),
+	constraint mapping_resourceuuid_channelid_fk foreign key (channel_id) references configuration.channel (channel_id)
 );
 
 /*

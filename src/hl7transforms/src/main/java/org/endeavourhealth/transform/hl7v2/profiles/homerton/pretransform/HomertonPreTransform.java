@@ -1,9 +1,11 @@
-package org.endeavourhealth.transform.hl7v2.profiles.homerton;
+package org.endeavourhealth.transform.hl7v2.profiles.homerton.pretransform;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Validate;
 import org.endeavourhealth.transform.hl7v2.parser.*;
 import org.endeavourhealth.transform.hl7v2.parser.messages.AdtMessage;
+import org.endeavourhealth.transform.hl7v2.parser.segments.PidSegment;
+import org.endeavourhealth.transform.hl7v2.parser.segments.Pv1Segment;
 import org.endeavourhealth.transform.hl7v2.parser.segments.SegmentName;
 
 import java.util.List;
@@ -23,11 +25,25 @@ public class HomertonPreTransform {
         for (Segment pidSegment : sourceMessage.getSegments(SegmentName.PID))
             movePid19ToPid3(pidSegment);
 
+        // PID18 (populated with Homerton FIN number) - copy from PID18 to PV1.51
+        copyPid19ToPv1_50(sourceMessage);
+
         // fix PD1
         if (sourceMessage.hasPd1Segment())
             fixPd1(sourceMessage.getSegment(SegmentName.PD1));
 
         return sourceMessage;
+    }
+
+    private static void copyPid19ToPv1_50(AdtMessage sourceMessage) {
+        PidSegment pidSegment = sourceMessage.getPidSegment();
+        Pv1Segment pv1Segment = sourceMessage.getPv1Segment();
+
+        if ((pidSegment == null) || (pv1Segment == null))
+            return;
+
+        Field field18 = pidSegment.getField(18); // encounter number
+        pv1Segment.setFieldAsString(50, field18.getAsString());
     }
 
     private static void removeEmptyDoubleQuotes(AdtMessage sourceMessage) {

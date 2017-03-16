@@ -1,7 +1,7 @@
 package org.endeavourhealth.transform.hl7v2.parser.segments;
 
 import org.endeavourhealth.transform.hl7v2.parser.*;
-import org.endeavourhealth.transform.hl7v2.transform.Hl7DateTime;
+import org.endeavourhealth.transform.hl7v2.parser.Hl7DateTime;
 
 public class MshSegment extends Segment {
     public MshSegment(String segment, Seperators seperators) throws ParseException {

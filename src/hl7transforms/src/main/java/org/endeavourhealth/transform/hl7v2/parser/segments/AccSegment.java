@@ -6,7 +6,7 @@ import org.endeavourhealth.transform.hl7v2.parser.Seperators;
 import org.endeavourhealth.transform.hl7v2.parser.datatypes.Ce;
 import org.endeavourhealth.transform.hl7v2.parser.datatypes.Xad;
 import org.endeavourhealth.transform.hl7v2.parser.datatypes.Xcn;
-import org.endeavourhealth.transform.hl7v2.transform.Hl7DateTime;
+import org.endeavourhealth.transform.hl7v2.parser.Hl7DateTime;
 
 public class AccSegment extends Segment {
     public AccSegment(String segmentText, Seperators seperators) throws ParseException {

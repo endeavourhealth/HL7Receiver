@@ -1,5 +1,7 @@
 package org.endeavourhealth.transform.hl7v2.mapper;
 
+import org.endeavourhealth.transform.hl7v2.parser.datatypes.Ce;
+
 public class Code {
     private String identifier;
     private String codingSystem;
@@ -40,5 +42,19 @@ public class Code {
     public Code setDisplayTerm(String displayTerm) {
         this.displayTerm = displayTerm;
         return this;
+    }
+
+    public static Code fromCe(Ce ce) {
+        return new Code()
+                .setIdentifier(ce.getIdentifier())
+                .setCodingSystem(ce.getCodingSystem())
+                .setDisplayTerm(ce.getText());
+    }
+
+    public static Code fromCeAlternate(Ce ce) {
+        return new Code()
+                .setIdentifier(ce.getAlternateIdentifier())
+                .setCodingSystem(ce.getAlternativeCodingSystem())
+                .setDisplayTerm(ce.getAlternateText());
     }
 }

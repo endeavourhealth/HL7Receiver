@@ -3,6 +3,7 @@ package org.endeavourhealth.hl7test;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.endeavourhealth.transform.hl7v2.Hl7v2Transform;
+import org.endeavourhealth.transform.hl7v2.mapper.PassThroughMapper;
 //import org.endeavourhealth.transform.hl7v2.Hl7v2Transform;
 
 import javax.swing.*;
@@ -35,7 +36,7 @@ public class MainDialog {
                     testPaneTextArea2.setText("");
                     testPaneTextArea2.repaint();
                     testPaneTextArea2.revalidate();
-                    testPaneTextArea2.setText(Hl7v2Transform.transform(testPane1TextArea.getText()));
+                    testPaneTextArea2.setText(Hl7v2Transform.transform(testPane1TextArea.getText(), new PassThroughMapper()));
                 } catch (Exception e1) {
                     testPaneTextArea2.setText("[" + e1.getClass() + "] " + e1.getMessage() + "\r\n" + ExceptionUtils.getStackTrace(e1));
                 }

@@ -1,6 +1,7 @@
 package org.endeavourhealth.hl7test;
 
 import org.endeavourhealth.transform.hl7v2.Hl7v2Transform;
+import org.endeavourhealth.transform.hl7v2.mapper.PassThroughMapper;
 
 import java.sql.*;
 
@@ -115,7 +116,7 @@ public class BulkTransformTester {
     }
 
     private static String transformMessage(String message) throws Exception {
-        return Hl7v2Transform.transform(message);
+        return Hl7v2Transform.transform(message, new PassThroughMapper());
     }
 
     private static String getMessage(Integer message_id) throws Exception {

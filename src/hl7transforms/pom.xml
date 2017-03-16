@@ -21,6 +21,11 @@
             <version>${eds-common.version}</version>
         </dependency>
         <dependency>
+            <groupId>com.github.endeavourhealth.Common</groupId>
+            <artifactId>utility</artifactId>
+            <version>${eds-common.version}</version>
+        </dependency>
+        <dependency>
             <groupId>me.fhir</groupId>
             <artifactId>fhir-dstu2</artifactId>
             <version>${fhir-dstu2.version}</version>

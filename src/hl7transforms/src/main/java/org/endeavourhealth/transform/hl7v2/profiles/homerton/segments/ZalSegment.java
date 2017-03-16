@@ -4,7 +4,7 @@ import org.endeavourhealth.transform.hl7v2.parser.ParseException;
 import org.endeavourhealth.transform.hl7v2.parser.Segment;
 import org.endeavourhealth.transform.hl7v2.parser.Seperators;
 import org.endeavourhealth.transform.hl7v2.parser.datatypes.Xcn;
-import org.endeavourhealth.transform.hl7v2.transform.Hl7DateTime;
+import org.endeavourhealth.transform.hl7v2.parser.Hl7DateTime;
 
 public class ZalSegment extends Segment {
     public ZalSegment(String segmentText, Seperators seperators) throws ParseException {

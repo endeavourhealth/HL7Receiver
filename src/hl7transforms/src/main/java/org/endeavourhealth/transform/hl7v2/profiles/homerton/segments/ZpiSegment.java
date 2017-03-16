@@ -2,7 +2,7 @@ package org.endeavourhealth.transform.hl7v2.profiles.homerton.segments;
 
 import org.endeavourhealth.transform.hl7v2.parser.*;
 import org.endeavourhealth.transform.hl7v2.parser.datatypes.*;
-import org.endeavourhealth.transform.hl7v2.transform.Hl7DateTime;
+import org.endeavourhealth.transform.hl7v2.parser.Hl7DateTime;
 
 import java.util.List;
 

@@ -1,10 +1,10 @@
-package org.endeavourhealth.transform.hl7v2.transform;
+package org.endeavourhealth.transform.hl7v2.transform.transforms;
 
 
 import org.endeavourhealth.transform.hl7v2.parser.ParseException;
 import org.endeavourhealth.transform.hl7v2.parser.segments.Dg1Segment;
+import org.endeavourhealth.transform.hl7v2.transform.TransformException;
 import org.endeavourhealth.transform.hl7v2.transform.converters.CodeableConceptHelper;
-import org.endeavourhealth.transform.hl7v2.transform.converters.IdentifierHelper;
 import org.hl7.fhir.instance.model.*;
 
 public class DiagnosisTransform {
@@ -12,7 +12,7 @@ public class DiagnosisTransform {
     public static Observation fromHl7v2(Dg1Segment source) throws ParseException, TransformException {
         Observation observation = new Observation();
 
-        observation.setIdElement(new IdType().setValue(IdentifierHelper.generateId(source.getDiagnosisCode().getAsString(), source.getDiagnosisDateTime().toString())));
+        //observation.setIdElement(new IdType().setValue(IdentifierHelper.generateId(source.getDiagnosisCode().getAsString(), source.getDiagnosisDateTime().toString())));
 
         CodeableConcept cc = new CodeableConcept();
         Coding coding = new Coding();

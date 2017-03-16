@@ -3,7 +3,6 @@ package org.endeavourhealth.transform.hl7v2.parser;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Validate;
 import org.endeavourhealth.transform.hl7v2.parser.segments.SegmentName;
-import org.endeavourhealth.transform.hl7v2.transform.Hl7DateTime;
 
 import java.lang.reflect.Constructor;
 import java.util.ArrayList;
@@ -154,6 +153,30 @@ public class Segment {
                                     .stream()
                                     .flatMap(r -> r.getComponents().stream()))
                 .collect(Collectors.toList());
+    }
+
+    //////////////////  Setters  //////////////////
+
+    public void setFieldAsString(int fieldNumber, String fieldText) {
+        Field field = getField(fieldNumber);
+
+        if (field != null) {
+            field.setAsString(fieldText);
+        } else {
+            int fieldIndex = fieldNumber - 1;
+            int maxCurrentFieldIndex = (this.fields.size() - 1);
+
+            if (field == null) {
+                for (int i = 0; i <= fieldIndex; i++) {
+                    if (i > maxCurrentFieldIndex) {
+                        if (i == fieldIndex)
+                            this.fields.add(new Field(fieldText, this.seperators));
+                        else
+                            this.fields.add(new Field("", this.seperators));
+                    }
+                }
+            }
+        }
     }
 
     //////////////////  Parsers  //////////////////

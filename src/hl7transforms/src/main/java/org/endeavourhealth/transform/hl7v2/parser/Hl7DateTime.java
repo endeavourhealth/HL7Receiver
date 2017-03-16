@@ -1,7 +1,5 @@
-package org.endeavourhealth.transform.hl7v2.transform;
+package org.endeavourhealth.transform.hl7v2.parser;
 
-import org.endeavourhealth.transform.hl7v2.parser.DateParser;
-import org.endeavourhealth.transform.hl7v2.parser.ParseException;
 import org.hl7.fhir.instance.model.DateTimeType;
 import org.hl7.fhir.instance.model.DateType;
 import org.hl7.fhir.instance.model.TemporalPrecisionEnum;
@@ -13,16 +11,16 @@ import java.time.format.DateTimeFormatter;
 import java.util.Date;
 
 public class Hl7DateTime {
-    LocalDateTime localDateTime;
-    String precision;
-    DateTimeFormatter formatter;
-    Boolean hasTimeComponent;
+    private LocalDateTime localDateTime;
+    private String precision;
+    private DateTimeFormatter formatter;
+    private Boolean hasTimeComponent;
 
     public Hl7DateTime(String dateTime) throws ParseException{
         this.localDateTime = DateParser.parse(dateTime);
         this.precision = DateParser.getPattern(dateTime);
         this.formatter = DateTimeFormatter.ofPattern(this.precision);
-        this.hasTimeComponent = dateTime.length() > 8;
+        this.hasTimeComponent = (dateTime.length() > 8);
     }
 
     public Date asDate() {
@@ -48,5 +46,13 @@ public class Hl7DateTime {
             }
             default: throw new ParseException("Could not parse date time");
         }
+    }
+
+    public LocalDateTime getLocalDateTime() {
+        return localDateTime;
+    }
+
+    public boolean hasTimeComponent() {
+        return this.hasTimeComponent;
     }
 }
