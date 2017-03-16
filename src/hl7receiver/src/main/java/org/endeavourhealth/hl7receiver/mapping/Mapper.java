@@ -1,13 +1,13 @@
 package org.endeavourhealth.hl7receiver.mapping;
 
 import org.endeavourhealth.hl7receiver.DataLayer;
-import org.endeavourhealth.transform.hl7v2.mapper.Code;
-import org.endeavourhealth.transform.hl7v2.mapper.MapperException;
+import org.endeavourhealth.hl7transform.mapper.Code;
+import org.endeavourhealth.hl7transform.mapper.MapperException;
 import org.hl7.fhir.instance.model.ResourceType;
 
 import java.util.UUID;
 
-public class Mapper extends org.endeavourhealth.transform.hl7v2.mapper.Mapper {
+public class Mapper extends org.endeavourhealth.hl7transform.mapper.Mapper {
 
     private DataLayer dataLayer;
     private int channelId;

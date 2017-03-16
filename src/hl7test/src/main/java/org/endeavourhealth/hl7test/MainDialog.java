@@ -2,8 +2,8 @@ package org.endeavourhealth.hl7test;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.exception.ExceptionUtils;
-import org.endeavourhealth.transform.hl7v2.Hl7v2Transform;
-import org.endeavourhealth.transform.hl7v2.mapper.PassThroughMapper;
+import org.endeavourhealth.hl7transform.Hl7v2Transform;
+import org.endeavourhealth.hl7transform.mapper.PassThroughMapper;
 //import org.endeavourhealth.transform.hl7v2.Hl7v2Transform;
 
 import javax.swing.*;
@@ -13,8 +13,6 @@ import java.awt.event.ComponentEvent;
 import java.awt.event.ComponentListener;
 import java.io.File;
 import java.io.IOException;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 
 public class MainDialog {
     private JPanel panelMain;

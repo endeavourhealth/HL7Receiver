@@ -11,7 +11,7 @@ import org.endeavourhealth.hl7receiver.engine.HL7ContentSaver;
 import org.endeavourhealth.hl7receiver.mapping.Mapper;
 import org.endeavourhealth.hl7receiver.model.db.*;
 import org.endeavourhealth.hl7receiver.model.exceptions.HL7MessageProcessorException;
-import org.endeavourhealth.transform.hl7v2.Hl7v2Transform;
+import org.endeavourhealth.hl7transform.Hl7v2Transform;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
