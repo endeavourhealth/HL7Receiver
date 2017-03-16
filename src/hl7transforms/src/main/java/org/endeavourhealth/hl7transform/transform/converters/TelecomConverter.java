@@ -13,26 +13,63 @@ public class TelecomConverter {
     public static List<ContactPoint> convert(List<Xtn> contact) throws TransformException {
         List<ContactPoint> result = new ArrayList<>();
 
-        for (Xtn xtn : contact)
-            if (xtn != null)
-                result.add(TelecomConverter.convert(xtn));
+        for (Xtn xtn : contact) {
+            ContactPoint contactPoint = convert(xtn);
+
+            if (contactPoint != null)
+                result.add(contactPoint);
+        }
 
         return result;
     }
 
+    public static ContactPoint createWorkPhone(String phoneNumber) {
+        if (StringUtils.isBlank(phoneNumber))
+            return null;
+
+        return new ContactPoint()
+                .setSystem(ContactPoint.ContactPointSystem.PHONE)
+                .setUse(ContactPoint.ContactPointUse.WORK)
+                .setValue(TelecomConverter.formatTelephoneNumber(phoneNumber));
+    }
+
     public static ContactPoint convert(Xtn source) throws TransformException {
+
+        if (source == null)
+            return null;
+
+        if (StringUtils.isBlank(source.getTelephoneNumber()))
+            return null;
+
         ContactPoint target = new ContactPoint();
 
         if (StringUtils.isNotBlank(source.getEquipmentType()))
             target.setSystem(convertSystemType(source.getEquipmentType()));
 
-        if (StringUtils.isNotBlank(source.getTelephoneNumber()))
-            target.setValue(source.getTelephoneNumber());
+        String phoneNumber = source.getTelephoneNumber().trim();
+
+        if ((target.getSystem() == ContactPoint.ContactPointSystem.PHONE) || (target.getSystem() == ContactPoint.ContactPointSystem.FAX))
+               phoneNumber = formatTelephoneNumber(source.getTelephoneNumber());
+
+        target.setValue(phoneNumber);
 
         if (StringUtils.isNotBlank(source.getUseCode()))
             target.setUse(convertUseCode(source.getUseCode()));
 
         return target;
+    }
+
+    public static String formatTelephoneNumber(String phoneNumber) {
+        if (phoneNumber == null)
+            return null;
+
+        if (!StringUtils.containsOnly("+()01234567890"))
+            return phoneNumber.trim();
+
+        return StringUtils
+                    .deleteWhitespace(phoneNumber)
+                    .replace("(", "")
+                    .replace(")", "");
     }
 
     private static ContactPoint.ContactPointSystem convertSystemType(String systemType) throws TransformException {

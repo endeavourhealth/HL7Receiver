@@ -3,10 +3,7 @@ package org.endeavourhealth.hl7transform.transform;
 
 import org.apache.commons.lang3.Validate;
 import org.endeavourhealth.common.utility.StreamExtension;
-import org.hl7.fhir.instance.model.Bundle;
-import org.hl7.fhir.instance.model.Patient;
-import org.hl7.fhir.instance.model.Resource;
-import org.hl7.fhir.instance.model.ResourceType;
+import org.hl7.fhir.instance.model.*;
 
 import java.util.ArrayList;
 
@@ -17,6 +14,13 @@ public class ResourceContainer extends ArrayList<Resource> {
         return this.stream()
                 .filter(t -> ResourceType.Patient.equals(t.getResourceType()))
                 .map(t -> (Patient)t)
+                .collect(StreamExtension.firstOrNullCollector());
+    }
+
+    public EpisodeOfCare getEpisodeOfCare() {
+        return this.stream()
+                .filter(t -> ResourceType.EpisodeOfCare.equals(t.getResourceType()))
+                .map(t -> (EpisodeOfCare)t)
                 .collect(StreamExtension.firstOrNullCollector());
     }
 

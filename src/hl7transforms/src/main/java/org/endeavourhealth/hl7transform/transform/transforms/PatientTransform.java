@@ -4,6 +4,9 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Validate;
 import org.endeavourhealth.common.fhir.FhirExtensionUri;
 import org.endeavourhealth.common.fhir.FhirUri;
+import org.endeavourhealth.hl7parser.Field;
+import org.endeavourhealth.hl7parser.Helpers;
+import org.endeavourhealth.hl7parser.segments.Pd1Segment;
 import org.endeavourhealth.hl7transform.mapper.Mapper;
 import org.endeavourhealth.hl7transform.mapper.MapperException;
 import org.endeavourhealth.hl7transform.profiles.TransformProfile;
@@ -40,7 +43,7 @@ public class PatientTransform {
         setContactPoint(source.getPidSegment(), target);
         setCommunication(source.getPidSegment(), target);
         setCodedElements(source.getPidSegment(), target);
-//        setPrimaryCareProvider(source.getPd1Segment(), target);
+        setPrimaryCareProvider(source, target, mapper, targetResources);
         addPatientContacts(source, target);
 
         // managing organization
@@ -119,18 +122,71 @@ public class PatientTransform {
         return FhirUri.getHl7v2LocalPatientIdentifierSystem(sendingFacility, assigningAuthority, identifierTypeCode);
     }
 
-//    private static void setPrimaryCareProvider(Pd1Segment sourcePd1, Patient target) {
-//        if (sourcePd1 != null) {
-//            if (sourcePd1.getPatientPrimaryCareProvider() != null) {
-//                for (Xcn xcn : sourcePd1.getPatientPrimaryCareProvider()){
-//                    Reference reference = new Reference();
-//                    reference.setReference(xcn.getId());
-//                    reference.setDisplay(NameConverter.getNameAsString(xcn));
-//                    target.addCareProvider(reference);
-//                }
-//            }
-//        }
-//    }
+    private static void setPrimaryCareProvider(AdtMessage source, Patient target, Mapper mapper, ResourceContainer targetResources) throws MapperException {
+
+        Pd1Segment pd1Segment = source.getPd1Segment();
+
+        if (pd1Segment == null)
+            return;
+
+        /*
+            Homerton specific
+
+            PD1.4 incorrectly contains both primary care organisation and doctor
+            It should only contain the doctor.
+
+            Homerton's PD1.4:
+
+            1          2       3         5           6       7            8        9.1      9.2      9.3          14.1       14.2
+            DoctorCode^Surname^Forename^^PhoneNumber^OdsCode^PracticeName^Address1^Address2&Address3&Address4^^^^^PctOdsCode&ShaOdsCode
+
+            Examples:
+
+            G3339325^SMITH^A^^1937573848^B86010^DR SR LIGHTFOOT & PARTNERS^Church View Surgery^School Lane&&LS22 5BQ^^^^^Q12&5HJ
+            G3426500^LYLE^ROBERT^^020 89867111^F84003^LOWER CLAPTON GROUP PRACTICE^Lower Clapton Health Ctr.^36 Lower Clapton Road&London&E5 0PD^^^^^Q06&5C3
+         */
+
+        Field field = pd1Segment.getField(4);
+
+        String phoneNumber;
+        String odsCode;
+        String practiceName;
+        List<String> addressLines = new ArrayList<>();
+        String city = null;
+        String postcode = null;
+
+        phoneNumber = field.getComponentAsString(5);
+        odsCode = field.getComponentAsString(6);
+        practiceName = field.getComponentAsString(7);
+        addressLines.add(field.getComponentAsString(8));
+
+        List<String> components = Helpers.split(field.getComponentAsString(9), "&");
+
+        if (components.size() > 0)
+            addressLines.add(components.get(0));
+
+        if (components.size() > 1)
+            city = components.get(1);
+
+        if (components.size() > 2)
+            postcode = components.get(2);
+
+        OrganizationTransform organizationTransform = new OrganizationTransform(mapper, targetResources);
+        Reference organisationReference = organizationTransform.createGeneralPracticeOrganisation(odsCode, practiceName, addressLines, city, postcode, phoneNumber);
+
+        String gmcCode = field.getComponentAsString(1);
+        String surname = field.getComponentAsString(2);
+        String forenames = field.getComponentAsString(3);
+
+        PractitionerTransform practitionerTransform = new PractitionerTransform(source.getMshSegment().getSendingFacility(), mapper, targetResources);
+        Reference practitionerReference = practitionerTransform.createPrimaryCarePractitioner(gmcCode, surname, forenames, organisationReference);
+
+        if (organisationReference != null)
+            target.addCareProvider(organisationReference);
+
+        if (practitionerReference != null)
+            target.addCareProvider(practitionerReference);
+    }
 
     private static void setCodedElements(PidSegment sourcePid, Patient target) throws TransformException {
         if (sourcePid.getReligion() != null)

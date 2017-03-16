@@ -20,6 +20,29 @@ public class AddressConverter {
         return result;
     }
 
+    public static Address createWorkAddress(List<String> addressLines, String city, String postcode) {
+        if (addressLines.stream().allMatch(t -> StringUtils.isBlank(t))
+                && StringUtils.isBlank(city)
+                && StringUtils.isBlank(postcode))
+            return null;
+
+        Address address = new Address();
+
+        for (String line : addressLines)
+            if (!StringUtils.isEmpty(line))
+                address.addLine(formatAddressLine(line));
+
+        if (StringUtils.isNotBlank(city))
+            address.setCity(formatAddressLine(city));
+
+        if (StringUtils.isNotBlank(postcode))
+            address.setPostalCode(formatPostcode(postcode));
+
+        address.setUse(Address.AddressUse.WORK);
+
+        return address;
+    }
+
     public static Address convert(Xad source) throws TransformException {
 
         Address target = new Address();

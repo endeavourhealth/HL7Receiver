@@ -29,12 +29,8 @@ import java.util.UUID;
 
 public class EncounterTransform {
     public static void fromHl7v2(AdtMessage sourceMessage, TransformProfile transformProfile, Mapper mapper, ResourceContainer targetResources) throws ParseException, TransformException, MapperException {
-        Validate.notNull(sourceMessage);
-        Validate.notNull(targetResources);
-        Validate.notNull(transformProfile);
-        Validate.notNull(mapper);
 
-        if (sourceMessage.getPv1Segment() == null)
+        if (!sourceMessage.hasPv1Segment())
             return;
 
         Encounter target = new Encounter();
@@ -46,9 +42,7 @@ public class EncounterTransform {
         setClass(sourceMessage, target);
         setType(sourceMessage, target);
         setPatient(target, targetResources);
-
-        // set episode of care
-
+        setEpisodeOfCare(target, targetResources);
         setParticipants(sourceMessage, target, mapper, targetResources);
         setPeriod(sourceMessage, target);
         setReason(sourceMessage, target);
@@ -186,6 +180,10 @@ public class EncounterTransform {
         target.setPatient(ReferenceHelper.createReference(ResourceType.Patient, targetResources.getPatient().getId()));
     }
 
+    private static void setEpisodeOfCare(Encounter target, ResourceContainer targetResources) {
+        target.addEpisodeOfCare(ReferenceHelper.createReference(ResourceType.EpisodeOfCare, targetResources.getEpisodeOfCare().getId()));
+    }
+
     private static void setParticipants(AdtMessage source, Encounter target, Mapper mapper, ResourceContainer targetResources) throws TransformException, ParseException, MapperException {
 
         Pv1Segment pv1Segment = source.getPv1Segment();
@@ -209,7 +207,8 @@ public class EncounterTransform {
         if (xcns == null)
             return;
 
-        List<Reference> references = PractitionerTransform.transformAndGetReferences(xcns, sendingFacility, mapper, targetResources);
+        PractitionerTransform practitionerTransform = new PractitionerTransform(sendingFacility, mapper, targetResources);
+        List<Reference> references = practitionerTransform.transformAndGetReferences(xcns);
 
         for (Reference reference : references) {
             target.addParticipant(new Encounter.EncounterParticipantComponent()

@@ -19,6 +19,23 @@ public class NameConverter {
         return result;
     }
 
+    public static HumanName createUsualName(String surname, String forenames, String title) {
+        HumanName humanName = new HumanName();
+
+        if (StringUtils.isNotBlank(surname))
+            humanName.addFamily(formatSurname(surname));
+
+        if (StringUtils.isNotBlank(forenames))
+            humanName.addGiven(formatName(forenames));
+
+        if (StringUtils.isNotBlank(title))
+            humanName.addPrefix(formatTitle(title));
+
+        humanName.setUse(HumanName.NameUse.USUAL);
+
+        return humanName;
+    }
+
     public static HumanName convert(XpnInterface source) throws TransformException {
         HumanName humanName = new HumanName();
 

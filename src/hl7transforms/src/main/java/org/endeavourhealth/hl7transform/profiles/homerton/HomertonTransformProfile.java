@@ -25,10 +25,10 @@ public class HomertonTransformProfile implements TransformProfile {
     private String uniqueIdentifierPrefix = "HOMERTON";
 
     public HomertonTransformProfile() {
-        zSegments.put("ZAL", ZalSegment.class);
-        zSegments.put("ZPI", ZpiSegment.class);
-        zSegments.put("ZQA", ZqaSegment.class);
-        zSegments.put("ZVI", ZviSegment.class);
+        zSegments.put(HomertonSegmentName.ZAL, ZalSegment.class);
+        zSegments.put(HomertonSegmentName.ZPI, ZpiSegment.class);
+        zSegments.put(HomertonSegmentName.ZQA, ZqaSegment.class);
+        zSegments.put(HomertonSegmentName.ZVI, ZviSegment.class);
     }
 
     @Override
