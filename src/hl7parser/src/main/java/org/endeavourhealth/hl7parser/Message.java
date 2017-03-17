@@ -2,6 +2,8 @@ package org.endeavourhealth.hl7parser;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Validate;
+import org.endeavourhealth.hl7parser.segments.MshSegment;
+import org.endeavourhealth.hl7parser.segments.SegmentName;
 
 import java.util.ArrayList;
 import java.util.HashMap;
