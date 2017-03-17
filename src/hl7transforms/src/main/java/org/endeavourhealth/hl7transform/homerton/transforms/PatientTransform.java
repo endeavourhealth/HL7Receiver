@@ -48,8 +48,7 @@ public class PatientTransform {
         setCodedElements(source.getPidSegment(), target);
         setPrimaryCareProvider(source, target, mapper, targetResources);
         addPatientContacts(source, target);
-
-        // managing organization
+        setManagingOrganization(source, target, mapper, targetResources);
 
         targetResources.add(target);
     }
@@ -329,7 +328,6 @@ public class PatientTransform {
             contactComponent.addExtension(org.endeavourhealth.hl7transform.common.converters.ExtensionHelper.createStringExtension(FhirExtensionUri.PATIENT_CONTACT_MAIN_LANGUAGE, sourceNk1.getPrimaryLanguage().getAsString()));
 
         target.addContact(contactComponent);
-
     }
 
     private static CodeableConcept getCodeableConcept(Ce ce) throws TransformException {
@@ -337,5 +335,12 @@ public class PatientTransform {
         codeableConcept.setText(ce.getAsString());
 
         return codeableConcept;
+    }
+
+    private static void setManagingOrganization(AdtMessage source, Patient target, Mapper mapper, ResourceContainer resourceContainer) throws MapperException {
+        OrganizationTransform organizationTransform = new OrganizationTransform(mapper, resourceContainer);
+
+        Reference managingOrganizationReference = organizationTransform.createHomertonOrganisation();
+        target.setManagingOrganization(managingOrganizationReference);
     }
 }

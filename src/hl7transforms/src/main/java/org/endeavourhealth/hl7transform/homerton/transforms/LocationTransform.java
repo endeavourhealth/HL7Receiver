@@ -3,18 +3,53 @@ package org.endeavourhealth.hl7transform.homerton.transforms;
 import com.google.common.collect.Lists;
 import javafx.util.Pair;
 import org.apache.commons.lang3.StringUtils;
+import org.endeavourhealth.common.fhir.FhirUri;
 import org.endeavourhealth.common.fhir.ReferenceHelper;
+import org.endeavourhealth.hl7parser.Helpers;
+import org.endeavourhealth.hl7transform.common.converters.AddressConverter;
 import org.endeavourhealth.hl7transform.mapper.Mapper;
 import org.endeavourhealth.hl7transform.mapper.MapperException;
 import org.endeavourhealth.hl7transform.common.ResourceContainer;
 import org.endeavourhealth.hl7parser.datatypes.Pl;
 import org.hl7.fhir.instance.model.*;
 import org.hl7.fhir.instance.model.valuesets.LocationPhysicalType;
+import org.hl7.fhir.instance.model.valuesets.V3RoleCode;
+import org.omg.CosNaming.NamingContextExtPackage.AddressHelper;
 
 import java.util.*;
 import java.util.stream.Collectors;
 
 public class LocationTransform {
+
+    public static Reference createHomertonLocation(Mapper mapper, ResourceContainer resourceContainer, Organization homertonOrganisation) throws MapperException {
+
+        final String odsCode = "RQXM1";
+        final String locationName = "Homerton University Hospital";
+
+        Location location = new Location()
+                .setName(locationName)
+                .addIdentifier(new Identifier()
+                        .setSystem(FhirUri.IDENTIFIER_SYSTEM_ODS_CODE)
+                        .setValue(odsCode))
+                .setStatus(Location.LocationStatus.ACTIVE)
+                .setAddress(AddressConverter.createWorkAddress(Arrays.asList("Homerton Row"), "London", "E9 6SR"))
+                .setManagingOrganization(ReferenceHelper.createReference(ResourceType.Organization, homertonOrganisation.getId()))
+                .setType(new CodeableConcept()
+                        .addCoding(new Coding()
+                                .setCode(V3RoleCode.HOSP.toCode())
+                                .setDisplay(V3RoleCode.HOSP.getDisplay())
+                                .setSystem(V3RoleCode.HOSP.getSystem())))
+                .setPhysicalType(createLocationPhysicalType(LocationPhysicalType.BU))
+                .setMode(Location.LocationMode.INSTANCE);
+
+        UUID id = getId(odsCode, locationName, mapper);
+        location.setId(id.toString());
+
+        if (!resourceContainer.hasResource(Location.class, location.getId()))
+            resourceContainer.add(location);
+
+        return ReferenceHelper.createReference(ResourceType.Location, location.getId());
+    }
 
     public static Reference transformAndGetReference(Pl source, Mapper mapper, ResourceContainer resourceContainer) throws MapperException {
 
@@ -79,9 +114,17 @@ public class LocationTransform {
         return location;
     }
 
-    private static UUID getId(String[] locationNames, Mapper mapper) throws MapperException {
-        String uniqueIdentifyingString = "Location-" + StringUtils.deleteWhitespace(String.join("-", locationNames)).toUpperCase().replace(".", "");
+    private static UUID getId(String odsCode, String locationName, Mapper mapper) throws MapperException {
+
+        odsCode = StringUtils.upperCase(StringUtils.deleteWhitespace(odsCode));
+        locationName = StringUtils.remove(StringUtils.upperCase(StringUtils.deleteWhitespace(locationName).toUpperCase()), ".");
+
+        String uniqueIdentifyingString = "Location-OdsCode=" + odsCode + "-" + locationName;
         return mapper.mapResourceUuid(ResourceType.Location, uniqueIdentifyingString);
+    }
+
+    private static UUID getId(String[] locationNames, Mapper mapper) throws MapperException {
+        return getId("", StringUtils.join(locationNames, "-"), mapper);
     }
 
     private static CodeableConcept createLocationPhysicalType(LocationPhysicalType locationPhysicalType) {
