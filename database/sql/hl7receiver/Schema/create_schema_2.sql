@@ -3,26 +3,26 @@
 /* 
 	create schemas
 */
---create schema mapping;
-
--- (moved to main create_schema file)
+create schema mapping;
 
 /*
 	create tables - mapping
 */
---create table mapping.resource_uuid
---(
---	channel_id integer not null,
---	resource_type varchar(100) not null,
---	unique_identifier varchar(200) not null,
---	resource_uuid uuid not null,
---	
---	constraint mapping_resourceuuid_channelid_resourcetype_uniqueidentifier_pk primary key (channel_id, resource_type, unique_identifier),
---	constraint mapping_resourceuuid_resourceuuid_uq unique (resource_uuid),
---	constraint mapping_resourceuuid_channelid_fk foreign key (channel_id) references configuration.channel (channel_id)
---);
+create table mapping.resource_uuid
+(
+	channel_id integer not null,
+	resource_type varchar(100) not null,
+	unique_identifier varchar(200) not null,
+	resource_uuid uuid not null,
+	
+	constraint mapping_resourceuuid_channelid_resourcetype_uniqueidentifier_pk primary key (channel_id, resource_type, unique_identifier),
+	constraint mapping_resourceuuid_resourceuuid_uq unique (resource_uuid),
+	constraint mapping_resourceuuid_channelid_fk foreign key (channel_id) references configuration.channel (channel_id)
+);
 
--- (moved to main create_schema file)
+
+
+
 
 create table mapping.code_set
 (
