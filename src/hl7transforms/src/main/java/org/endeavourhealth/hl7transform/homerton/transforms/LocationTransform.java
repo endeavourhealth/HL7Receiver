@@ -21,7 +21,15 @@ import java.util.stream.Collectors;
 
 public class LocationTransform {
 
-    public static Reference createHomertonLocation(Mapper mapper, ResourceContainer resourceContainer, Organization homertonOrganisation) throws MapperException {
+    private Mapper mapper;
+    private ResourceContainer targetResources;
+
+    public LocationTransform(Mapper mapper, ResourceContainer targetResources) {
+        this.mapper = mapper;
+        this.targetResources = targetResources;
+    }
+
+    public Reference createHomertonLocation(Organization homertonOrganisation) throws MapperException {
 
         final String odsCode = "RQXM1";
         final String locationName = "Homerton University Hospital";
@@ -45,13 +53,13 @@ public class LocationTransform {
         UUID id = getId(odsCode, locationName, mapper);
         location.setId(id.toString());
 
-        if (!resourceContainer.hasResource(Location.class, location.getId()))
-            resourceContainer.add(location);
+        if (!targetResources.hasResource(Location.class, location.getId()))
+            targetResources.add(location);
 
         return ReferenceHelper.createReference(ResourceType.Location, location.getId());
     }
 
-    public static Reference transformAndGetReference(Pl source, Mapper mapper, ResourceContainer resourceContainer) throws MapperException {
+    public Reference transformAndGetReference(Pl source) throws MapperException {
 
         List<Pair<LocationPhysicalType, String>> locations = new ArrayList<>();
 
@@ -76,8 +84,8 @@ public class LocationTransform {
             Location fhirLocation = createLocation(location, lastLocation, mapper);
 
             if (fhirLocation != null)
-                if (!resourceContainer.hasResource(Location.class, fhirLocation.getId()))
-                    resourceContainer.add(fhirLocation);
+                if (!targetResources.hasResource(Location.class, fhirLocation.getId()))
+                    targetResources.add(fhirLocation);
 
             lastLocation = fhirLocation;
         }

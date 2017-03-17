@@ -21,14 +21,22 @@ import java.util.UUID;
 
 public class MessageHeaderTransform {
 
-    public static void fromHl7v2(AdtMessage sourceMessage, Mapper mapper, ResourceContainer resourceContainer) throws ParseException, MapperException, TransformException {
+    private Mapper mapper;
+    private ResourceContainer resourceContainer;
+
+    public MessageHeaderTransform(Mapper mapper, ResourceContainer resourceContainer) {
+        this.mapper = mapper;
+        this.resourceContainer = resourceContainer;
+    }
+
+    public void transform(AdtMessage sourceMessage) throws ParseException, MapperException, TransformException {
         Validate.notNull(sourceMessage);
         Validate.notNull(sourceMessage.getMshSegment());
 
         MshSegment source = sourceMessage.getMshSegment();
         MessageHeader target = new MessageHeader();
 
-        UUID messageId = getId(sourceMessage, mapper);
+        UUID messageId = getId(sourceMessage);
         target.setId(messageId.toString());
 
         LocalDateTime sourceMessageDateTime = source.getDateTimeOfMessage().getLocalDateTime();
@@ -60,13 +68,13 @@ public class MessageHeaderTransform {
         resourceContainer.add(target);
     }
 
-    private static UUID getId(AdtMessage source, Mapper mapper) throws MapperException, TransformException {
+    private UUID getId(AdtMessage source) throws MapperException, TransformException {
         String uniqueIdentifyingString = getUniqueMessageHeaderString(source);
 
         return mapper.mapResourceUuid(ResourceType.MessageHeader, uniqueIdentifyingString);
     }
 
-    public static String getUniqueMessageHeaderString(AdtMessage source) throws TransformException {
+    private static String getUniqueMessageHeaderString(AdtMessage source) throws TransformException {
 
         if (StringUtils.isBlank(source.getMshSegment().getMessageControlId()))
             throw new TransformException("Cannot create unique resource identifying string as MessageControlId is blank");

@@ -31,29 +31,37 @@ public class PatientTransform {
 
     private static final String patientIdentifierTypeCode = "CNN";
 
-    public static void fromHl7v2(AdtMessage source, Mapper mapper, ResourceContainer targetResources) throws Exception {
+    private Mapper mapper;
+    private ResourceContainer targetResources;
+
+    public PatientTransform(Mapper mapper, ResourceContainer targetResources) {
+        this.mapper = mapper;
+        this.targetResources = targetResources;
+    }
+
+    public void transform(AdtMessage source) throws Exception {
         Validate.notNull(source);
-        Validate.notNull(mapper);
 
         Patient target = new Patient();
 
-        setId(source, target, mapper);
+        setId(source, target);
         addNames(source.getPidSegment(), target);
-        setBirthAndDeath(source.getPidSegment(), target);
+        setDateOfBirth(source.getPidSegment(), target);
+        setDateOfDeath(source.getPidSegment(), target);
         setSex(source.getPidSegment(), target);
         addIdentifiers(source, target);
         setAddress(source, target);
         setContactPoint(source.getPidSegment(), target);
         setCommunication(source.getPidSegment(), target);
         setCodedElements(source.getPidSegment(), target);
-        setPrimaryCareProvider(source, target, mapper, targetResources);
+        setPrimaryCareProvider(source, target);
         addPatientContacts(source, target);
-        setManagingOrganization(source, target, mapper, targetResources);
+        setManagingOrganization(source, target);
 
         targetResources.add(target);
     }
 
-    private static void setId(AdtMessage source, Patient target, Mapper mapper) throws MapperException, TransformException {
+    private void setId(AdtMessage source, Patient target) throws MapperException, TransformException {
         String uniqueIdentifyingString = getUniquePatientString(source);
         UUID resourceUuid = mapper.mapResourceUuid(ResourceType.Patient, uniqueIdentifyingString);
 
@@ -136,7 +144,7 @@ public class PatientTransform {
         return FhirUri.getHl7v2LocalPatientIdentifierSystem(sendingFacility, assigningAuthority, identifierTypeCode);
     }
 
-    private static void setPrimaryCareProvider(AdtMessage source, Patient target, Mapper mapper, ResourceContainer targetResources) throws MapperException {
+    private void setPrimaryCareProvider(AdtMessage source, Patient target) throws MapperException {
 
         Pd1Segment pd1Segment = source.getPd1Segment();
 
@@ -251,18 +259,20 @@ public class PatientTransform {
         return SexConverter.convert(gender);
     }
 
-    private static void setBirthAndDeath(PidSegment sourcePid, Patient target) throws ParseException, TransformException {
-        if (sourcePid.getDateOfBirth() != null) {
-            target.setBirthDate(sourcePid.getDateOfBirth().asDate());
-            //ADD EXTENSION FOR TIME OF BIRTH
-            if (sourcePid.getDateOfBirth().hasTimeComponent()) {
-                target.addExtension(org.endeavourhealth.hl7transform.common.converters.ExtensionHelper.createDateTimeTypeExtension(FhirExtensionUri.PATIENT_BIRTH_DATE_TIME, DateConverter.getDateType(sourcePid.getDateOfBirth())));
-            }
-        }
+    private static void setDateOfBirth(PidSegment sourcePid, Patient target) throws ParseException, TransformException {
+        if (sourcePid.getDateOfBirth() == null)
+            return;
 
-        if (sourcePid.getDateOfDeath() != null) {
+        target.setBirthDate(sourcePid.getDateOfBirth().asDate());
+
+        if (sourcePid.getDateOfBirth().hasTimeComponent())
+            target.addExtension(ExtensionHelper.createDateTimeTypeExtension(FhirExtensionUri.PATIENT_BIRTH_DATE_TIME, DateConverter.getDateType(sourcePid.getDateOfBirth())));
+    }
+
+    private static void setDateOfDeath(PidSegment sourcePid, Patient target) throws ParseException, TransformException {
+        if (sourcePid.getDateOfDeath() != null)
             target.setDeceased(DateConverter.getDateType(sourcePid.getDateOfDeath()));
-        } else if (isDeceased(sourcePid.getDeathIndicator()))
+        else if (isDeceased(sourcePid.getDeathIndicator()))
             target.setDeceased(new BooleanType(true));
     }
 
@@ -329,8 +339,8 @@ public class PatientTransform {
         target.addContact(contactComponent);
     }
 
-    private static void setManagingOrganization(AdtMessage source, Patient target, Mapper mapper, ResourceContainer resourceContainer) throws MapperException {
-        OrganizationTransform organizationTransform = new OrganizationTransform(mapper, resourceContainer);
+    private void setManagingOrganization(AdtMessage source, Patient target) throws MapperException {
+        OrganizationTransform organizationTransform = new OrganizationTransform(mapper, targetResources);
 
         Reference managingOrganizationReference = organizationTransform.createHomertonOrganisation();
         target.setManagingOrganization(managingOrganizationReference);

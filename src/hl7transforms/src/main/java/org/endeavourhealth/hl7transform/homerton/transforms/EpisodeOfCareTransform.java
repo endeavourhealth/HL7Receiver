@@ -12,13 +12,22 @@ import org.endeavourhealth.hl7transform.common.ResourceContainer;
 import org.endeavourhealth.hl7transform.common.TransformException;
 import org.hl7.fhir.instance.model.EpisodeOfCare;
 import org.hl7.fhir.instance.model.Identifier;
+import org.hl7.fhir.instance.model.Patient;
 import org.hl7.fhir.instance.model.ResourceType;
 
 import java.util.UUID;
 
 public class EpisodeOfCareTransform {
 
-    public static void fromHl7v2(AdtMessage sourceMessage, Mapper mapper, ResourceContainer targetResources) throws ParseException, TransformException, MapperException {
+    private Mapper mapper;
+    private ResourceContainer targetResources;
+
+    public EpisodeOfCareTransform(Mapper mapper, ResourceContainer targetResources) {
+        this.mapper = mapper;
+        this.targetResources = targetResources;
+    }
+
+    public void transform(AdtMessage sourceMessage) throws ParseException, TransformException, MapperException {
 
         if (!sourceMessage.hasPv1Segment())
             return;
@@ -29,7 +38,7 @@ public class EpisodeOfCareTransform {
 
         // set status
 
-        setPatient(target, targetResources);
+        setPatient(target, targetResources.getPatient());
 
         // set managing organisation
 
@@ -73,7 +82,7 @@ public class EpisodeOfCareTransform {
                 .setValue(cx.getId());
     }
 
-    private static void setPatient(EpisodeOfCare target, ResourceContainer targetResources) {
-        target.setPatient(ReferenceHelper.createReference(ResourceType.Patient, targetResources.getPatient().getId()));
+    private static void setPatient(EpisodeOfCare target, Patient patient) {
+        target.setPatient(ReferenceHelper.createReference(ResourceType.Patient, patient.getId()));
     }
 }

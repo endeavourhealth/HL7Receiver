@@ -30,26 +30,34 @@ import java.util.UUID;
 public class EncounterTransform {
     private static final String encounterAssigningAuthority = "Homerton FIN";
 
-    public static void fromHl7v2(AdtMessage sourceMessage, Mapper mapper, ResourceContainer targetResources) throws ParseException, TransformException, MapperException {
+    private Mapper mapper;
+    private ResourceContainer targetResources;
+
+    public EncounterTransform(Mapper mapper, ResourceContainer targetResources) {
+        this.mapper = mapper;
+        this.targetResources = targetResources;
+    }
+
+    public void transform(AdtMessage sourceMessage) throws ParseException, TransformException, MapperException {
 
         if (!sourceMessage.hasPv1Segment())
             return;
 
         Encounter target = new Encounter();
 
-        setId(sourceMessage, target, mapper);
+        setId(sourceMessage, target);
         setIdentifiers(sourceMessage, target);
         setStatus(sourceMessage, target);
         setStatusHistory(sourceMessage, target);
         setClass(sourceMessage, target);
         setType(sourceMessage, target);
-        setPatient(target, targetResources);
-        setEpisodeOfCare(target, targetResources);
-        setParticipants(sourceMessage, target, mapper, targetResources);
+        setPatient(target, targetResources.getPatient());
+        setEpisodeOfCare(target, targetResources.getEpisodeOfCare());
+        setParticipants(sourceMessage, target);
         setPeriod(sourceMessage, target);
         setReason(sourceMessage, target);
         setHospitalisationElement(sourceMessage.getPv1Segment(), target);
-        setLocations(sourceMessage, target, mapper, targetResources);
+        setLocations(sourceMessage, target);
 
         // set service provider
 
@@ -58,7 +66,7 @@ public class EncounterTransform {
         targetResources.add(target);
     }
 
-    private static void setId(AdtMessage sourceMessage, Encounter target, Mapper mapper) throws MapperException, TransformException {
+    private void setId(AdtMessage sourceMessage, Encounter target) throws MapperException, TransformException {
         String uniqueIdentifyingString = getUniqueEncounterString(sourceMessage);
         UUID resourceUuid = mapper.mapResourceUuid(ResourceType.Encounter, uniqueIdentifyingString);
 
@@ -213,32 +221,30 @@ public class EncounterTransform {
                 target.addType(CodeableConceptHelper.getCodeableConceptFromString(zviSegment.getAdmitMode()));
     }
 
-    private static void setPatient(Encounter target, ResourceContainer targetResources) {
-        target.setPatient(ReferenceHelper.createReference(ResourceType.Patient, targetResources.getPatient().getId()));
+    private static void setPatient(Encounter target, Patient patient) {
+        target.setPatient(ReferenceHelper.createReference(ResourceType.Patient, patient.getId()));
     }
 
-    private static void setEpisodeOfCare(Encounter target, ResourceContainer targetResources) {
-        target.addEpisodeOfCare(ReferenceHelper.createReference(ResourceType.EpisodeOfCare, targetResources.getEpisodeOfCare().getId()));
+    private static void setEpisodeOfCare(Encounter target, EpisodeOfCare episodeOfCare) {
+        target.addEpisodeOfCare(ReferenceHelper.createReference(ResourceType.EpisodeOfCare, episodeOfCare.getId()));
     }
 
-    private static void setParticipants(AdtMessage source, Encounter target, Mapper mapper, ResourceContainer targetResources) throws TransformException, ParseException, MapperException {
+    private void setParticipants(AdtMessage source, Encounter target) throws TransformException, ParseException, MapperException {
 
         Pv1Segment pv1Segment = source.getPv1Segment();
         String sendingFacility = source.getMshSegment().getSendingFacility();
 
-        addParticipantComponent(pv1Segment.getAttendingDoctor(), EncounterParticipantType.ATTENDER, target, mapper, targetResources, sendingFacility);
-        addParticipantComponent(pv1Segment.getReferringDoctor(), EncounterParticipantType.REFERRER, target, mapper, targetResources, sendingFacility);
-        addParticipantComponent(pv1Segment.getConsultingDoctor(), EncounterParticipantType.CONSULTANT, target, mapper, targetResources, sendingFacility);
-        addParticipantComponent(pv1Segment.getAdmittingDoctor(), EncounterParticipantType.ADMITTER, target, mapper, targetResources, sendingFacility);
-        addParticipantComponent(pv1Segment.getOtherHealthcareProvider(), EncounterParticipantType.SECONDARY_PERFORMER, target, mapper, targetResources, sendingFacility);
+        addParticipantComponent(pv1Segment.getAttendingDoctor(), EncounterParticipantType.ATTENDER, target, sendingFacility);
+        addParticipantComponent(pv1Segment.getReferringDoctor(), EncounterParticipantType.REFERRER, target, sendingFacility);
+        addParticipantComponent(pv1Segment.getConsultingDoctor(), EncounterParticipantType.CONSULTANT, target, sendingFacility);
+        addParticipantComponent(pv1Segment.getAdmittingDoctor(), EncounterParticipantType.ADMITTER, target, sendingFacility);
+        addParticipantComponent(pv1Segment.getOtherHealthcareProvider(), EncounterParticipantType.SECONDARY_PERFORMER, target, sendingFacility);
     }
 
-    private static void addParticipantComponent(
+    private void addParticipantComponent(
             List<Xcn> xcns,
             EncounterParticipantType type,
             Encounter target,
-            Mapper mapper,
-            ResourceContainer targetResources,
             String sendingFacility) throws TransformException, MapperException {
 
         if (xcns == null)
@@ -258,23 +264,19 @@ public class EncounterTransform {
         }
     }
 
-    private static void setLocations(AdtMessage source, Encounter target, Mapper mapper, ResourceContainer targetResources) throws TransformException, MapperException {
+    private void setLocations(AdtMessage source, Encounter target) throws TransformException, MapperException {
 
         Pv1Segment pv1Segment = source.getPv1Segment();
 
-        addLocation(pv1Segment.getAssignedPatientLocation(), Encounter.EncounterLocationStatus.ACTIVE, target, mapper, targetResources);
-        addLocation(pv1Segment.getPriorPatientLocation(), Encounter.EncounterLocationStatus.COMPLETED, target, mapper, targetResources);
+        addLocation(pv1Segment.getAssignedPatientLocation(), Encounter.EncounterLocationStatus.ACTIVE, target);
+        addLocation(pv1Segment.getPriorPatientLocation(), Encounter.EncounterLocationStatus.COMPLETED, target);
     }
 
-    private static void addLocation(
-            Pl location,
-            Encounter.EncounterLocationStatus encounterLocationStatus,
-            Encounter target,
-            Mapper mapper,
-            ResourceContainer targetResources) throws MapperException {
+    private void addLocation(Pl location, Encounter.EncounterLocationStatus encounterLocationStatus, Encounter target) throws MapperException {
 
         if (location != null) {
-            Reference assignedLocationReference = LocationTransform.transformAndGetReference(location, mapper, targetResources);
+            Reference assignedLocationReference = new LocationTransform(mapper, targetResources)
+                    .transformAndGetReference(location);
 
             if (assignedLocationReference != null) {
                 target.addLocation(new Encounter.EncounterLocationComponent()

@@ -47,7 +47,8 @@ public class OrganizationTransform {
         UUID id = getId(odsCode, organisationName);
         organization.setId(id.toString());
 
-        LocationTransform.createHomertonLocation(mapper, resourceContainer, organization);
+        new LocationTransform(mapper, resourceContainer)
+                .createHomertonLocation(organization);
 
         if (!resourceContainer.hasResource(Organization.class, organization.getId()))
             resourceContainer.add(organization);

@@ -7,11 +7,8 @@ import org.endeavourhealth.hl7parser.messages.AdtMessage;
 import org.endeavourhealth.hl7transform.Transform;
 import org.endeavourhealth.hl7transform.homerton.parser.zsegments.*;
 import org.endeavourhealth.hl7transform.homerton.pretransform.HomertonPreTransform;
+import org.endeavourhealth.hl7transform.homerton.transforms.*;
 import org.endeavourhealth.hl7transform.mapper.Mapper;
-import org.endeavourhealth.hl7transform.homerton.transforms.EncounterTransform;
-import org.endeavourhealth.hl7transform.homerton.transforms.EpisodeOfCareTransform;
-import org.endeavourhealth.hl7transform.homerton.transforms.MessageHeaderTransform;
-import org.endeavourhealth.hl7transform.homerton.transforms.PatientTransform;
 import org.endeavourhealth.hl7transform.common.ResourceContainer;
 import org.hl7.fhir.instance.model.*;
 
@@ -47,10 +44,17 @@ public class HomertonAdtTransform implements Transform {
 
         ResourceContainer targetResources = new ResourceContainer();
 
-        MessageHeaderTransform.fromHl7v2(sourceMessage, mapper, targetResources);
-        PatientTransform.fromHl7v2(sourceMessage, mapper, targetResources);
-        EpisodeOfCareTransform.fromHl7v2(sourceMessage, mapper, targetResources);
-        EncounterTransform.fromHl7v2(sourceMessage, mapper, targetResources);
+        new MessageHeaderTransform(mapper, targetResources)
+                .transform(sourceMessage);
+
+        new PatientTransform(mapper, targetResources)
+                .transform(sourceMessage);
+
+        new EpisodeOfCareTransform(mapper, targetResources)
+                .transform(sourceMessage);
+
+        new EncounterTransform(mapper, targetResources)
+                .transform(sourceMessage);
 
         return targetResources.createBundle();
     }
