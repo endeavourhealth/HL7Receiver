@@ -8,6 +8,7 @@ import org.endeavourhealth.common.utility.StreamExtension;
 import org.endeavourhealth.hl7parser.Field;
 import org.endeavourhealth.hl7parser.Helpers;
 import org.endeavourhealth.hl7parser.segments.Pd1Segment;
+import org.endeavourhealth.hl7transform.common.converters.ExtensionHelper;
 import org.endeavourhealth.hl7transform.homerton.parser.zsegments.HomertonSegmentName;
 import org.endeavourhealth.hl7transform.homerton.parser.zsegments.ZpiSegment;
 import org.endeavourhealth.hl7transform.mapper.Mapper;
@@ -37,7 +38,6 @@ public class PatientTransform {
         Patient target = new Patient();
 
         setId(source, target, mapper);
-
         addNames(source.getPidSegment(), target);
         setBirthAndDeath(source.getPidSegment(), target);
         setSex(source.getPidSegment(), target);
@@ -204,18 +204,17 @@ public class PatientTransform {
 
     private static void setCodedElements(PidSegment sourcePid, Patient target) throws TransformException {
         if (sourcePid.getReligion() != null)
-            target.addExtension(org.endeavourhealth.hl7transform.common.converters.ExtensionHelper.createStringExtension(FhirExtensionUri.PATIENT_RELIGION, sourcePid.getReligion().getAsString()));
+            target.addExtension(ExtensionHelper.createStringExtension(FhirExtensionUri.PATIENT_RELIGION, sourcePid.getReligion().getAsString()));
 
         if (sourcePid.getEthnicGroups() != null)
             for (Ce ce : sourcePid.getEthnicGroups())
-                target.addExtension(org.endeavourhealth.hl7transform.common.converters.ExtensionHelper.createStringExtension(FhirExtensionUri.PATIENT_ETHNICITY, ce.getAsString()));
+                target.addExtension(ExtensionHelper.createStringExtension(FhirExtensionUri.PATIENT_ETHNICITY, ce.getAsString()));
 
         if (sourcePid.getTraceStatus() != null)
-            target.addExtension(org.endeavourhealth.hl7transform.common.converters.ExtensionHelper.createStringExtension(FhirExtensionUri.PATIENT_NHS_NUMBER_VERIFICATION_STATUS, sourcePid.getTraceStatus().getAsString()));
-
+            target.addExtension(ExtensionHelper.createStringExtension(FhirExtensionUri.PATIENT_NHS_NUMBER_VERIFICATION_STATUS, sourcePid.getTraceStatus().getAsString()));
 
         if (sourcePid.getMaritalStatus() != null)
-            target.setMaritalStatus(getCodeableConcept(sourcePid.getMaritalStatus()));
+            target.setMaritalStatus(new CodeableConcept().setText(sourcePid.getMaritalStatus().getAsString()));
     }
 
     private static void setAddress(AdtMessage source, Patient target) throws TransformException {
@@ -270,7 +269,7 @@ public class PatientTransform {
     private static void setCommunication(PidSegment sourcePid, Patient target) throws ParseException, TransformException {
         if (sourcePid.getPrimaryLanguage() != null) {
             Patient.PatientCommunicationComponent communicationComponent = new Patient.PatientCommunicationComponent();
-            communicationComponent.setLanguage(getCodeableConcept(sourcePid.getPrimaryLanguage()));
+            communicationComponent.setLanguage(new CodeableConcept().setText(sourcePid.getPrimaryLanguage().getAsString()));
             communicationComponent.setPreferred(true);
             target.addCommunication(communicationComponent);
         }
@@ -302,7 +301,7 @@ public class PatientTransform {
             contactComponent.setName(name);
 
         if (sourceNk1.getRelationship() != null)
-            contactComponent.addRelationship(getCodeableConcept(sourceNk1.getRelationship()));
+            contactComponent.addRelationship(new CodeableConcept().setText(sourceNk1.getRelationship().getAsString()));
 
         for (ContactPoint cp : TelecomConverter.convert(sourceNk1.getPhoneNumber()))
             contactComponent.addTelecom(cp);
@@ -318,23 +317,16 @@ public class PatientTransform {
             contactComponent.setGender(getSex(sourceNk1.getSex()));
 
         if (sourceNk1.getContactRole() != null)
-            contactComponent.addRelationship(getCodeableConcept(sourceNk1.getContactRole()));
+            contactComponent.addRelationship(new CodeableConcept().setText((sourceNk1.getContactRole().getAsString())));
 
         if (sourceNk1.getDateTimeOfBirth() != null)
-            contactComponent.addExtension(org.endeavourhealth.hl7transform.common.converters.ExtensionHelper.createDateTimeTypeExtension(FhirExtensionUri.PATIENT_CONTACT_DOB,
+            contactComponent.addExtension(ExtensionHelper.createDateTimeTypeExtension(FhirExtensionUri.PATIENT_CONTACT_DOB,
                     DateConverter.getDateType(sourceNk1.getDateTimeOfBirth())));
 
         if (sourceNk1.getPrimaryLanguage() != null)
-            contactComponent.addExtension(org.endeavourhealth.hl7transform.common.converters.ExtensionHelper.createStringExtension(FhirExtensionUri.PATIENT_CONTACT_MAIN_LANGUAGE, sourceNk1.getPrimaryLanguage().getAsString()));
+            contactComponent.addExtension(ExtensionHelper.createStringExtension(FhirExtensionUri.PATIENT_CONTACT_MAIN_LANGUAGE, sourceNk1.getPrimaryLanguage().getAsString()));
 
         target.addContact(contactComponent);
-    }
-
-    private static CodeableConcept getCodeableConcept(Ce ce) throws TransformException {
-        CodeableConcept codeableConcept = new CodeableConcept();
-        codeableConcept.setText(ce.getAsString());
-
-        return codeableConcept;
     }
 
     private static void setManagingOrganization(AdtMessage source, Patient target, Mapper mapper, ResourceContainer resourceContainer) throws MapperException {
