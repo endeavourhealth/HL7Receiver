@@ -38,8 +38,9 @@ begin
 			m.message_id,
 			coalesce(m.next_attempt_date, now()) as next_attempt_date
 		from log.message m
+		inner join dictionary.message_status ms on m.message_status_id = ms.message_status_id
 		where m.channel_id = _channel_id
-		and m.is_complete = false
+		and ms.is_complete = false
 		order by
 			m.message_date asc,
 			m.log_date asc

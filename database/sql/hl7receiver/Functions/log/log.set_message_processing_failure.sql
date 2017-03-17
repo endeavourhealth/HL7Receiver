@@ -17,10 +17,11 @@ begin
 	(
 		select
 			*
-		from log.message
-		where message_id = _message_id
-		and processing_attempt_id = _attempt_id
-		and (is_complete)
+		from log.message m
+		inner join dictionary.message_status s on m.message_status_id = s.message_status_id
+		where m.message_id = _message_id
+		and m.processing_attempt_id = _attempt_id
+		and s.is_complete
 	)
 	then
 		raise exception 'Cannot update message processing status for message % attempt % because this attempt is already complete', _message_id, _attempt_id;
@@ -33,7 +34,6 @@ begin
 	set
 		message_status_id = _message_status_id,
 		message_status_date = _message_status_date,
-		is_complete = false,
 		processing_attempt_id = _attempt_id
 	where message_id = _message_id;
 		

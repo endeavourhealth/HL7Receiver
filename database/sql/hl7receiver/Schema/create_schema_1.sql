@@ -201,7 +201,6 @@ create table log.message
 	message_uuid uuid not null,
 	message_status_id smallint not null,
 	message_status_date timestamp not null,
-	is_complete boolean not null,
 	processing_attempt_id smallint not null,
 	next_attempt_date timestamp null,
 	
@@ -211,9 +210,8 @@ create table log.message
 	constraint log_message_outboundmessagetype_fk foreign key (channel_id, outbound_message_type) references configuration.channel_message_type (channel_id, message_type),
 	constraint log_message_messagecontrolid_ck check (char_length(trim(message_control_id)) > 0),
 	constraint log_message_messageuuid_uq unique (message_uuid),
-	constraint log_message_messagestatusid_iscomplete_fk foreign key (message_status_id, is_complete) references dictionary.message_status (message_status_id, is_complete),
-	constraint log_message_processingattemptid_ck check (processing_attempt_id >= 0),
-	constraint log_message_iscomplete_nextattemptdate_ck check ((is_complete and next_attempt_date is null) or (not is_complete))
+	constraint log_message_messagestatusid_fk foreign key (message_status_id) references dictionary.message_status (message_status_id),
+	constraint log_message_processingattemptid_ck check (processing_attempt_id >= 0)
 );
 
 create index concurrently log_message_messagedate_logdate_ix on log.message (message_date, log_date);
