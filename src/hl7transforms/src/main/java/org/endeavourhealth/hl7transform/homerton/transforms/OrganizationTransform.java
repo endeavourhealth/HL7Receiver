@@ -47,7 +47,7 @@ public class OrganizationTransform {
         UUID id = getId(odsCode, organisationName);
         organization.setId(id.toString());
 
-        resourceContainer.addResource(organization);
+        resourceContainer.addManagingOrganisation(organization);
 
         return ReferenceHelper.createReference(ResourceType.Organization, organization.getId());
     }
