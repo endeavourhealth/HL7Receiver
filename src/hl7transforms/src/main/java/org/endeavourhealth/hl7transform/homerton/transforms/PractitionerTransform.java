@@ -47,8 +47,7 @@ public class PractitionerTransform {
 
         practitioner.setId(id.toString());
 
-        if (resourceContainer.getResource(Practitioner.class, practitioner.getId()) == null)
-            resourceContainer.add(practitioner);
+        resourceContainer.addResource(practitioner);
 
         if (primaryCareOrganizationReference != null)
             practitioner.addPractitionerRole(new Practitioner.PractitionerPractitionerRoleComponent().setManagingOrganization(primaryCareOrganizationReference));
@@ -68,8 +67,7 @@ public class PractitionerTransform {
         for (List<Xcn> practitioners : practitionerGroups) {
             Practitioner practitioner = createPractitionerFromDuplicates(practitioners);
 
-            if (resourceContainer.getResource(Practitioner.class, practitioner.getId()) == null)
-                resourceContainer.add(practitioner);
+            resourceContainer.addResource(practitioner);
 
             references.add(ReferenceHelper.createReference(ResourceType.Practitioner, practitioner.getId()));
         }

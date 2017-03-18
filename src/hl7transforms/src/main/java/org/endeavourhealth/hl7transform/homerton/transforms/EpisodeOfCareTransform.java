@@ -46,7 +46,7 @@ public class EpisodeOfCareTransform {
 
         target.setId(UUID.randomUUID().toString());
 
-        targetResources.add(target);
+        targetResources.addResource(target);
     }
 
     private static void setIdentifiers(AdtMessage source, EpisodeOfCare target) {

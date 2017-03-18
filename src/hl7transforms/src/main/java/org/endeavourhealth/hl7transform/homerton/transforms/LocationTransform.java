@@ -53,8 +53,7 @@ public class LocationTransform {
         UUID id = getId(odsCode, locationName, mapper);
         location.setId(id.toString());
 
-        if (!targetResources.hasResource(Location.class, location.getId()))
-            targetResources.add(location);
+        targetResources.addResource(location);
 
         return ReferenceHelper.createReference(ResourceType.Location, location.getId());
     }
@@ -84,8 +83,7 @@ public class LocationTransform {
             Location fhirLocation = createLocation(location, lastLocation, mapper);
 
             if (fhirLocation != null)
-                if (!targetResources.hasResource(Location.class, fhirLocation.getId()))
-                    targetResources.add(fhirLocation);
+                targetResources.addResource(fhirLocation);
 
             lastLocation = fhirLocation;
         }

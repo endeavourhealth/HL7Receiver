@@ -58,7 +58,7 @@ public class PatientTransform {
         addPatientContacts(source, target);
         setManagingOrganization(source, target);
 
-        targetResources.add(target);
+        targetResources.addResource(target);
     }
 
     private void setId(AdtMessage source, Patient target) throws MapperException, TransformException {

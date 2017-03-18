@@ -63,7 +63,7 @@ public class EncounterTransform {
 
         // determine what to do with ACC segment information
 
-        targetResources.add(target);
+        targetResources.addResource(target);
     }
 
     private void setId(AdtMessage sourceMessage, Encounter target) throws MapperException, TransformException {

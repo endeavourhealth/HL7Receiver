@@ -65,7 +65,7 @@ public class MessageHeaderTransform {
         if (sequenceNumber != null)
             target.addExtension(ExtensionHelper.createIntegerExtension(FhirExtensionUri.EXTENSION_HL7V2_SEQUENCE_NUMBER, sequenceNumber));
 
-        resourceContainer.add(target);
+        resourceContainer.addResource(target);
     }
 
     private UUID getId(AdtMessage source) throws MapperException, TransformException {

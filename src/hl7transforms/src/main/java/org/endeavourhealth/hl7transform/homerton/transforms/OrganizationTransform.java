@@ -50,8 +50,7 @@ public class OrganizationTransform {
         new LocationTransform(mapper, resourceContainer)
                 .createHomertonLocation(organization);
 
-        if (!resourceContainer.hasResource(Organization.class, organization.getId()))
-            resourceContainer.add(organization);
+        resourceContainer.addResource(organization);
 
         return ReferenceHelper.createReference(ResourceType.Organization, organization.getId());
     }
@@ -90,8 +89,7 @@ public class OrganizationTransform {
 
         organization.setId(id.toString());
 
-        if (!resourceContainer.hasResource(Organization.class, organization.getId()))
-            resourceContainer.add(organization);
+        resourceContainer.addResource(organization);
 
         return ReferenceHelper.createReference(ResourceType.Organization, organization.getId());
     }
