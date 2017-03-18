@@ -53,7 +53,9 @@ public class PatientTransform {
         setAddress(source, target);
         setContactPoint(source.getPidSegment(), target);
         setCommunication(source.getPidSegment(), target);
-        setCodedElements(source.getPidSegment(), target);
+        addEthnicity(source.getPidSegment(), target);
+        addReligion(source.getPidSegment(), target);
+        addMaritalStatus(source.getPidSegment(), target);
         setPrimaryCareProvider(source, target);
         addPatientContacts(source, target);
         setManagingOrganization(source, target);
@@ -107,9 +109,28 @@ public class PatientTransform {
         for (Cx cx : identifiers) {
             Identifier identifier = createPatientIdentifier(cx, source.getMshSegment().getSendingFacility());
 
-            if (identifier != null)
+            if (identifier != null) {
+
+                if (identifier.getSystem() != null)
+                    if (identifier.getSystem().equals(FhirUri.IDENTIFIER_SYSTEM_NHSNUMBER))
+                        addTraceStatus(source.getPidSegment(), identifier);
+
                 target.addIdentifier(identifier);
+            }
         }
+    }
+
+    private static void addTraceStatus(PidSegment sourcePid, Identifier target) {
+        if (sourcePid.getTraceStatus() == null)
+            return;
+
+        if (StringUtils.isBlank(sourcePid.getTraceStatus().getAsString()))
+            return;
+
+        target.addExtension(new Extension()
+                .setUrl(FhirExtensionUri.PATIENT_NHS_NUMBER_VERIFICATION_STATUS)
+                .setValue(new CodeableConcept()
+                        .setText(sourcePid.getTraceStatus().getAsString())));
     }
 
     public static Identifier createPatientIdentifier(CxInterface source, String sendingFacility) {
@@ -210,19 +231,43 @@ public class PatientTransform {
             target.addCareProvider(practitionerReference);
     }
 
-    private static void setCodedElements(PidSegment sourcePid, Patient target) throws TransformException {
-        if (sourcePid.getReligion() != null)
-            target.addExtension(ExtensionHelper.createStringExtension(FhirExtensionUri.PATIENT_RELIGION, sourcePid.getReligion().getAsString()));
+    private static void addReligion(PidSegment sourcePid, Patient target) {
+        if (sourcePid.getReligion() == null)
+            return;
 
-        if (sourcePid.getEthnicGroups() != null)
-            for (Ce ce : sourcePid.getEthnicGroups())
-                target.addExtension(ExtensionHelper.createStringExtension(FhirExtensionUri.PATIENT_ETHNICITY, ce.getAsString()));
+        if (StringUtils.isBlank(sourcePid.getReligion().getAsString()))
+            return;
 
-        if (sourcePid.getTraceStatus() != null)
-            target.addExtension(ExtensionHelper.createStringExtension(FhirExtensionUri.PATIENT_NHS_NUMBER_VERIFICATION_STATUS, sourcePid.getTraceStatus().getAsString()));
+        target.addExtension(new Extension()
+                .setUrl(FhirExtensionUri.PATIENT_RELIGION)
+                .setValue(new CodeableConcept()
+                        .setText(sourcePid.getReligion().getAsString())));
+    }
 
-        if (sourcePid.getMaritalStatus() != null)
-            target.setMaritalStatus(new CodeableConcept().setText(sourcePid.getMaritalStatus().getAsString()));
+    private static void addEthnicity(PidSegment sourcePid, Patient target) throws TransformException {
+        if (sourcePid.getEthnicGroups() == null)
+            return;
+
+        for (Ce ce : sourcePid.getEthnicGroups()) {
+            if (StringUtils.isBlank(ce.getAsString()))
+                continue;
+
+            target.addExtension(new Extension()
+                    .setUrl(FhirExtensionUri.PATIENT_ETHNICITY)
+                    .setValue(new CodeableConcept()
+                            .setText(ce.getAsString())));
+        }
+    }
+
+    private static void addMaritalStatus(PidSegment sourcePid, Patient target) {
+        if (sourcePid.getMaritalStatus() == null)
+            return;
+
+        if (StringUtils.isEmpty(sourcePid.getMaritalStatus().getAsString()))
+            return;
+
+        target.setMaritalStatus(new CodeableConcept()
+                .setText(sourcePid.getMaritalStatus().getAsString()));
     }
 
     private static void setAddress(AdtMessage source, Patient target) throws TransformException {
