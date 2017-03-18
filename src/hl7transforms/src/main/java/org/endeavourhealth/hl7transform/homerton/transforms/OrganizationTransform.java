@@ -26,7 +26,7 @@ public class OrganizationTransform {
         this.resourceContainer = resourceContainer;
     }
 
-    public Reference createHomertonOrganisation() throws MapperException {
+    public Reference createHomertonManagingOrganisation() throws MapperException {
         final String organisationName = "Homerton University Hospital NHS Foundation Trust";
         final String odsCode = "RQX";
 
@@ -46,9 +46,6 @@ public class OrganizationTransform {
 
         UUID id = getId(odsCode, organisationName);
         organization.setId(id.toString());
-
-        new LocationTransform(mapper, resourceContainer)
-                .createHomertonLocation(organization);
 
         resourceContainer.addResource(organization);
 

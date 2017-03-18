@@ -272,7 +272,7 @@ public class EncounterTransform {
         addLocation(pv1Segment.getPriorPatientLocation(), Encounter.EncounterLocationStatus.COMPLETED, target);
     }
 
-    private void addLocation(Pl location, Encounter.EncounterLocationStatus encounterLocationStatus, Encounter target) throws MapperException {
+    private void addLocation(Pl location, Encounter.EncounterLocationStatus encounterLocationStatus, Encounter target) throws MapperException, TransformException {
 
         if (location != null) {
             Reference assignedLocationReference = new LocationTransform(mapper, targetResources)

@@ -6,6 +6,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.endeavourhealth.common.fhir.FhirUri;
 import org.endeavourhealth.common.fhir.ReferenceHelper;
 import org.endeavourhealth.hl7parser.Helpers;
+import org.endeavourhealth.hl7transform.common.TransformException;
 import org.endeavourhealth.hl7transform.common.converters.AddressConverter;
 import org.endeavourhealth.hl7transform.mapper.Mapper;
 import org.endeavourhealth.hl7transform.mapper.MapperException;
@@ -29,7 +30,7 @@ public class LocationTransform {
         this.targetResources = targetResources;
     }
 
-    public Reference createHomertonLocation(Organization homertonOrganisation) throws MapperException {
+    public Reference createHomertonLocation() throws MapperException, TransformException {
 
         final String odsCode = "RQXM1";
         final String locationName = "Homerton University Hospital";
@@ -41,7 +42,7 @@ public class LocationTransform {
                         .setValue(odsCode))
                 .setStatus(Location.LocationStatus.ACTIVE)
                 .setAddress(AddressConverter.createWorkAddress(Arrays.asList("Homerton Row"), "London", "E9 6SR"))
-                .setManagingOrganization(ReferenceHelper.createReference(ResourceType.Organization, homertonOrganisation.getId()))
+                .setManagingOrganization(this.targetResources.getManagingOrganisation())
                 .setType(new CodeableConcept()
                         .addCoding(new Coding()
                                 .setCode(V3RoleCode.HOSP.toCode())
@@ -53,12 +54,12 @@ public class LocationTransform {
         UUID id = getId(odsCode, locationName, mapper);
         location.setId(id.toString());
 
-        targetResources.addResource(location);
+        targetResources.addManagingLocation(location);
 
         return ReferenceHelper.createReference(ResourceType.Location, location.getId());
     }
 
-    public Reference transformAndGetReference(Pl source) throws MapperException {
+    public Reference transformAndGetReference(Pl source) throws MapperException, TransformException {
 
         List<Pair<LocationPhysicalType, String>> locations = new ArrayList<>();
 
@@ -66,6 +67,13 @@ public class LocationTransform {
         locations.add(new Pair<>(LocationPhysicalType.WI, source.getPointOfCare()));
         locations.add(new Pair<>(LocationPhysicalType.RO, source.getRoom()));
         locations.add(new Pair<>(LocationPhysicalType.BD, source.getBed()));
+
+        String facility = StringUtils.trim(StringUtils.defaultString(source.getFacility())).toLowerCase();
+
+        Reference managingOrganisation = null;
+
+        if (facility.equals("homerton univer") || facility.equals("homerton uh"))
+            managingOrganisation = targetResources.getManagingOrganisation();
 
         locations = locations
                 .stream()
@@ -80,7 +88,7 @@ public class LocationTransform {
                     .limit(i)
                     .collect(Collectors.toList()));
 
-            Location fhirLocation = createLocation(location, lastLocation, mapper);
+            Location fhirLocation = createLocation(location, lastLocation, managingOrganisation, mapper);
 
             if (fhirLocation != null)
                 targetResources.addResource(fhirLocation);
@@ -94,7 +102,10 @@ public class LocationTransform {
         return ReferenceHelper.createReference(ResourceType.Location, lastLocation.getId());
     }
 
-    private static Location createLocation(List<Pair<LocationPhysicalType, String>> locations, Location parentLocation, Mapper mapper) throws MapperException {
+    private static Location createLocation(List<Pair<LocationPhysicalType, String>> locations,
+                                           Location parentLocation,
+                                           Reference managingOrganisation,
+                                           Mapper mapper) throws MapperException {
         if (locations.size() == 0)
             return null;
 
@@ -113,6 +124,9 @@ public class LocationTransform {
         location.setName(locationName);
         location.setMode(Location.LocationMode.INSTANCE);
         location.setPhysicalType(createLocationPhysicalType(locations.get(0).getKey()));
+
+        if (managingOrganisation != null)
+            location.setManagingOrganization(managingOrganisation);
 
         if (parentLocation != null)
             location.setPartOf(ReferenceHelper.createReference(ResourceType.Location, parentLocation.getId()));

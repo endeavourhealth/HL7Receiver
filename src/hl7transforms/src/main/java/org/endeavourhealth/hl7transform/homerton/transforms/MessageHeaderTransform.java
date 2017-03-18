@@ -58,6 +58,8 @@ public class MessageHeaderTransform {
                 .setName(source.getReceivingFacility())
                 .addExtension(ExtensionHelper.createStringExtension(FhirExtensionUri.EXTENSION_HL7V2_DESTINATION_SOFTWARE, source.getReceivingApplication()));
 
+        target.setResponsible(this.resourceContainer.getManagingOrganisation());
+
         target.addExtension(ExtensionHelper.createStringExtension(FhirExtensionUri.EXTENSION_HL7V2_MESSAGE_CONTROL_ID, source.getMessageControlId()));
 
         Integer sequenceNumber = source.getSequenceNumber();

@@ -44,6 +44,12 @@ public class HomertonAdtTransform implements Transform {
 
         ResourceContainer targetResources = new ResourceContainer();
 
+        new OrganizationTransform(mapper, targetResources)
+                .createHomertonManagingOrganisation();
+
+        new LocationTransform(mapper, targetResources)
+                .createHomertonLocation();
+
         new MessageHeaderTransform(mapper, targetResources)
                 .transform(sourceMessage);
 

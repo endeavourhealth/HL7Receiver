@@ -2,6 +2,7 @@ package org.endeavourhealth.hl7transform.common;
 
 
 import org.apache.commons.lang3.Validate;
+import org.endeavourhealth.common.fhir.ReferenceHelper;
 import org.endeavourhealth.common.utility.StreamExtension;
 import org.hl7.fhir.instance.model.*;
 
@@ -9,7 +10,10 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class ResourceContainer {
+
     protected List<Resource> resources = new ArrayList<>();
+    private Organization managingOrganisation = null;
+    private Location managingLocation = null;
 
     public Patient getPatient() {
         return this.resources
@@ -27,6 +31,29 @@ public class ResourceContainer {
                 .collect(StreamExtension.firstOrNullCollector());
     }
 
+    public void addManagingOrganisation(Organization organization) {
+        this.managingOrganisation = organization;
+        this.addResource(organization);
+    }
+
+    public Reference getManagingOrganisation() throws TransformException {
+        if (this.managingOrganisation == null)
+            throw new TransformException("Managing organisation not created");
+
+        return ReferenceHelper.createReference(ResourceType.Organization, this.managingOrganisation.getId());
+    }
+
+    public void addManagingLocation(Location managingLocation) {
+        this.managingLocation = managingLocation;
+        this.addResource(managingLocation);
+    }
+
+    public Reference getManagingLocation() throws TransformException {
+        if (this.managingOrganisation == null)
+            throw new TransformException("Managing location not created");
+
+        return ReferenceHelper.createReference(ResourceType.Location, this.managingLocation.getId());
+    }
 
     public void addResource(Resource resource) {
         Validate.notNull(resource);
@@ -35,11 +62,20 @@ public class ResourceContainer {
             this.resources.add(resource);
     }
 
-    public <T extends Resource> boolean hasResource(Class<T> resourceType, String id) {
+    private <T extends Resource> boolean hasResource(Class<T> resourceType, String id) {
         return (getResource(resourceType, id) != null);
     }
 
-    public <T extends Resource> T getResource(Class<T> resourceType, String id) {
+    public <T extends Resource> Reference getResourceReference(Class<T> resourceType, String id) throws TransformException {
+        T resource = getResource(resourceType, id);
+
+        if (resource == null)
+            throw new TransformException("Could not find resource " + resourceType.getName() + " with id " + id);
+
+        return ReferenceHelper.createReference(resource.getResourceType(), id);
+    }
+
+    private <T extends Resource> T getResource(Class<T> resourceType, String id) {
         Validate.notBlank(id);
 
         return (T)this.resources

@@ -339,10 +339,7 @@ public class PatientTransform {
         target.addContact(contactComponent);
     }
 
-    private void setManagingOrganization(AdtMessage source, Patient target) throws MapperException {
-        OrganizationTransform organizationTransform = new OrganizationTransform(mapper, targetResources);
-
-        Reference managingOrganizationReference = organizationTransform.createHomertonOrganisation();
-        target.setManagingOrganization(managingOrganizationReference);
+    private void setManagingOrganization(AdtMessage source, Patient target) throws MapperException, TransformException {
+        target.setManagingOrganization(this.targetResources.getManagingOrganisation());
     }
 }
