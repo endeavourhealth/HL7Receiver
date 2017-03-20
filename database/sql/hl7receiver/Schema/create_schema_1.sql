@@ -205,6 +205,7 @@ create table log.message
 	next_attempt_date timestamp null,
 	
 	constraint log_message_messageid_pk primary key (message_id),
+	constraint log_message_messageid_channelid_uq unique (message_id, channel_id),
 	constraint log_message_channelid_connectionid_fk foreign key (channel_id, connection_id) references log.connection (channel_id, connection_id),
 	constraint log_message_inboundmessagetype_fk foreign key (channel_id, inbound_message_type) references configuration.channel_message_type (channel_id, message_type),
 	constraint log_message_outboundmessagetype_fk foreign key (channel_id, outbound_message_type) references configuration.channel_message_type (channel_id, message_type),
@@ -234,6 +235,19 @@ create table log.message_status_history
 	constraint log_messagestatushistory_iscomplete_errormessage_ck check ((is_complete and error_message is null) or (not is_complete)),
 	constraint log_messagestatushistory_instanceid_fk foreign key (instance_id) references log.instance (instance_id)
 );
+
+create table log.message_queue
+(
+	message_id integer not null,
+	channel_id integer not null,
+	message_date timestamp not null,
+	log_date timestamp not null,
+
+	constraint log_messagequeue_messageid_pk primary key (message_id),
+	constraint log_messagequeue_messageid_channelid_fk foreign key (message_id, channel_id) references log.message (message_id, channel_id)
+);
+
+create index concurrently log_messagequeue_messagedate_logdate_ix on log.message_queue (message_date, log_date);
 
 create table log.message_processing_content
 (

@@ -35,15 +35,12 @@ begin
 	with candidates as
 	(
 		select
-			m.message_id,
-			coalesce(m.next_attempt_date, now()) as next_attempt_date
-		from log.message m
-		inner join dictionary.message_status ms on m.message_status_id = ms.message_status_id
-		where m.channel_id = _channel_id
-		and ms.is_complete = false
+			mq.message_id
+		from log.message_queue mq
+		where mq.channel_id = _channel_id
 		order by
-			m.message_date asc,
-			m.log_date asc
+			mq.message_date asc,
+			mq.log_date asc
 		limit (select cast(configuration.get_channel_option(_channel_id, 'MaxSkippableProcessingErroredMessages') as integer) + 1)
 	)
 	select
@@ -56,7 +53,7 @@ begin
 		m.message_uuid
 	from candidates c
 	inner join log.message m on c.message_id = m.message_id
-	where (c.next_attempt_date <= now())
+	where (coalesce(m.next_attempt_date, now()) <= now())
 	order by 
 		m.message_date asc, 
 		m.log_date asc
