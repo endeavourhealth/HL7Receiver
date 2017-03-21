@@ -215,8 +215,6 @@ create table log.message
 	constraint log_message_processingattemptid_ck check (processing_attempt_id >= 0)
 );
 
-create index concurrently log_message_messagedate_logdate_ix on log.message (message_date, log_date);
-
 create table log.message_status_history
 (
 	message_status_history_id serial not null,
