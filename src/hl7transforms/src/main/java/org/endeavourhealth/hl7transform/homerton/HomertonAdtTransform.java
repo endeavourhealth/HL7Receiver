@@ -62,6 +62,8 @@ public class HomertonAdtTransform implements Transform {
         new EncounterTransform(mapper, targetResources)
                 .transform(sourceMessage);
 
-        return targetResources.createBundle();
+        return targetResources
+                .orderByResourceType()
+                .createBundle();
     }
 }

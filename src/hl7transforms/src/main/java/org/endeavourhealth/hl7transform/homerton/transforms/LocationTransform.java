@@ -109,19 +109,22 @@ public class LocationTransform {
         if (locations.size() == 0)
             return null;
 
+        String locationName = locations.get(0).getValue();
+
         String[] locationsNames = locations
                 .stream()
                 .map(t -> t.getValue())
                 .collect(Collectors.toList())
                 .toArray(new String[locations.size()]);
 
-        String locationName = String.join(", ", locationsNames);
+        String locationDescription = String.join(", ", locationsNames);
         UUID id = getId(locationsNames, mapper);
 
         Location location = new Location();
 
         location.setId(id.toString());
         location.setName(locationName);
+        location.setDescription(locationDescription);
         location.setMode(Location.LocationMode.INSTANCE);
         location.setPhysicalType(createLocationPhysicalType(locations.get(0).getKey()));
 

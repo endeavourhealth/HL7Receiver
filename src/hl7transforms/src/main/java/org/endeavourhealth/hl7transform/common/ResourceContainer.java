@@ -7,7 +7,9 @@ import org.endeavourhealth.common.utility.StreamExtension;
 import org.hl7.fhir.instance.model.*;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class ResourceContainer {
 
@@ -83,6 +85,16 @@ public class ResourceContainer {
                 .filter(t -> id.equals(t.getId()))
                 .filter(t -> resourceType.isAssignableFrom(t.getClass()))
                 .collect(StreamExtension.singleOrNullCollector());
+    }
+
+    public ResourceContainer orderByResourceType() {
+        this.resources = this.
+                resources.
+                stream().
+                sorted(Comparator.comparing(t -> t.getResourceType()))
+                .collect(Collectors.toList());
+
+        return this;
     }
 
     public Bundle createBundle() {
