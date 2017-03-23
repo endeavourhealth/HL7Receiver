@@ -51,7 +51,6 @@ public class EncounterTransform extends TransformBase {
 
         mapAndSetId(getUniqueIdentifyingString(sourceMessage), target);
 
-        setIdentifiers(sourceMessage, target);
         setStatus(sourceMessage, target);
         setStatusHistory(sourceMessage, target);
         setClass(sourceMessage, target);
@@ -89,29 +88,6 @@ public class EncounterTransform extends TransformBase {
         return StringUtils.deleteWhitespace(
                 EpisodeOfCareTransform.getUniqueIdentifyingString(sourceMessage)
                         + "-" + sourceMessage.getEvnSegment().getRecordedDateTime().getLocalDateTime().format(DateTimeFormatter.ISO_LOCAL_DATE_TIME));
-    }
-
-    private static void setIdentifiers(AdtMessage source, Encounter target) {
-
-        List<Cx> cxs = new ArrayList<>();
-        cxs.add(source.getPv1Segment().getVisitNumber());
-        cxs.add(source.getPv1Segment().getAlternateVisitID());
-
-        for (Cx cx : cxs) {
-            if (cx != null) {
-                if (!StringUtils.isBlank(cx.getId())) {
-
-                    String identifierSystem = FhirUri.getHl7v2LocalEncounterIdentifierSystem(
-                            source.getMshSegment().getSendingFacility(),
-                            cx.getAssigningAuthority(),
-                            cx.getIdentifierTypeCode());
-
-                    target.addIdentifier(new Identifier()
-                            .setSystem(identifierSystem)
-                            .setValue(cx.getId()));
-                }
-            }
-        }
     }
 
     private static void setStatus(AdtMessage source, Encounter target) throws TransformException {

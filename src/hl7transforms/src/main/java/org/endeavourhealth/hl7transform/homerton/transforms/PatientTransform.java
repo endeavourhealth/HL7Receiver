@@ -11,6 +11,7 @@ import org.endeavourhealth.hl7parser.segments.Pd1Segment;
 import org.endeavourhealth.hl7transform.common.converters.ExtensionHelper;
 import org.endeavourhealth.hl7transform.homerton.parser.zsegments.HomertonSegmentName;
 import org.endeavourhealth.hl7transform.homerton.parser.zsegments.ZpiSegment;
+import org.endeavourhealth.hl7transform.homerton.transforms.converters.IdentifierConverter;
 import org.endeavourhealth.hl7transform.mapper.Mapper;
 import org.endeavourhealth.hl7transform.mapper.MapperException;
 import org.endeavourhealth.hl7transform.common.ResourceContainer;
@@ -91,18 +92,17 @@ public class PatientTransform extends TransformBase {
     public static List<Cx> getAllPatientIdentifiers(AdtMessage source) {
         List<Cx> patientIdentifiers = new ArrayList<>();
 
-        patientIdentifiers.addAll(source.getPidSegment().getInternalPatientId());
-        patientIdentifiers.addAll(source.getPidSegment().getAlternatePatientId());
         patientIdentifiers.add(source.getPidSegment().getExternalPatientId());
+        patientIdentifiers.addAll(source.getPidSegment().getInternalPatientId());
 
         return patientIdentifiers;
     }
 
-    private static void addIdentifiers(AdtMessage source, Patient target) {
+    private void addIdentifiers(AdtMessage source, Patient target) throws TransformException {
         List<Cx> identifiers = getAllPatientIdentifiers(source);
 
         for (Cx cx : identifiers) {
-            Identifier identifier = createPatientIdentifier(cx, source.getMshSegment().getSendingFacility());
+            Identifier identifier = IdentifierConverter.createIdentifier(cx, getResourceType());
 
             if (identifier != null) {
 
@@ -126,38 +126,6 @@ public class PatientTransform extends TransformBase {
                 .setUrl(FhirExtensionUri.PATIENT_NHS_NUMBER_VERIFICATION_STATUS)
                 .setValue(new CodeableConcept()
                         .setText(sourcePid.getTraceStatus().getAsString())));
-    }
-
-    public static Identifier createPatientIdentifier(CxInterface source, String sendingFacility) {
-        if (source == null)
-            return null;
-
-        if (StringUtils.isBlank(source.getId()))
-            return null;
-
-        String identifierSystem = getPatientIdentifierSystem(source, sendingFacility);
-
-        Identifier identifier = new Identifier();
-
-        if (StringUtils.isNotBlank(identifierSystem))
-            identifier.setSystem(identifierSystem);
-
-        identifier.setValue(StringUtils.deleteWhitespace(source.getId()));
-
-        return identifier;
-    }
-
-    private static String getPatientIdentifierSystem(CxInterface source, String sendingFacility) {
-        String identifierTypeCode = source.getIdentifierTypeCode();
-        String assigningAuthority = source.getAssigningAuthority();
-
-        if (StringUtils.isBlank(identifierTypeCode) && StringUtils.isBlank(assigningAuthority))
-            return null;
-
-        if (identifierTypeCode.equals("NHS"))
-            return FhirUri.IDENTIFIER_SYSTEM_NHSNUMBER;
-
-        return FhirUri.getHl7v2LocalPatientIdentifierSystem(sendingFacility, assigningAuthority, identifierTypeCode);
     }
 
     private void setPrimaryCareProvider(AdtMessage source, Patient target) throws MapperException, TransformException, ParseException {

@@ -7,6 +7,7 @@ import org.endeavourhealth.common.fhir.ReferenceHelper;
 import org.endeavourhealth.common.utility.StreamExtension;
 import org.endeavourhealth.hl7parser.ParseException;
 import org.endeavourhealth.hl7transform.common.ResourceContainer;
+import org.endeavourhealth.hl7transform.homerton.transforms.converters.IdentifierConverter;
 import org.endeavourhealth.hl7transform.mapper.Mapper;
 import org.endeavourhealth.hl7transform.mapper.MapperException;
 import org.endeavourhealth.hl7parser.datatypes.Xcn;
@@ -83,20 +84,12 @@ public class PractitionerTransform extends TransformBase {
         practitioner.setName(NameConverter.convert(sources.get(0)));
 
         for (Xcn source : sources) {
-            if (StringUtils.isNotBlank(source.getId())) {
 
-                String identifierSystem = getIdentifierSystem(sendingFacility, source.getId(), source.getAssigningAuthority(), source.getIdentifierTypeCode());
+            Identifier identifier = IdentifierConverter.createIdentifier(source, getResourceType());
 
-                if (StringUtils.isNotBlank(identifierSystem)) {
-
-                    if (!hasIdentifierWithSystem(practitioner.getIdentifier(), identifierSystem)) {
-
-                        practitioner.addIdentifier(new Identifier()
-                                .setValue(source.getId().trim())
-                                .setSystem(identifierSystem));
-                    }
-                }
-            }
+            if (identifier != null)
+                if (!hasIdentifierWithSystem(practitioner.getIdentifier(), identifier.getSystem()))
+                    practitioner.addIdentifier(identifier);
         }
 
         mapAndSetId(getUniqueIdentifyingString(sendingFacility, practitioner), practitioner);
@@ -111,7 +104,7 @@ public class PractitionerTransform extends TransformBase {
 
         String uniqueIdentifyingString = surname + "-" + forename;
 
-        String primaryIdentifier = getIdentifierValue(source.getIdentifier(), FhirUri.getIdentifierSystemHl7v2LocalPractitionerIdentifier(sendingFacility, "personnel primary identifier", "personnel primary identifier"));
+        String primaryIdentifier = getIdentifierValue(source.getIdentifier(), FhirUri.IDENTIFIER_SYSTEM_HOMERTON_PRIMARY_PRACTITIONER_ID);
 
         if (StringUtils.isNotBlank(primaryIdentifier))
             uniqueIdentifyingString += "-PersonnelPrimaryIdentifier=" + primaryIdentifier;
@@ -139,41 +132,5 @@ public class PractitionerTransform extends TransformBase {
                 .filter(t -> t.getSystem().equals(system))
                 .map(t -> t.getValue())
                 .collect(StreamExtension.firstOrNullCollector());
-    }
-
-    private String getIdentifierSystem(String sendingFacility, String id, String assigningAuth, String typeCode) {
-        if (id == null)
-            id = "";
-
-        if (assigningAuth == null)
-            assigningAuth = "";
-
-        if (typeCode == null)
-            typeCode = "";
-
-        assigningAuth = assigningAuth.trim().toLowerCase();
-        typeCode = typeCode.trim().toLowerCase();
-        id = id.trim().toLowerCase();
-
-        String combined = assigningAuth + " | " + typeCode;
-
-        switch (combined) {
-            case "nhs consultant number | non gp":
-            case "community dr nbr | community dr nbr":
-            case " | community dr nbr":
-                return FhirUri.IDENTIFIER_SYSTEM_CONSULTANT_CODE;
-
-            case "external id | external identifier":
-                if (id.startsWith("g"))
-                    return FhirUri.IDENTIFIER_SYSTEM_GMC_NUMBER;
-                break;
-
-            case "personnel primary identifier | personnel primary identifier":
-                return FhirUri.getIdentifierSystemHl7v2LocalPractitionerIdentifier(sendingFacility, assigningAuth, typeCode);
-
-            default: break;
-        }
-
-        return null;
     }
 }

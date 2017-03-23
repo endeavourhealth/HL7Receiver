@@ -6,6 +6,7 @@ import org.endeavourhealth.common.fhir.ReferenceHelper;
 import org.endeavourhealth.hl7parser.ParseException;
 import org.endeavourhealth.hl7parser.datatypes.Cx;
 import org.endeavourhealth.hl7parser.messages.AdtMessage;
+import org.endeavourhealth.hl7transform.homerton.transforms.converters.IdentifierConverter;
 import org.endeavourhealth.hl7transform.mapper.Mapper;
 import org.endeavourhealth.hl7transform.mapper.MapperException;
 import org.endeavourhealth.hl7transform.common.ResourceContainer;
@@ -15,7 +16,6 @@ import org.hl7.fhir.instance.model.*;
 import java.util.UUID;
 
 public class EpisodeOfCareTransform extends TransformBase {
-    private static final String encounterAssigningAuthority = "Homerton FIN";
 
     public EpisodeOfCareTransform(Mapper mapper, ResourceContainer targetResources) {
         super(mapper, targetResources);
@@ -50,7 +50,7 @@ public class EpisodeOfCareTransform extends TransformBase {
     }
 
     protected static String getUniqueIdentifyingString(AdtMessage sourceMessage) throws TransformException {
-        Cx cx = sourceMessage.getPidSegment().getPatientAccountNumber();
+        Cx cx = sourceMessage.getPv1Segment().getVisitNumber();
 
         if (cx == null)
             throw new TransformException("Episode number (PID.18) is null");
@@ -61,7 +61,7 @@ public class EpisodeOfCareTransform extends TransformBase {
         if (StringUtils.isEmpty(cx.getId()))
             throw new TransformException("Episode number (PID.18) id is empty");
 
-        if (!encounterAssigningAuthority.equals(cx.getAssigningAuthority()))
+        if (!"Homerton FIN".equals(cx.getAssigningAuthority()))
             throw new TransformException("Episode number assigning authority does not match");
 
         return StringUtils.deleteWhitespace(
@@ -69,37 +69,17 @@ public class EpisodeOfCareTransform extends TransformBase {
                         + "-" + cx.getAssigningAuthority() + "-" + cx.getId());
     }
 
-    private static void setIdentifiers(AdtMessage source, EpisodeOfCare target) {
+    private void setIdentifiers(AdtMessage source, EpisodeOfCare target) throws TransformException {
 
-        Identifier visitNumber = transformIdentifier(source.getPv1Segment().getVisitNumber(), source);
+        Identifier visitNumber = IdentifierConverter.createIdentifier(source.getPv1Segment().getVisitNumber(), getResourceType());
 
         if (visitNumber != null)
             target.addIdentifier(visitNumber);
 
-        Identifier alternateVisitId = transformIdentifier(source.getPv1Segment().getAlternateVisitID(), source);
+        Identifier alternateVisitId = IdentifierConverter.createIdentifier(source.getPv1Segment().getAlternateVisitID(), getResourceType());
 
         if (alternateVisitId != null)
             target.addIdentifier(alternateVisitId);
-    }
-
-    private static Identifier transformIdentifier(Cx cx, AdtMessage source) {
-        if (cx == null)
-            return null;
-
-        if (StringUtils.isBlank(cx.getId()))
-            return null;
-
-        if (StringUtils.isBlank(cx.getAssigningAuthority()) && StringUtils.isBlank(cx.getIdentifierTypeCode()))
-            return null;
-
-        String identifierSystem = FhirUri.getHl7v2LocalEncounterIdentifierSystem(
-                source.getMshSegment().getSendingFacility(),
-                cx.getAssigningAuthority(),
-                cx.getIdentifierTypeCode());
-
-        return new Identifier()
-                .setSystem(identifierSystem)
-                .setValue(cx.getId());
     }
 
     private static void setPatient(Patient patient, EpisodeOfCare target) {
