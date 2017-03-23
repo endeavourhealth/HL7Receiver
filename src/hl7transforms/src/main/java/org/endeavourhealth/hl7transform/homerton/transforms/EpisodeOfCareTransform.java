@@ -10,43 +10,63 @@ import org.endeavourhealth.hl7transform.mapper.Mapper;
 import org.endeavourhealth.hl7transform.mapper.MapperException;
 import org.endeavourhealth.hl7transform.common.ResourceContainer;
 import org.endeavourhealth.hl7transform.common.TransformException;
-import org.hl7.fhir.instance.model.EpisodeOfCare;
-import org.hl7.fhir.instance.model.Identifier;
-import org.hl7.fhir.instance.model.Patient;
-import org.hl7.fhir.instance.model.ResourceType;
+import org.hl7.fhir.instance.model.*;
 
 import java.util.UUID;
 
-public class EpisodeOfCareTransform {
-
-    private Mapper mapper;
-    private ResourceContainer targetResources;
+public class EpisodeOfCareTransform extends TransformBase {
+    private static final String encounterAssigningAuthority = "Homerton FIN";
 
     public EpisodeOfCareTransform(Mapper mapper, ResourceContainer targetResources) {
-        this.mapper = mapper;
-        this.targetResources = targetResources;
+        super(mapper, targetResources);
     }
 
-    public void transform(AdtMessage sourceMessage) throws ParseException, TransformException, MapperException {
+    @Override
+    public ResourceType getResourceType() {
+        return ResourceType.EpisodeOfCare;
+    }
+
+    public void transform(AdtMessage sourceMessage) throws TransformException, MapperException, ParseException {
 
         if (!sourceMessage.hasPv1Segment())
             return;
 
         EpisodeOfCare target = new EpisodeOfCare();
 
+        mapAndSetId(getUniqueIdentifyingString(sourceMessage), target);
+
         setIdentifiers(sourceMessage, target);
 
         // set status
 
-        setPatient(target, targetResources.getPatient());
+        setPatient(targetResources.getPatient(), target);
 
         // set managing organisation
 
         // period
 
-        target.setId(UUID.randomUUID().toString());
 
         targetResources.addResource(target);
+    }
+
+    protected static String getUniqueIdentifyingString(AdtMessage sourceMessage) throws TransformException {
+        Cx cx = sourceMessage.getPidSegment().getPatientAccountNumber();
+
+        if (cx == null)
+            throw new TransformException("Episode number (PID.18) is null");
+
+        if (StringUtils.isEmpty(cx.getAssigningAuthority()))
+            throw new TransformException("Episode number (PID.18) assigning authority is empty");
+
+        if (StringUtils.isEmpty(cx.getId()))
+            throw new TransformException("Episode number (PID.18) id is empty");
+
+        if (!encounterAssigningAuthority.equals(cx.getAssigningAuthority()))
+            throw new TransformException("Episode number assigning authority does not match");
+
+        return StringUtils.deleteWhitespace(
+                PatientTransform.getUniqueIdentifyingString(sourceMessage)
+                        + "-" + cx.getAssigningAuthority() + "-" + cx.getId());
     }
 
     private static void setIdentifiers(AdtMessage source, EpisodeOfCare target) {
@@ -82,7 +102,7 @@ public class EpisodeOfCareTransform {
                 .setValue(cx.getId());
     }
 
-    private static void setPatient(EpisodeOfCare target, Patient patient) {
+    private static void setPatient(Patient patient, EpisodeOfCare target) {
         target.setPatient(ReferenceHelper.createReference(ResourceType.Patient, patient.getId()));
     }
 }

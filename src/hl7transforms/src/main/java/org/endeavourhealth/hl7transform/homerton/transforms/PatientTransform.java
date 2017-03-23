@@ -27,16 +27,17 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
-public class PatientTransform {
+public class PatientTransform extends TransformBase {
 
     private static final String patientIdentifierTypeCode = "CNN";
 
-    private Mapper mapper;
-    private ResourceContainer targetResources;
-
     public PatientTransform(Mapper mapper, ResourceContainer targetResources) {
-        this.mapper = mapper;
-        this.targetResources = targetResources;
+        super(mapper, targetResources);
+    }
+
+    @Override
+    public ResourceType getResourceType() {
+        return ResourceType.Patient;
     }
 
     public void transform(AdtMessage source) throws Exception {
@@ -44,7 +45,8 @@ public class PatientTransform {
 
         Patient target = new Patient();
 
-        setId(source, target);
+        mapAndSetId(getUniqueIdentifyingString(source), target);
+
         addNames(source.getPidSegment(), target);
         setDateOfBirth(source.getPidSegment(), target);
         setDateOfDeath(source.getPidSegment(), target);
@@ -63,14 +65,7 @@ public class PatientTransform {
         targetResources.addResource(target);
     }
 
-    private void setId(AdtMessage source, Patient target) throws MapperException, TransformException {
-        String uniqueIdentifyingString = getUniquePatientString(source);
-        UUID resourceUuid = mapper.mapResourceUuid(ResourceType.Patient, uniqueIdentifyingString);
-
-        target.setId(resourceUuid.toString());
-    }
-
-    public static String getUniquePatientString(AdtMessage message) throws TransformException {
+    public static String getUniqueIdentifyingString(AdtMessage message) throws TransformException {
         Cx cx = PatientTransform.getAllPatientIdentifiers(message)
                 .stream()
                 .filter(t -> patientIdentifierTypeCode.equals(t.getIdentifierTypeCode()))
@@ -82,7 +77,7 @@ public class PatientTransform {
         if (StringUtils.isBlank(cx.getId()))
             throw new TransformException("Patient identifier with type of " + patientIdentifierTypeCode + " has empty value");
 
-        return StringUtils.deleteWhitespace("Patient-" + patientIdentifierTypeCode + "-" + cx.getId());
+        return StringUtils.deleteWhitespace(patientIdentifierTypeCode + "-" + cx.getId());
     }
 
     private static void addNames(PidSegment sourcePid, Patient target) throws TransformException {
@@ -165,7 +160,7 @@ public class PatientTransform {
         return FhirUri.getHl7v2LocalPatientIdentifierSystem(sendingFacility, assigningAuthority, identifierTypeCode);
     }
 
-    private void setPrimaryCareProvider(AdtMessage source, Patient target) throws MapperException {
+    private void setPrimaryCareProvider(AdtMessage source, Patient target) throws MapperException, TransformException, ParseException {
 
         Pd1Segment pd1Segment = source.getPd1Segment();
 
@@ -221,8 +216,8 @@ public class PatientTransform {
         String surname = field.getComponentAsString(2);
         String forenames = field.getComponentAsString(3);
 
-        PractitionerTransform practitionerTransform = new PractitionerTransform(source.getMshSegment().getSendingFacility(), mapper, targetResources);
-        Reference practitionerReference = practitionerTransform.createPrimaryCarePractitioner(gmcCode, surname, forenames, organisationReference);
+        PractitionerTransform practitionerTransform = new PractitionerTransform(mapper, targetResources);
+        Reference practitionerReference = practitionerTransform.createPrimaryCarePractitioner(source.getMshSegment().getSendingFacility(), gmcCode, surname, forenames, organisationReference);
 
         if (organisationReference != null)
             target.addCareProvider(organisationReference);

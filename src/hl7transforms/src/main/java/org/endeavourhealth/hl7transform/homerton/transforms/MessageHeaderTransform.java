@@ -19,14 +19,15 @@ import org.hl7.fhir.instance.model.*;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
-public class MessageHeaderTransform {
+public class MessageHeaderTransform extends TransformBase {
 
-    private Mapper mapper;
-    private ResourceContainer resourceContainer;
+    public MessageHeaderTransform(Mapper mapper, ResourceContainer targetResources) {
+        super(mapper, targetResources);
+    }
 
-    public MessageHeaderTransform(Mapper mapper, ResourceContainer resourceContainer) {
-        this.mapper = mapper;
-        this.resourceContainer = resourceContainer;
+    @Override
+    public ResourceType getResourceType() {
+        return ResourceType.MessageHeader;
     }
 
     public void transform(AdtMessage sourceMessage) throws ParseException, MapperException, TransformException {
@@ -58,7 +59,7 @@ public class MessageHeaderTransform {
                 .setName(source.getReceivingFacility())
                 .addExtension(ExtensionHelper.createStringExtension(FhirExtensionUri.EXTENSION_HL7V2_DESTINATION_SOFTWARE, source.getReceivingApplication()));
 
-        target.setResponsible(this.resourceContainer.getManagingOrganisation());
+        target.setResponsible(this.targetResources.getManagingOrganisation());
 
         target.addExtension(ExtensionHelper.createStringExtension(FhirExtensionUri.EXTENSION_HL7V2_MESSAGE_CONTROL_ID, source.getMessageControlId()));
 
@@ -67,7 +68,7 @@ public class MessageHeaderTransform {
         if (sequenceNumber != null)
             target.addExtension(ExtensionHelper.createIntegerExtension(FhirExtensionUri.EXTENSION_HL7V2_SEQUENCE_NUMBER, sequenceNumber));
 
-        resourceContainer.addResource(target);
+        targetResources.addResource(target);
     }
 
     private UUID getId(AdtMessage source) throws MapperException, TransformException {
@@ -81,7 +82,7 @@ public class MessageHeaderTransform {
         if (StringUtils.isBlank(source.getMshSegment().getMessageControlId()))
             throw new TransformException("Cannot create unique resource identifying string as MessageControlId is blank");
 
-        return StringUtils.deleteWhitespace("MessageHeader-" + source.getMshSegment().getMessageControlId());
+        return StringUtils.deleteWhitespace(source.getMshSegment().getMessageControlId());
     }
 
     private static String getMessageTypeDescription(String messageType) {

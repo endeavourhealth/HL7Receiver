@@ -5,6 +5,7 @@ import org.apache.commons.lang3.Validate;
 import org.endeavourhealth.common.fhir.FhirUri;
 import org.endeavourhealth.common.fhir.ReferenceHelper;
 import org.endeavourhealth.common.utility.StreamExtension;
+import org.endeavourhealth.hl7parser.ParseException;
 import org.endeavourhealth.hl7transform.common.ResourceContainer;
 import org.endeavourhealth.hl7transform.mapper.Mapper;
 import org.endeavourhealth.hl7transform.mapper.MapperException;
@@ -16,19 +17,18 @@ import org.hl7.fhir.instance.model.*;
 import java.util.*;
 import java.util.stream.Collectors;
 
-public class PractitionerTransform {
+public class PractitionerTransform extends TransformBase {
 
-    private String sendingFacility;
-    private Mapper mapper;
-    private ResourceContainer resourceContainer;
-
-    public PractitionerTransform(String sendingFacility, Mapper mapper, ResourceContainer resourceContainer) {
-        this.sendingFacility = sendingFacility;
-        this.mapper = mapper;
-        this.resourceContainer = resourceContainer;
+    public PractitionerTransform(Mapper mapper, ResourceContainer targetResources) {
+        super(mapper, targetResources);
     }
 
-    public Reference createPrimaryCarePractitioner(String gmcCode, String surname, String forenames, Reference primaryCareOrganizationReference) throws MapperException {
+    @Override
+    public ResourceType getResourceType() {
+        return ResourceType.Practitioner;
+    }
+
+    public Reference createPrimaryCarePractitioner(String sendingFacility, String gmcCode, String surname, String forenames, Reference primaryCareOrganizationReference) throws MapperException, TransformException, ParseException {
         Practitioner practitioner = new Practitioner();
 
         if (StringUtils.isNotBlank(gmcCode)) {
@@ -43,11 +43,9 @@ public class PractitionerTransform {
 
         practitioner.setName(NameConverter.createUsualName(surname, forenames, null));
 
-        UUID id = getId(practitioner);
+        mapAndSetId(getUniqueIdentifyingString(sendingFacility, practitioner), practitioner);
 
-        practitioner.setId(id.toString());
-
-        resourceContainer.addResource(practitioner);
+        targetResources.addResource(practitioner);
 
         if (primaryCareOrganizationReference != null)
             practitioner.addPractitionerRole(new Practitioner.PractitionerPractitionerRoleComponent().setManagingOrganization(primaryCareOrganizationReference));
@@ -56,7 +54,7 @@ public class PractitionerTransform {
     }
 
     // this method removes duplicates based on title, surname, forename, and merges the identifiers
-    public List<Reference> transformAndGetReferences(List<Xcn> source) throws TransformException, MapperException {
+    public List<Reference> transformAndGetReferences(String sendingFacility, List<Xcn> source) throws TransformException, MapperException, ParseException {
         Collection<List<Xcn>> practitionerGroups = source
                 .stream()
                 .collect(Collectors.groupingBy(t -> t.getPrefix() + t.getFamilyName() + t.getGivenName()))
@@ -65,9 +63,9 @@ public class PractitionerTransform {
         List<Reference> references = new ArrayList<>();
 
         for (List<Xcn> practitioners : practitionerGroups) {
-            Practitioner practitioner = createPractitionerFromDuplicates(practitioners);
+            Practitioner practitioner = createPractitionerFromDuplicates(sendingFacility, practitioners);
 
-            resourceContainer.addResource(practitioner);
+            targetResources.addResource(practitioner);
 
             references.add(ReferenceHelper.createReference(ResourceType.Practitioner, practitioner.getId()));
         }
@@ -75,7 +73,7 @@ public class PractitionerTransform {
         return references;
     }
 
-    private Practitioner createPractitionerFromDuplicates(List<Xcn> sources) throws TransformException, MapperException {
+    private Practitioner createPractitionerFromDuplicates(String sendingFacility, List<Xcn> sources) throws TransformException, MapperException, ParseException {
         Validate.notNull(sources);
 
         if (sources.size() == 0)
@@ -87,7 +85,7 @@ public class PractitionerTransform {
         for (Xcn source : sources) {
             if (StringUtils.isNotBlank(source.getId())) {
 
-                String identifierSystem = getIdentifierSystem(source.getId(), source.getAssigningAuthority(), source.getIdentifierTypeCode());
+                String identifierSystem = getIdentifierSystem(sendingFacility, source.getId(), source.getAssigningAuthority(), source.getIdentifierTypeCode());
 
                 if (StringUtils.isNotBlank(identifierSystem)) {
 
@@ -101,21 +99,17 @@ public class PractitionerTransform {
             }
         }
 
-        UUID id = getId(practitioner);
-
-        practitioner.setId(id.toString());
+        mapAndSetId(getUniqueIdentifyingString(sendingFacility, practitioner), practitioner);
 
         return practitioner;
     }
 
-    private UUID getId(Practitioner source) throws MapperException {
-
-        String uniqueIdentifyingString = sendingFacility + "-Practitioner-";
+    private String getUniqueIdentifyingString(String sendingFacility, Practitioner source) throws MapperException {
 
         String forename = source.getName().getGiven().get(0).getValue().toUpperCase().trim();
         String surname = source.getName().getFamily().get(0).getValue().toUpperCase().trim();
 
-        uniqueIdentifyingString += surname + "-" + forename;
+        String uniqueIdentifyingString = surname + "-" + forename;
 
         String primaryIdentifier = getIdentifierValue(source.getIdentifier(), FhirUri.getIdentifierSystemHl7v2LocalPractitionerIdentifier(sendingFacility, "personnel primary identifier", "personnel primary identifier"));
 
@@ -132,7 +126,7 @@ public class PractitionerTransform {
         if (StringUtils.isNotBlank(gmcCode))
             uniqueIdentifyingString += "-GmcCode=" + gmcCode;
 
-        return mapper.mapResourceUuid(ResourceType.Practitioner, uniqueIdentifyingString);
+        return uniqueIdentifyingString;
     }
 
     private boolean hasIdentifierWithSystem(List<Identifier> identifiers, String system) {
@@ -147,7 +141,7 @@ public class PractitionerTransform {
                 .collect(StreamExtension.firstOrNullCollector());
     }
 
-    private String getIdentifierSystem(String id, String assigningAuth, String typeCode) {
+    private String getIdentifierSystem(String sendingFacility, String id, String assigningAuth, String typeCode) {
         if (id == null)
             id = "";
 

@@ -6,6 +6,8 @@ import org.apache.commons.lang3.StringUtils;
 import org.endeavourhealth.common.fhir.FhirUri;
 import org.endeavourhealth.common.fhir.ReferenceHelper;
 import org.endeavourhealth.hl7parser.Helpers;
+import org.endeavourhealth.hl7parser.ParseException;
+import org.endeavourhealth.hl7parser.messages.AdtMessage;
 import org.endeavourhealth.hl7transform.common.TransformException;
 import org.endeavourhealth.hl7transform.common.converters.AddressConverter;
 import org.endeavourhealth.hl7transform.mapper.Mapper;
@@ -20,17 +22,18 @@ import org.omg.CosNaming.NamingContextExtPackage.AddressHelper;
 import java.util.*;
 import java.util.stream.Collectors;
 
-public class LocationTransform {
-
-    private Mapper mapper;
-    private ResourceContainer targetResources;
+public class LocationTransform extends TransformBase {
 
     public LocationTransform(Mapper mapper, ResourceContainer targetResources) {
-        this.mapper = mapper;
-        this.targetResources = targetResources;
+        super(mapper, targetResources);
     }
 
-    public Reference createHomertonLocation() throws MapperException, TransformException {
+    @Override
+    public ResourceType getResourceType() {
+        return ResourceType.Location;
+    }
+
+    public Reference createHomertonLocation() throws MapperException, TransformException, ParseException {
 
         final String odsCode = "RQXM1";
         final String locationName = "Homerton University Hospital";
@@ -51,15 +54,14 @@ public class LocationTransform {
                 .setPhysicalType(createLocationPhysicalType(LocationPhysicalType.BU))
                 .setMode(Location.LocationMode.INSTANCE);
 
-        UUID id = getId(odsCode, locationName, mapper);
-        location.setId(id.toString());
+        mapAndSetId(getUniqueIdentifyingString(odsCode, locationName), location);
 
         targetResources.addManagingLocation(location);
 
         return ReferenceHelper.createReference(ResourceType.Location, location.getId());
     }
 
-    public Reference transformAndGetReference(Pl source) throws MapperException, TransformException {
+    public Reference transformAndGetReference(Pl source) throws MapperException, TransformException, ParseException {
 
         List<Pair<LocationPhysicalType, String>> locations = new ArrayList<>();
 
@@ -88,7 +90,7 @@ public class LocationTransform {
                     .limit(i)
                     .collect(Collectors.toList()));
 
-            Location fhirLocation = createLocation(location, lastLocation, managingOrganisation, mapper);
+            Location fhirLocation = createLocation(location, lastLocation, managingOrganisation);
 
             if (fhirLocation != null)
                 targetResources.addResource(fhirLocation);
@@ -102,10 +104,9 @@ public class LocationTransform {
         return ReferenceHelper.createReference(ResourceType.Location, lastLocation.getId());
     }
 
-    private static Location createLocation(List<Pair<LocationPhysicalType, String>> locations,
+    private Location createLocation(List<Pair<LocationPhysicalType, String>> locations,
                                            Location parentLocation,
-                                           Reference managingOrganisation,
-                                           Mapper mapper) throws MapperException {
+                                           Reference managingOrganisation) throws MapperException, TransformException, ParseException {
         if (locations.size() == 0)
             return null;
 
@@ -118,11 +119,11 @@ public class LocationTransform {
                 .toArray(new String[locations.size()]);
 
         String locationDescription = String.join(", ", locationsNames);
-        UUID id = getId(locationsNames, mapper);
 
         Location location = new Location();
 
-        location.setId(id.toString());
+        mapAndSetId(getUniqueIdentifyingString(locationsNames), location);
+
         location.setName(locationName);
         location.setDescription(locationDescription);
         location.setMode(Location.LocationMode.INSTANCE);
@@ -137,17 +138,16 @@ public class LocationTransform {
         return location;
     }
 
-    private static UUID getId(String odsCode, String locationName, Mapper mapper) throws MapperException {
+    private static String getUniqueIdentifyingString(String odsCode, String locationName) {
 
         odsCode = StringUtils.upperCase(StringUtils.deleteWhitespace(odsCode));
         locationName = StringUtils.remove(StringUtils.upperCase(StringUtils.deleteWhitespace(locationName).toUpperCase()), ".");
 
-        String uniqueIdentifyingString = "Location-OdsCode=" + odsCode + "-" + locationName;
-        return mapper.mapResourceUuid(ResourceType.Location, uniqueIdentifyingString);
+        return "OdsCode=" + odsCode + "-" + locationName;
     }
 
-    private static UUID getId(String[] locationNames, Mapper mapper) throws MapperException {
-        return getId("", StringUtils.join(locationNames, "-"), mapper);
+    private static String getUniqueIdentifyingString(String[] locationNames) {
+        return getUniqueIdentifyingString("", StringUtils.join(locationNames, "-"));
     }
 
     private static CodeableConcept createLocationPhysicalType(LocationPhysicalType locationPhysicalType) {

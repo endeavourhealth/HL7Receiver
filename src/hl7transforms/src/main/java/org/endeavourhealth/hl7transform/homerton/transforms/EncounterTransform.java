@@ -5,6 +5,9 @@ import org.endeavourhealth.common.fhir.FhirExtensionUri;
 import org.endeavourhealth.common.fhir.FhirUri;
 import org.endeavourhealth.common.fhir.ReferenceHelper;
 import org.endeavourhealth.common.fhir.schema.EncounterParticipantType;
+import org.endeavourhealth.hl7parser.Hl7DateTime;
+import org.endeavourhealth.hl7parser.segments.EvnSegment;
+import org.endeavourhealth.hl7transform.Transform;
 import org.endeavourhealth.hl7transform.homerton.parser.zsegments.HomertonSegmentName;
 import org.endeavourhealth.hl7transform.homerton.parser.zsegments.ZviSegment;
 import org.endeavourhealth.hl7transform.mapper.MapperException;
@@ -23,19 +26,20 @@ import org.endeavourhealth.hl7transform.common.converters.ExtensionHelper;
 import org.hl7.fhir.instance.model.*;
 import org.hl7.fhir.instance.model.Encounter;
 
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
-public class EncounterTransform {
-    private static final String encounterAssigningAuthority = "Homerton FIN";
-
-    private Mapper mapper;
-    private ResourceContainer targetResources;
+public class EncounterTransform extends TransformBase {
 
     public EncounterTransform(Mapper mapper, ResourceContainer targetResources) {
-        this.mapper = mapper;
-        this.targetResources = targetResources;
+        super(mapper, targetResources);
+    }
+
+    @Override
+    public ResourceType getResourceType() {
+        return ResourceType.Encounter;
     }
 
     public void transform(AdtMessage sourceMessage) throws ParseException, TransformException, MapperException {
@@ -45,7 +49,8 @@ public class EncounterTransform {
 
         Encounter target = new Encounter();
 
-        setId(sourceMessage, target);
+        mapAndSetId(getUniqueIdentifyingString(sourceMessage), target);
+
         setIdentifiers(sourceMessage, target);
         setStatus(sourceMessage, target);
         setStatusHistory(sourceMessage, target);
@@ -66,29 +71,24 @@ public class EncounterTransform {
         targetResources.addResource(target);
     }
 
-    private void setId(AdtMessage sourceMessage, Encounter target) throws MapperException, TransformException {
-        String uniqueIdentifyingString = getUniqueEncounterString(sourceMessage);
-        UUID resourceUuid = mapper.mapResourceUuid(ResourceType.Encounter, uniqueIdentifyingString);
+    protected String getUniqueIdentifyingString(AdtMessage sourceMessage) throws TransformException, ParseException {
 
-        target.setId(resourceUuid.toString());
-    }
+        if (!sourceMessage.hasEvnSegment())
+            throw new TransformException("EVN segment not found");
 
-    public static String getUniqueEncounterString(AdtMessage message) throws TransformException {
-        Cx cx = message.getPidSegment().getPatientAccountNumber();
+        EvnSegment evnSegment = sourceMessage.getEvnSegment();
 
-        if (cx == null)
-            throw new TransformException("Encounter number (PID.18) is null");
+        Hl7DateTime recordedDateTime = evnSegment.getRecordedDateTime();
 
-        if (StringUtils.isEmpty(cx.getAssigningAuthority()))
-            throw new TransformException("Encounter number (PID.18) assigning authority is empty");
+        if (recordedDateTime == null)
+            throw new TransformException("Could not determine event recorded date/time");
 
-        if (StringUtils.isEmpty(cx.getId()))
-            throw new TransformException("Encounter number (PID.18) id is empty");
+        if (recordedDateTime.getLocalDateTime() == null)
+            throw new TransformException("Could not determine event recorded date/time");
 
-        if (!encounterAssigningAuthority.equals(cx.getAssigningAuthority()))
-            throw new TransformException("Encounter number assigning authority does not match");
-
-        return StringUtils.deleteWhitespace(PatientTransform.getUniquePatientString(message) + "-Encounter-" + cx.getAssigningAuthority() + "-" + cx.getId());
+        return StringUtils.deleteWhitespace(
+                EpisodeOfCareTransform.getUniqueIdentifyingString(sourceMessage)
+                        + "-" + sourceMessage.getEvnSegment().getRecordedDateTime().getLocalDateTime().format(DateTimeFormatter.ISO_LOCAL_DATE_TIME));
     }
 
     private static void setIdentifiers(AdtMessage source, Encounter target) {
@@ -245,13 +245,13 @@ public class EncounterTransform {
             List<Xcn> xcns,
             EncounterParticipantType type,
             Encounter target,
-            String sendingFacility) throws TransformException, MapperException {
+            String sendingFacility) throws TransformException, MapperException, ParseException {
 
         if (xcns == null)
             return;
 
-        PractitionerTransform practitionerTransform = new PractitionerTransform(sendingFacility, mapper, targetResources);
-        List<Reference> references = practitionerTransform.transformAndGetReferences(xcns);
+        PractitionerTransform practitionerTransform = new PractitionerTransform(mapper, targetResources);
+        List<Reference> references = practitionerTransform.transformAndGetReferences(sendingFacility, xcns);
 
         for (Reference reference : references) {
             target.addParticipant(new Encounter.EncounterParticipantComponent()
@@ -264,7 +264,7 @@ public class EncounterTransform {
         }
     }
 
-    private void setLocations(AdtMessage source, Encounter target) throws TransformException, MapperException {
+    private void setLocations(AdtMessage source, Encounter target) throws TransformException, MapperException, ParseException {
 
         Pv1Segment pv1Segment = source.getPv1Segment();
 
@@ -272,7 +272,7 @@ public class EncounterTransform {
         addLocation(pv1Segment.getPriorPatientLocation(), Encounter.EncounterLocationStatus.COMPLETED, target);
     }
 
-    private void addLocation(Pl location, Encounter.EncounterLocationStatus encounterLocationStatus, Encounter target) throws MapperException, TransformException {
+    private void addLocation(Pl location, Encounter.EncounterLocationStatus encounterLocationStatus, Encounter target) throws MapperException, TransformException, ParseException {
 
         if (location != null) {
             Reference assignedLocationReference = new LocationTransform(mapper, targetResources)

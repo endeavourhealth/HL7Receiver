@@ -4,6 +4,8 @@ import org.apache.commons.lang3.StringUtils;
 import org.endeavourhealth.common.fhir.FhirUri;
 import org.endeavourhealth.common.fhir.ReferenceHelper;
 import org.endeavourhealth.common.fhir.schema.OrganisationType;
+import org.endeavourhealth.hl7parser.ParseException;
+import org.endeavourhealth.hl7transform.common.TransformException;
 import org.endeavourhealth.hl7transform.mapper.Mapper;
 import org.endeavourhealth.hl7transform.mapper.MapperException;
 import org.endeavourhealth.hl7transform.common.ResourceContainer;
@@ -16,17 +18,18 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
 
-public class OrganizationTransform {
-
-    private Mapper mapper;
-    private ResourceContainer resourceContainer;
+public class OrganizationTransform extends TransformBase {
 
     public OrganizationTransform(Mapper mapper, ResourceContainer resourceContainer) {
-        this.mapper = mapper;
-        this.resourceContainer = resourceContainer;
+        super(mapper, resourceContainer);
     }
 
-    public Reference createHomertonManagingOrganisation() throws MapperException {
+    @Override
+    public ResourceType getResourceType() {
+        return ResourceType.Organization;
+    }
+
+    public Reference createHomertonManagingOrganisation() throws MapperException, TransformException, ParseException {
         final String organisationName = "Homerton University Hospital NHS Foundation Trust";
         final String odsCode = "RQX";
 
@@ -43,21 +46,21 @@ public class OrganizationTransform {
                                 .setSystem(OrganisationType.NHS_TRUST.getSystem())
                                 .setDisplay(OrganisationType.NHS_TRUST.getDescription())));
 
+        mapAndSetId(getUniqueIdentifyingString(odsCode, organisationName), organization);
 
-        UUID id = getId(odsCode, organisationName);
-        organization.setId(id.toString());
-
-        resourceContainer.addManagingOrganisation(organization);
+        targetResources.addManagingOrganisation(organization);
 
         return ReferenceHelper.createReference(ResourceType.Organization, organization.getId());
     }
 
-    public Reference createGeneralPracticeOrganisation(String odsCode, String practiceName, List<String> addressLines, String city, String postcode, String phoneNumber) throws MapperException {
+    public Reference createGeneralPracticeOrganisation(String odsCode, String practiceName, List<String> addressLines, String city, String postcode, String phoneNumber) throws MapperException, TransformException, ParseException {
 
         if (StringUtils.isBlank(practiceName))
             return null;
 
         Organization organization = new Organization();
+
+        mapAndSetId(getUniqueIdentifyingString(odsCode, practiceName), organization);
 
         if (StringUtils.isNotBlank(odsCode)) {
             organization.addIdentifier(new Identifier()
@@ -81,17 +84,12 @@ public class OrganizationTransform {
                         .setDisplay(OrganisationType.GP_PRACTICE.getDescription())
                         .setCode(OrganisationType.GP_PRACTICE.getCode())));
 
-
-        UUID id = getId(odsCode, practiceName);
-
-        organization.setId(id.toString());
-
-        resourceContainer.addResource(organization);
+        targetResources.addResource(organization);
 
         return ReferenceHelper.createReference(ResourceType.Organization, organization.getId());
     }
 
-    private UUID getId(String odsCode, String name) throws MapperException {
+    private String getUniqueIdentifyingString(String odsCode, String name) throws TransformException {
 
         if (odsCode == null)
             odsCode = "";
@@ -99,8 +97,9 @@ public class OrganizationTransform {
         odsCode = StringUtils.deleteWhitespace(odsCode).toUpperCase();
         name = StringUtils.deleteWhitespace(name).toUpperCase();
 
-        String uniqueIdentifyingString = "Organization-" + odsCode + "-" + name;
+        if (StringUtils.isBlank(odsCode) && StringUtils.isBlank(name))
+            throw new TransformException("ODS code and organisation name are blank");
 
-        return mapper.mapResourceUuid(ResourceType.Organization, uniqueIdentifyingString);
+        return odsCode + "-" + name;
     }
 }
