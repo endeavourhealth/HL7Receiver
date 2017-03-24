@@ -1,5 +1,6 @@
 package org.endeavourhealth.hl7transform.homerton.transforms;
 
+import com.google.common.collect.ImmutableMap;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Validate;
 import org.endeavourhealth.common.fhir.FhirUri;
@@ -29,7 +30,7 @@ public class PractitionerTransform extends TransformBase {
         return ResourceType.Practitioner;
     }
 
-    public Reference createPrimaryCarePractitioner(String sendingFacility, String gmcCode, String surname, String forenames, Reference primaryCareOrganizationReference) throws MapperException, TransformException, ParseException {
+    public Reference createPrimaryCarePractitioner(String gmcCode, String surname, String forenames, Reference primaryCareOrganizationReference) throws MapperException, TransformException, ParseException {
         Practitioner practitioner = new Practitioner();
 
         if (StringUtils.isNotBlank(gmcCode)) {
@@ -44,7 +45,7 @@ public class PractitionerTransform extends TransformBase {
 
         practitioner.setName(NameConverter.createUsualName(surname, forenames, null));
 
-        mapAndSetId(getUniqueIdentifyingString(sendingFacility, practitioner), practitioner);
+        mapAndSetId(getUniqueIdentifyingString(practitioner), practitioner);
 
         targetResources.addResource(practitioner);
 
@@ -55,7 +56,7 @@ public class PractitionerTransform extends TransformBase {
     }
 
     // this method removes duplicates based on title, surname, forename, and merges the identifiers
-    public List<Reference> transformAndGetReferences(String sendingFacility, List<Xcn> source) throws TransformException, MapperException, ParseException {
+    public List<Reference> transformAndGetReferences(List<Xcn> source) throws TransformException, MapperException, ParseException {
         Collection<List<Xcn>> practitionerGroups = source
                 .stream()
                 .collect(Collectors.groupingBy(t -> t.getPrefix() + t.getFamilyName() + t.getGivenName()))
@@ -64,7 +65,7 @@ public class PractitionerTransform extends TransformBase {
         List<Reference> references = new ArrayList<>();
 
         for (List<Xcn> practitioners : practitionerGroups) {
-            Practitioner practitioner = createPractitionerFromDuplicates(sendingFacility, practitioners);
+            Practitioner practitioner = createPractitionerFromDuplicates(practitioners);
 
             targetResources.addResource(practitioner);
 
@@ -74,7 +75,7 @@ public class PractitionerTransform extends TransformBase {
         return references;
     }
 
-    private Practitioner createPractitionerFromDuplicates(String sendingFacility, List<Xcn> sources) throws TransformException, MapperException, ParseException {
+    private Practitioner createPractitionerFromDuplicates(List<Xcn> sources) throws TransformException, MapperException, ParseException {
         Validate.notNull(sources);
 
         if (sources.size() == 0)
@@ -92,34 +93,9 @@ public class PractitionerTransform extends TransformBase {
                     practitioner.addIdentifier(identifier);
         }
 
-        mapAndSetId(getUniqueIdentifyingString(sendingFacility, practitioner), practitioner);
+        mapAndSetId(getUniqueIdentifyingString(practitioner), practitioner);
 
         return practitioner;
-    }
-
-    private String getUniqueIdentifyingString(String sendingFacility, Practitioner source) throws MapperException {
-
-        String forename = source.getName().getGiven().get(0).getValue().toUpperCase().trim();
-        String surname = source.getName().getFamily().get(0).getValue().toUpperCase().trim();
-
-        String uniqueIdentifyingString = surname + "-" + forename;
-
-        String primaryIdentifier = getIdentifierValue(source.getIdentifier(), FhirUri.IDENTIFIER_SYSTEM_HOMERTON_PRIMARY_PRACTITIONER_ID);
-
-        if (StringUtils.isNotBlank(primaryIdentifier))
-            uniqueIdentifyingString += "-PersonnelPrimaryIdentifier=" + primaryIdentifier;
-
-        String consultantCode = getIdentifierValue(source.getIdentifier(), FhirUri.IDENTIFIER_SYSTEM_CONSULTANT_CODE);
-
-        if (StringUtils.isNotBlank(consultantCode))
-            uniqueIdentifyingString += "-ConsultantCode=" + consultantCode;
-
-        String gmcCode = getIdentifierValue(source.getIdentifier(), FhirUri.IDENTIFIER_SYSTEM_GMC_NUMBER);
-
-        if (StringUtils.isNotBlank(gmcCode))
-            uniqueIdentifyingString += "-GmcCode=" + gmcCode;
-
-        return uniqueIdentifyingString;
     }
 
     private boolean hasIdentifierWithSystem(List<Identifier> identifiers, String system) {
@@ -132,5 +108,25 @@ public class PractitionerTransform extends TransformBase {
                 .filter(t -> t.getSystem().equals(system))
                 .map(t -> t.getValue())
                 .collect(StreamExtension.firstOrNullCollector());
+    }
+
+    private String getUniqueIdentifyingString(Practitioner source) throws MapperException, TransformException {
+
+        String forename = StringUtils.defaultString(source.getName().getGiven().get(0).getValue());
+        String surname = StringUtils.defaultString(source.getName().getFamily().get(0).getValue());
+        String primaryIdentifier = StringUtils.defaultString(getIdentifierValue(source.getIdentifier(), FhirUri.IDENTIFIER_SYSTEM_HOMERTON_PRIMARY_PRACTITIONER_ID));
+        String consultantCode = StringUtils.defaultString(getIdentifierValue(source.getIdentifier(), FhirUri.IDENTIFIER_SYSTEM_CONSULTANT_CODE));
+        String gmcCode = StringUtils.defaultString(getIdentifierValue(source.getIdentifier(), FhirUri.IDENTIFIER_SYSTEM_GMC_NUMBER));
+
+        if (StringUtils.isBlank(surname))
+            throw new TransformException("surname is blank");
+
+        return createIdentifyingString(ImmutableMap.of(
+                "Surname", surname,
+                "Forename", forename,
+                "HomertonPersonnelPrimaryIdentifier", primaryIdentifier,
+                "ConsultantCode", consultantCode,
+                "GmcCode", gmcCode
+        ));
     }
 }

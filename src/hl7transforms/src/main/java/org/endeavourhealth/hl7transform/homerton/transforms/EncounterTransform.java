@@ -1,6 +1,8 @@
 package org.endeavourhealth.hl7transform.homerton.transforms;
 
+import com.google.common.collect.ImmutableMap;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Validate;
 import org.endeavourhealth.common.fhir.FhirExtensionUri;
 import org.endeavourhealth.common.fhir.FhirUri;
 import org.endeavourhealth.common.fhir.ReferenceHelper;
@@ -62,32 +64,11 @@ public class EncounterTransform extends TransformBase {
         setReason(sourceMessage, target);
         setHospitalisationElement(sourceMessage.getPv1Segment(), target);
         setLocations(sourceMessage, target);
-
-        // set service provider
+        setServiceProvider(sourceMessage, target);
 
         // determine what to do with ACC segment information
 
         targetResources.addResource(target);
-    }
-
-    protected String getUniqueIdentifyingString(AdtMessage sourceMessage) throws TransformException, ParseException {
-
-        if (!sourceMessage.hasEvnSegment())
-            throw new TransformException("EVN segment not found");
-
-        EvnSegment evnSegment = sourceMessage.getEvnSegment();
-
-        Hl7DateTime recordedDateTime = evnSegment.getRecordedDateTime();
-
-        if (recordedDateTime == null)
-            throw new TransformException("Could not determine event recorded date/time");
-
-        if (recordedDateTime.getLocalDateTime() == null)
-            throw new TransformException("Could not determine event recorded date/time");
-
-        return StringUtils.deleteWhitespace(
-                EpisodeOfCareTransform.getUniqueIdentifyingString(sourceMessage)
-                        + "-" + sourceMessage.getEvnSegment().getRecordedDateTime().getLocalDateTime().format(DateTimeFormatter.ISO_LOCAL_DATE_TIME));
     }
 
     private static void setStatus(AdtMessage source, Encounter target) throws TransformException {
@@ -208,26 +189,24 @@ public class EncounterTransform extends TransformBase {
     private void setParticipants(AdtMessage source, Encounter target) throws TransformException, ParseException, MapperException {
 
         Pv1Segment pv1Segment = source.getPv1Segment();
-        String sendingFacility = source.getMshSegment().getSendingFacility();
 
-        addParticipantComponent(pv1Segment.getAttendingDoctor(), EncounterParticipantType.ATTENDER, target, sendingFacility);
-        addParticipantComponent(pv1Segment.getReferringDoctor(), EncounterParticipantType.REFERRER, target, sendingFacility);
-        addParticipantComponent(pv1Segment.getConsultingDoctor(), EncounterParticipantType.CONSULTANT, target, sendingFacility);
-        addParticipantComponent(pv1Segment.getAdmittingDoctor(), EncounterParticipantType.ADMITTER, target, sendingFacility);
-        addParticipantComponent(pv1Segment.getOtherHealthcareProvider(), EncounterParticipantType.SECONDARY_PERFORMER, target, sendingFacility);
+        addParticipantComponent(pv1Segment.getAttendingDoctor(), EncounterParticipantType.ATTENDER, target);
+        addParticipantComponent(pv1Segment.getReferringDoctor(), EncounterParticipantType.REFERRER, target);
+        addParticipantComponent(pv1Segment.getConsultingDoctor(), EncounterParticipantType.CONSULTANT, target);
+        addParticipantComponent(pv1Segment.getAdmittingDoctor(), EncounterParticipantType.ADMITTER, target);
+        addParticipantComponent(pv1Segment.getOtherHealthcareProvider(), EncounterParticipantType.SECONDARY_PERFORMER, target);
     }
 
     private void addParticipantComponent(
             List<Xcn> xcns,
             EncounterParticipantType type,
-            Encounter target,
-            String sendingFacility) throws TransformException, MapperException, ParseException {
+            Encounter target) throws TransformException, MapperException, ParseException {
 
         if (xcns == null)
             return;
 
         PractitionerTransform practitionerTransform = new PractitionerTransform(mapper, targetResources);
-        List<Reference> references = practitionerTransform.transformAndGetReferences(sendingFacility, xcns);
+        List<Reference> references = practitionerTransform.transformAndGetReferences(xcns);
 
         for (Reference reference : references) {
             target.addParticipant(new Encounter.EncounterParticipantComponent()
@@ -309,5 +288,27 @@ public class EncounterTransform extends TransformBase {
 
             target.setHospitalization(hospitalComponent);
         }
+    }
+
+    private void setServiceProvider(AdtMessage sourceMessage, Encounter target) throws TransformException, MapperException, ParseException {
+
+        Pv1Segment pv1Segment = sourceMessage.getPv1Segment();
+
+        OrganizationTransform organizationTransform = new OrganizationTransform(mapper, targetResources);
+        Reference reference = organizationTransform.createHomertonHospitalServiceOrganisation(pv1Segment.getHospitalService(), pv1Segment.getServicingFacility());
+
+        if (reference != null)
+            target.setServiceProvider(reference);
+    }
+
+    protected String getUniqueIdentifyingString(AdtMessage sourceMessage) throws TransformException, ParseException {
+
+        Hl7DateTime recordedDateTime = sourceMessage.getEvnSegment().getRecordedDateTime();
+
+        Validate.notNull(recordedDateTime, "EVN.getRecordedDateTime()");
+        Validate.notNull(recordedDateTime.getLocalDateTime(), "EVN.getRecordedDateTime().getLocalDateTime()");
+
+        return createIdentifyingString(EpisodeOfCareTransform.getUniqueIdentifyingString(sourceMessage),
+                ImmutableMap.of("EncounterDateTime", recordedDateTime.getLocalDateTime().format(DateTimeFormatter.ISO_LOCAL_DATE_TIME)));
     }
 }

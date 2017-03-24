@@ -1,5 +1,6 @@
 package org.endeavourhealth.hl7transform.homerton.transforms;
 
+import com.google.common.collect.ImmutableMap;
 import org.apache.commons.lang3.NotImplementedException;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Validate;
@@ -59,7 +60,7 @@ public class MessageHeaderTransform extends TransformBase {
                 .setName(source.getReceivingFacility())
                 .addExtension(ExtensionHelper.createStringExtension(FhirExtensionUri.EXTENSION_HL7V2_DESTINATION_SOFTWARE, source.getReceivingApplication()));
 
-        target.setResponsible(this.targetResources.getManagingOrganisation());
+        target.setResponsible(this.targetResources.getManagingOrganisationReference());
 
         target.addExtension(ExtensionHelper.createStringExtension(FhirExtensionUri.EXTENSION_HL7V2_MESSAGE_CONTROL_ID, source.getMessageControlId()));
 
@@ -72,17 +73,9 @@ public class MessageHeaderTransform extends TransformBase {
     }
 
     private UUID getId(AdtMessage source) throws MapperException, TransformException {
-        String uniqueIdentifyingString = getUniqueMessageHeaderString(source);
+        String uniqueIdentifyingString = getUniqueMessageHeaderString(source.getMshSegment().getMessageControlId());
 
         return mapper.mapResourceUuid(ResourceType.MessageHeader, uniqueIdentifyingString);
-    }
-
-    private static String getUniqueMessageHeaderString(AdtMessage source) throws TransformException {
-
-        if (StringUtils.isBlank(source.getMshSegment().getMessageControlId()))
-            throw new TransformException("Cannot create unique resource identifying string as MessageControlId is blank");
-
-        return StringUtils.deleteWhitespace(source.getMshSegment().getMessageControlId());
     }
 
     private static String getMessageTypeDescription(String messageType) {
@@ -140,5 +133,11 @@ public class MessageHeaderTransform extends TransformBase {
             case "ADT^A51": return "Change alternate visit ID";
             default: throw new NotImplementedException("Message type " + messageType + " not recognised");
         }
+    }
+
+    private static String getUniqueMessageHeaderString(String messageControlId) throws TransformException {
+        Validate.notBlank(messageControlId, "messageControlId");
+
+        return createIdentifyingString(ImmutableMap.of("MessageControlId", messageControlId));
     }
 }

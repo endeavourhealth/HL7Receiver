@@ -38,7 +38,7 @@ public class ResourceContainer {
         this.addResource(organization);
     }
 
-    public Reference getManagingOrganisation() throws TransformException {
+    public Reference getManagingOrganisationReference() throws TransformException {
         if (this.managingOrganisation == null)
             throw new TransformException("Managing organisation not created");
 
@@ -50,11 +50,11 @@ public class ResourceContainer {
         this.addResource(managingLocation);
     }
 
-    public Reference getManagingLocation() throws TransformException {
+    public Location getManagingLocation() throws TransformException {
         if (this.managingOrganisation == null)
             throw new TransformException("Managing location not created");
 
-        return ReferenceHelper.createReference(ResourceType.Location, this.managingLocation.getId());
+        return this.managingLocation;
     }
 
     public void addResource(Resource resource) {

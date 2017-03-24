@@ -19,7 +19,7 @@ public class SexConverter {
             //not known (n)
             case "n": return Enumerations.AdministrativeGender.UNKNOWN;
             //indeterminate
-            case "i": return Enumerations.AdministrativeGender.UNKNOWN;
+            case "i": return Enumerations.AdministrativeGender.OTHER;
             default: throw new TransformException(sex + " not recognised as a sex value");
         }
     }

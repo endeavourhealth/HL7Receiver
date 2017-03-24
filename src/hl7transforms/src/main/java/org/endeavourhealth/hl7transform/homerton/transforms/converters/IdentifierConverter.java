@@ -26,6 +26,15 @@ public class IdentifierConverter {
                 .setValue(StringUtils.deleteWhitespace(source.getId()));
     }
 
+    public static Identifier createOdsCodeIdentifier(String odsCode) {
+        if (StringUtils.isBlank(odsCode))
+            return null;
+
+        return new Identifier()
+                .setSystem(FhirUri.IDENTIFIER_SYSTEM_ODS_CODE)
+                .setValue(StringUtils.deleteWhitespace(odsCode.toUpperCase()));
+    }
+
     private static String getIdentifierSystem(CxInterface source, ResourceType resourceType) throws TransformException {
         String id = StringUtils.trim(StringUtils.defaultString(source.getId())).toLowerCase();
         String identifierTypeCode = StringUtils.trim(StringUtils.defaultString(source.getIdentifierTypeCode())).toLowerCase();
@@ -36,7 +45,7 @@ public class IdentifierConverter {
 
         if (resourceType == ResourceType.Patient) {
 
-            switch (identifierTypeCode + " | " + assigningAuthority) {
+            switch (assigningAuthority + " | " + identifierTypeCode) {
                 case "nhs number | nhs": return FhirUri.IDENTIFIER_SYSTEM_NHSNUMBER;
                 case "homerton case note number | cnn": return FhirUri.IDENTIFIER_SYSTEM_HOMERTON_CNN_PATIENT_ID;
                 case "homerton case note number | mrn": return FhirUri.IDENTIFIER_SYSTEM_HOMERTON_MRN_PATIENT_ID;
@@ -47,7 +56,7 @@ public class IdentifierConverter {
 
         } else if (resourceType == ResourceType.EpisodeOfCare) {
 
-            switch (identifierTypeCode + " | " + assigningAuthority) {
+            switch (assigningAuthority + " | " + identifierTypeCode) {
                 case "homerton fin | encounter no.": return FhirUri.IDENTIFIER_SYSTEM_HOMERTON_FIN_EPISODE_ID;
                 case " | attendance no.": return FhirUri.IDENTIFIER_SYSTEM_HOMERTON_ATTENDANCE_NO_EPISODE_ID;
                 default: throw new TransformException("Episode identifier system not found for " + identifierTypeCode + " | " + assigningAuthority);
@@ -55,7 +64,7 @@ public class IdentifierConverter {
 
         } else if (resourceType == ResourceType.Practitioner) {
 
-            switch (identifierTypeCode + " | " + assigningAuthority) {
+            switch (assigningAuthority + " | " + identifierTypeCode) {
                 case "nhs consultant number | non gp":
                 case "community dr nbr | community dr nbr":
                 case " | community dr nbr":

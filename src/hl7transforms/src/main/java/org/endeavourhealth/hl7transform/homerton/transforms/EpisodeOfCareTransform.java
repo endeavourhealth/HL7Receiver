@@ -1,6 +1,8 @@
 package org.endeavourhealth.hl7transform.homerton.transforms;
 
+import com.google.common.collect.ImmutableMap;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Validate;
 import org.endeavourhealth.common.fhir.FhirUri;
 import org.endeavourhealth.common.fhir.ReferenceHelper;
 import org.endeavourhealth.hl7parser.ParseException;
@@ -49,26 +51,6 @@ public class EpisodeOfCareTransform extends TransformBase {
         targetResources.addResource(target);
     }
 
-    protected static String getUniqueIdentifyingString(AdtMessage sourceMessage) throws TransformException {
-        Cx cx = sourceMessage.getPv1Segment().getVisitNumber();
-
-        if (cx == null)
-            throw new TransformException("Episode number (PID.18) is null");
-
-        if (StringUtils.isEmpty(cx.getAssigningAuthority()))
-            throw new TransformException("Episode number (PID.18) assigning authority is empty");
-
-        if (StringUtils.isEmpty(cx.getId()))
-            throw new TransformException("Episode number (PID.18) id is empty");
-
-        if (!"Homerton FIN".equals(cx.getAssigningAuthority()))
-            throw new TransformException("Episode number assigning authority does not match");
-
-        return StringUtils.deleteWhitespace(
-                PatientTransform.getUniqueIdentifyingString(sourceMessage)
-                        + "-" + cx.getAssigningAuthority() + "-" + cx.getId());
-    }
-
     private void setIdentifiers(AdtMessage source, EpisodeOfCare target) throws TransformException {
 
         Identifier visitNumber = IdentifierConverter.createIdentifier(source.getPv1Segment().getVisitNumber(), getResourceType());
@@ -84,5 +66,25 @@ public class EpisodeOfCareTransform extends TransformBase {
 
     private static void setPatient(Patient patient, EpisodeOfCare target) {
         target.setPatient(ReferenceHelper.createReference(ResourceType.Patient, patient.getId()));
+    }
+
+    protected static String getUniqueIdentifyingString(AdtMessage sourceMessage) throws TransformException {
+
+        final String episodeAssigningAuthority = "Homerton FIN";
+
+        Cx alternateVisitId = sourceMessage.getPv1Segment().getAlternateVisitID();
+
+        Validate.notNull(alternateVisitId, "PV1.getAlternateVisitID()");
+        Validate.notBlank(alternateVisitId.getAssigningAuthority(), "PV1.getAlternateVisitID().getAssigningAuthority()");
+        Validate.notBlank(alternateVisitId.getId(), "PV1.getAlternateVisitID().getId()");
+
+        if (!episodeAssigningAuthority.equals(alternateVisitId.getAssigningAuthority()))
+            throw new TransformException("Episode number assigning authority " + alternateVisitId.getAssigningAuthority() + " not recognised");
+
+        return createIdentifyingString(PatientTransform.getUniqueIdentifyingString(sourceMessage),
+                ImmutableMap.of(
+                        "EpisodeIdentifierAssigningAuthority", alternateVisitId.getAssigningAuthority(),
+                        "EpisodeIdentifierValue", alternateVisitId.getId()
+                ));
     }
 }

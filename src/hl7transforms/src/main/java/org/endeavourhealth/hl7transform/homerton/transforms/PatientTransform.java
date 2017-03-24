@@ -1,5 +1,7 @@
 package org.endeavourhealth.hl7transform.homerton.transforms;
 
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Validate;
 import org.endeavourhealth.common.fhir.FhirExtensionUri;
@@ -26,11 +28,8 @@ import org.hl7.fhir.instance.model.*;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.UUID;
 
 public class PatientTransform extends TransformBase {
-
-    private static final String patientIdentifierTypeCode = "CNN";
 
     public PatientTransform(Mapper mapper, ResourceContainer targetResources) {
         super(mapper, targetResources);
@@ -66,19 +65,12 @@ public class PatientTransform extends TransformBase {
         targetResources.addResource(target);
     }
 
-    public static String getUniqueIdentifyingString(AdtMessage message) throws TransformException {
-        Cx cx = PatientTransform.getAllPatientIdentifiers(message)
+    private static String getPatientIdentifierValue(AdtMessage message, String patientIdentifierTypeCode) {
+        return PatientTransform.getAllPatientIdentifiers(message)
                 .stream()
                 .filter(t -> patientIdentifierTypeCode.equals(t.getIdentifierTypeCode()))
+                .map(t -> t.getId())
                 .collect(StreamExtension.firstOrNullCollector());
-
-        if (cx == null)
-            throw new TransformException("Could not find patient identifier with type of " + patientIdentifierTypeCode);
-
-        if (StringUtils.isBlank(cx.getId()))
-            throw new TransformException("Patient identifier with type of " + patientIdentifierTypeCode + " has empty value");
-
-        return StringUtils.deleteWhitespace(patientIdentifierTypeCode + "-" + cx.getId());
     }
 
     private static void addNames(PidSegment sourcePid, Patient target) throws TransformException {
@@ -185,7 +177,7 @@ public class PatientTransform extends TransformBase {
         String forenames = field.getComponentAsString(3);
 
         PractitionerTransform practitionerTransform = new PractitionerTransform(mapper, targetResources);
-        Reference practitionerReference = practitionerTransform.createPrimaryCarePractitioner(source.getMshSegment().getSendingFacility(), gmcCode, surname, forenames, organisationReference);
+        Reference practitionerReference = practitionerTransform.createPrimaryCarePractitioner(gmcCode, surname, forenames, organisationReference);
 
         if (organisationReference != null)
             target.addCareProvider(organisationReference);
@@ -348,6 +340,22 @@ public class PatientTransform extends TransformBase {
     }
 
     private void setManagingOrganization(AdtMessage source, Patient target) throws MapperException, TransformException {
-        target.setManagingOrganization(this.targetResources.getManagingOrganisation());
+        target.setManagingOrganization(this.targetResources.getManagingOrganisationReference());
+    }
+
+    public static String getUniqueIdentifyingString(AdtMessage message) throws TransformException {
+        Validate.notNull(message);
+
+        final String patientIdentifierTypeCode = "CNN";
+
+        String patientIdentifierValue = getPatientIdentifierValue(message, patientIdentifierTypeCode);
+
+        if (StringUtils.isBlank(patientIdentifierValue))
+            throw new TransformException("Patient identifier with type of " + patientIdentifierTypeCode + " has empty value");
+
+        return createIdentifyingString(ImmutableMap.of(
+                "PatientIdentifierTypeCode", patientIdentifierTypeCode,
+                "PatientIdentifierValue", patientIdentifierValue
+        ));
     }
 }
