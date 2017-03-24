@@ -69,6 +69,8 @@ public class OrganizationTransform extends TransformBase {
 
         mapAndSetId(getUniqueIdentifyingString(homertonOdsCode, homertonOrganisationName, hospitalServiceName), organization);
 
+        targetResources.addResource(organization);
+
         return ReferenceHelper.createReference(ResourceType.Organization, organization.getId());
     }
 

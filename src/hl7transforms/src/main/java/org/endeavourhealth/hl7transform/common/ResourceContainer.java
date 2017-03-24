@@ -1,12 +1,15 @@
 package org.endeavourhealth.hl7transform.common;
 
 
+import com.google.common.collect.Iterables;
+import com.google.common.collect.Lists;
 import org.apache.commons.lang3.Validate;
 import org.endeavourhealth.common.fhir.ReferenceHelper;
 import org.endeavourhealth.common.utility.StreamExtension;
 import org.hl7.fhir.instance.model.*;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -88,13 +91,30 @@ public class ResourceContainer {
     }
 
     public ResourceContainer orderByResourceType() {
-        this.resources = this.
-                resources.
-                stream().
-                sorted(Comparator.comparing(t -> t.getResourceType()))
-                .collect(Collectors.toList());
+        List<Resource> orderedResources = Lists.newArrayList(Iterables.concat(
+                getResourcesOfType(ResourceType.MessageHeader),
+                getResourcesOfType(ResourceType.Patient),
+                getResourcesOfType(ResourceType.EpisodeOfCare),
+                getResourcesOfType(ResourceType.Encounter),
+                getResourcesOfType(ResourceType.Organization),
+                getResourcesOfType(ResourceType.Location),
+                getResourcesOfType(ResourceType.Practitioner)));
+
+        for (Resource resource : this.resources)
+            if (!orderedResources.stream().anyMatch(t -> t.getId().equals(resource.getId())))
+                orderedResources.add(resource);
+
+        this.resources = orderedResources;
 
         return this;
+    }
+
+    private List<Resource> getResourcesOfType(ResourceType resourceType) {
+        return this
+                .resources
+                .stream()
+                .filter(t -> t.getResourceType() == resourceType)
+                .collect(Collectors.toList());
     }
 
     public Bundle createBundle() {
