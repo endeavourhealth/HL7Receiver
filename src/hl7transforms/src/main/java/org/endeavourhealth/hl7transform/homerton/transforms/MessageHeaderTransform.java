@@ -38,8 +38,7 @@ public class MessageHeaderTransform extends TransformBase {
         MshSegment source = sourceMessage.getMshSegment();
         MessageHeader target = new MessageHeader();
 
-        UUID messageId = getId(sourceMessage);
-        target.setId(messageId.toString());
+        setId(sourceMessage, target);
 
         LocalDateTime sourceMessageDateTime = source.getDateTimeOfMessage().getLocalDateTime();
 
@@ -72,10 +71,10 @@ public class MessageHeaderTransform extends TransformBase {
         targetResources.addResource(target);
     }
 
-    private UUID getId(AdtMessage source) throws MapperException, TransformException {
-        String uniqueIdentifyingString = getUniqueMessageHeaderString(source.getMshSegment().getMessageControlId());
+    private void setId(AdtMessage source, MessageHeader target) throws MapperException {
 
-        return mapper.mapResourceUuid(ResourceType.MessageHeader, uniqueIdentifyingString);
+        UUID id = mapper.mapMessageHeaderUuid(source.getMshSegment().getMessageControlId());
+        target.setId(id.toString());
     }
 
     private static String getMessageTypeDescription(String messageType) {
@@ -133,11 +132,5 @@ public class MessageHeaderTransform extends TransformBase {
             case "ADT^A51": return "Change alternate visit ID";
             default: throw new NotImplementedException("Message type " + messageType + " not recognised");
         }
-    }
-
-    private static String getUniqueMessageHeaderString(String messageControlId) throws TransformException {
-        Validate.notBlank(messageControlId, "messageControlId");
-
-        return createIdentifyingString(ImmutableMap.of("MessageControlId", messageControlId));
     }
 }

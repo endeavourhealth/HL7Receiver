@@ -1,7 +1,5 @@
 package org.endeavourhealth.hl7transform.homerton.transforms;
 
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableMap;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Validate;
 import org.endeavourhealth.common.fhir.FhirExtensionUri;
@@ -28,6 +26,7 @@ import org.hl7.fhir.instance.model.*;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 public class PatientTransform extends TransformBase {
 
@@ -45,7 +44,7 @@ public class PatientTransform extends TransformBase {
 
         Patient target = new Patient();
 
-        mapAndSetId(getUniqueIdentifyingString(source), target);
+        setId(source, target);
 
         addNames(source.getPidSegment(), target);
         setDateOfBirth(source.getPidSegment(), target);
@@ -65,7 +64,15 @@ public class PatientTransform extends TransformBase {
         targetResources.addResource(target);
     }
 
-    private static String getPatientIdentifierValue(AdtMessage message, String patientIdentifierTypeCode) {
+    public void setId(AdtMessage source, Patient target) throws TransformException, MapperException {
+
+        String patientIdentifierValue = getPatientIdentifierValue(source, HomertonConstants.primaryPatientIdentifierTypeCode);
+        UUID patientUuid = mapper.mapPatientUuid(HomertonConstants.primaryPatientIdentifierTypeCode, patientIdentifierValue);
+
+        target.setId(patientUuid.toString());
+    }
+
+    public static String getPatientIdentifierValue(AdtMessage message, String patientIdentifierTypeCode) {
         return PatientTransform.getAllPatientIdentifiers(message)
                 .stream()
                 .filter(t -> patientIdentifierTypeCode.equals(t.getIdentifierTypeCode()))
@@ -84,8 +91,11 @@ public class PatientTransform extends TransformBase {
     public static List<Cx> getAllPatientIdentifiers(AdtMessage source) {
         List<Cx> patientIdentifiers = new ArrayList<>();
 
-        patientIdentifiers.add(source.getPidSegment().getExternalPatientId());
-        patientIdentifiers.addAll(source.getPidSegment().getInternalPatientId());
+        if (source.getPidSegment().getExternalPatientId() != null)
+            patientIdentifiers.add(source.getPidSegment().getExternalPatientId());
+
+        if (source.getPidSegment().getInternalPatientId() != null)
+            patientIdentifiers.addAll(source.getPidSegment().getInternalPatientId());
 
         return patientIdentifiers;
     }
@@ -341,21 +351,5 @@ public class PatientTransform extends TransformBase {
 
     private void setManagingOrganization(AdtMessage source, Patient target) throws MapperException, TransformException {
         target.setManagingOrganization(this.targetResources.getManagingOrganisationReference());
-    }
-
-    public static String getUniqueIdentifyingString(AdtMessage message) throws TransformException {
-        Validate.notNull(message);
-
-        final String patientIdentifierTypeCode = "CNN";
-
-        String patientIdentifierValue = getPatientIdentifierValue(message, patientIdentifierTypeCode);
-
-        if (StringUtils.isBlank(patientIdentifierValue))
-            throw new TransformException("Patient identifier with type of " + patientIdentifierTypeCode + " has empty value");
-
-        return createIdentifyingString(ImmutableMap.of(
-                "PatientIdentifierTypeCode", patientIdentifierTypeCode,
-                "PatientIdentifierValue", patientIdentifierValue
-        ));
     }
 }

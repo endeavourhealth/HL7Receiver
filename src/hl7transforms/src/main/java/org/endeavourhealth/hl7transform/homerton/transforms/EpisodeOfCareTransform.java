@@ -5,6 +5,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Validate;
 import org.endeavourhealth.common.fhir.FhirUri;
 import org.endeavourhealth.common.fhir.ReferenceHelper;
+import org.endeavourhealth.common.utility.StreamExtension;
 import org.endeavourhealth.hl7parser.ParseException;
 import org.endeavourhealth.hl7parser.datatypes.Cx;
 import org.endeavourhealth.hl7parser.messages.AdtMessage;
@@ -15,6 +16,8 @@ import org.endeavourhealth.hl7transform.common.ResourceContainer;
 import org.endeavourhealth.hl7transform.common.TransformException;
 import org.hl7.fhir.instance.model.*;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 
 public class EpisodeOfCareTransform extends TransformBase {
@@ -35,7 +38,7 @@ public class EpisodeOfCareTransform extends TransformBase {
 
         EpisodeOfCare target = new EpisodeOfCare();
 
-        mapAndSetId(getUniqueIdentifyingString(sourceMessage), target);
+        setId(sourceMessage, target);
 
         setIdentifiers(sourceMessage, target);
 
@@ -49,6 +52,15 @@ public class EpisodeOfCareTransform extends TransformBase {
 
 
         targetResources.addResource(target);
+    }
+
+    protected void setId(AdtMessage source, EpisodeOfCare target) throws TransformException, MapperException {
+
+        String patientIdentifierValue = PatientTransform.getPatientIdentifierValue(source, HomertonConstants.primaryPatientIdentifierTypeCode);
+        String episodeIdentifierValue = getEpisodeIdentifierValue(source, HomertonConstants.primaryEpisodeIdentifierAssigningAuthority);
+        UUID episodeUuid = mapper.mapEpisodeUuid(HomertonConstants.primaryPatientIdentifierTypeCode, patientIdentifierValue, HomertonConstants.primaryEpisodeIdentifierAssigningAuthority, episodeIdentifierValue);
+
+        target.setId(episodeUuid.toString());
     }
 
     private void setIdentifiers(AdtMessage source, EpisodeOfCare target) throws TransformException {
@@ -68,23 +80,23 @@ public class EpisodeOfCareTransform extends TransformBase {
         target.setPatient(ReferenceHelper.createReference(ResourceType.Patient, patient.getId()));
     }
 
-    protected static String getUniqueIdentifyingString(AdtMessage sourceMessage) throws TransformException {
+    public static List<Cx> getAllEpisodeIdentifiers(AdtMessage source) {
+        List<Cx> episodeIdentifiers = new ArrayList<>();
 
-        final String episodeAssigningAuthority = "Homerton FIN";
+        if (source.getPv1Segment().getVisitNumber() != null)
+            episodeIdentifiers.add(source.getPv1Segment().getVisitNumber());
 
-        Cx alternateVisitId = sourceMessage.getPv1Segment().getAlternateVisitID();
+        if (source.getPv1Segment().getAlternateVisitID() != null)
+            episodeIdentifiers.add(source.getPv1Segment().getAlternateVisitID());
 
-        Validate.notNull(alternateVisitId, "PV1.getAlternateVisitID()");
-        Validate.notBlank(alternateVisitId.getAssigningAuthority(), "PV1.getAlternateVisitID().getAssigningAuthority()");
-        Validate.notBlank(alternateVisitId.getId(), "PV1.getAlternateVisitID().getId()");
+        return episodeIdentifiers;
+    }
 
-        if (!episodeAssigningAuthority.equals(alternateVisitId.getAssigningAuthority()))
-            throw new TransformException("Episode number assigning authority " + alternateVisitId.getAssigningAuthority() + " not recognised");
-
-        return createIdentifyingString(PatientTransform.getUniqueIdentifyingString(sourceMessage),
-                ImmutableMap.of(
-                        "EpisodeIdentifierAssigningAuthority", alternateVisitId.getAssigningAuthority(),
-                        "EpisodeIdentifierValue", alternateVisitId.getId()
-                ));
+    public static String getEpisodeIdentifierValue(AdtMessage source, String episodeIdentifierAssigningAuthority) {
+        return getAllEpisodeIdentifiers(source)
+                .stream()
+                .filter(t -> episodeIdentifierAssigningAuthority.equals(t.getAssigningAuthority()))
+                .map(t -> t.getId())
+                .collect(StreamExtension.firstOrNullCollector());
     }
 }

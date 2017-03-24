@@ -1,6 +1,5 @@
 package org.endeavourhealth.hl7transform.homerton.transforms;
 
-import com.google.common.collect.ImmutableMap;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Validate;
 import org.endeavourhealth.common.fhir.FhirUri;
@@ -45,7 +44,8 @@ public class PractitionerTransform extends TransformBase {
 
         practitioner.setName(NameConverter.createUsualName(surname, forenames, null));
 
-        mapAndSetId(getUniqueIdentifyingString(practitioner), practitioner);
+        UUID id = getId(practitioner);
+        practitioner.setId(id.toString());
 
         targetResources.addResource(practitioner);
 
@@ -93,7 +93,8 @@ public class PractitionerTransform extends TransformBase {
                     practitioner.addIdentifier(identifier);
         }
 
-        mapAndSetId(getUniqueIdentifyingString(practitioner), practitioner);
+        UUID id = getId(practitioner);
+        practitioner.setId(id.toString());
 
         return practitioner;
     }
@@ -110,23 +111,14 @@ public class PractitionerTransform extends TransformBase {
                 .collect(StreamExtension.firstOrNullCollector());
     }
 
-    private String getUniqueIdentifyingString(Practitioner source) throws MapperException, TransformException {
+    private UUID getId(Practitioner source) throws MapperException, TransformException {
 
-        String forename = StringUtils.defaultString(source.getName().getGiven().get(0).getValue());
-        String surname = StringUtils.defaultString(source.getName().getFamily().get(0).getValue());
-        String primaryIdentifier = StringUtils.defaultString(getIdentifierValue(source.getIdentifier(), FhirUri.IDENTIFIER_SYSTEM_HOMERTON_PRIMARY_PRACTITIONER_ID));
-        String consultantCode = StringUtils.defaultString(getIdentifierValue(source.getIdentifier(), FhirUri.IDENTIFIER_SYSTEM_CONSULTANT_CODE));
-        String gmcCode = StringUtils.defaultString(getIdentifierValue(source.getIdentifier(), FhirUri.IDENTIFIER_SYSTEM_GMC_NUMBER));
+        String forename = source.getName().getGiven().get(0).getValue();
+        String surname = source.getName().getFamily().get(0).getValue();
+        String primaryIdentifier = getIdentifierValue(source.getIdentifier(), FhirUri.IDENTIFIER_SYSTEM_HOMERTON_PRIMARY_PRACTITIONER_ID);
+        String consultantCode = getIdentifierValue(source.getIdentifier(), FhirUri.IDENTIFIER_SYSTEM_CONSULTANT_CODE);
+        String gmcCode = getIdentifierValue(source.getIdentifier(), FhirUri.IDENTIFIER_SYSTEM_GMC_NUMBER);
 
-        if (StringUtils.isBlank(surname))
-            throw new TransformException("surname is blank");
-
-        return createIdentifyingString(ImmutableMap.of(
-                "Surname", surname,
-                "Forename", forename,
-                "HomertonPersonnelPrimaryIdentifier", primaryIdentifier,
-                "ConsultantCode", consultantCode,
-                "GmcCode", gmcCode
-        ));
+        return mapper.mapPractitionerUuid(surname, forename, HomertonConstants.primaryPatientIdentifierTypeCode, primaryIdentifier, consultantCode, gmcCode);
     }
 }

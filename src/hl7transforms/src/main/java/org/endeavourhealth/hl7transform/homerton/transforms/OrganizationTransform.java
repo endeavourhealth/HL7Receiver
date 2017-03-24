@@ -40,7 +40,8 @@ public class OrganizationTransform extends TransformBase {
                 .setName(HomertonConstants.organisationName)
                 .addAddress(AddressConverter.createWorkAddress(Arrays.asList(HomertonConstants.addressLine), HomertonConstants.addressCity, HomertonConstants.addressPostcode));
 
-        mapAndSetId(getUniqueIdentifyingString(HomertonConstants.odsCode, HomertonConstants.organisationName), organization);
+        UUID id = mapper.mapOrganisationUuid(HomertonConstants.odsCode, HomertonConstants.organisationName);
+        organization.setId(id.toString());
 
         targetResources.addManagingOrganisation(organization);
 
@@ -67,7 +68,8 @@ public class OrganizationTransform extends TransformBase {
                 .addAddress(AddressConverter.createWorkAddress(Arrays.asList(HomertonConstants.organisationName, HomertonConstants.addressLine), HomertonConstants.addressCity, HomertonConstants.addressPostcode))
                 .setPartOf(managingOrganisationReference);
 
-        mapAndSetId(getUniqueIdentifyingString(HomertonConstants.odsCode, HomertonConstants.addressLine, hospitalServiceName), organization);
+        UUID id = mapper.mapOrganisationUuid(HomertonConstants.odsCode, HomertonConstants.organisationName, hospitalServiceName);
+        organization.setId(id.toString());
 
         targetResources.addResource(organization);
 
@@ -81,7 +83,8 @@ public class OrganizationTransform extends TransformBase {
 
         Organization organization = new Organization();
 
-        mapAndSetId(getUniqueIdentifyingString(odsCode, practiceName), organization);
+        UUID id = mapper.mapOrganisationUuid(odsCode, practiceName);
+        organization.setId(id.toString());
 
         Identifier identifier = IdentifierConverter.createOdsCodeIdentifier(odsCode);
 
@@ -111,27 +114,5 @@ public class OrganizationTransform extends TransformBase {
                         .setSystem(organisationType.getSystem())
                         .setDisplay(organisationType.getDescription())
                         .setCode(organisationType.getCode()));
-    }
-
-    private String getUniqueIdentifyingString(String odsCode, String name) {
-        Validate.notBlank(odsCode, "odsCode");
-        Validate.notBlank(name, "name");
-
-        return createIdentifyingString(ImmutableMap.of(
-                "OdsCode", odsCode,
-                "Name", name
-        ));
-    }
-
-    private String getUniqueIdentifyingString(String parentOdsCode, String parentName, String serviceName) {
-        Validate.notBlank(parentOdsCode, "parentOdsCode");
-        Validate.notBlank(parentName, "parentName");
-        Validate.notBlank(serviceName, "serviceName");
-
-        return createIdentifyingString(ImmutableMap.of(
-                "ParentOdsCode", parentOdsCode,
-                "ParentName", parentName,
-                "ServiceName", serviceName
-        ));
     }
 }

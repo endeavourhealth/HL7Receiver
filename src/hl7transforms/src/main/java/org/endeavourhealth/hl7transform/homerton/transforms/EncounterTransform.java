@@ -51,7 +51,7 @@ public class EncounterTransform extends TransformBase {
 
         Encounter target = new Encounter();
 
-        mapAndSetId(getUniqueIdentifyingString(sourceMessage), target);
+        setId(sourceMessage, target);
 
         setStatus(sourceMessage, target);
         setStatusHistory(sourceMessage, target);
@@ -69,6 +69,21 @@ public class EncounterTransform extends TransformBase {
         // determine what to do with ACC segment information
 
         targetResources.addResource(target);
+    }
+
+    protected void setId(AdtMessage source, Encounter target) throws TransformException, ParseException, MapperException {
+
+        String patientIdentifierValue = PatientTransform.getPatientIdentifierValue(source, HomertonConstants.primaryPatientIdentifierTypeCode);
+        String episodeIdentifierValue = EpisodeOfCareTransform.getEpisodeIdentifierValue(source, HomertonConstants.primaryEpisodeIdentifierAssigningAuthority);
+
+        UUID encounterUuid = mapper.mapEncounterUuid(
+                HomertonConstants.primaryPatientIdentifierTypeCode,
+                patientIdentifierValue,
+                HomertonConstants.primaryEpisodeIdentifierAssigningAuthority,
+                episodeIdentifierValue,
+                source.getEvnSegment().getRecordedDateTime());
+
+        target.setId(encounterUuid.toString());
     }
 
     private static void setStatus(AdtMessage source, Encounter target) throws TransformException {
@@ -299,16 +314,5 @@ public class EncounterTransform extends TransformBase {
 
         if (reference != null)
             target.setServiceProvider(reference);
-    }
-
-    protected String getUniqueIdentifyingString(AdtMessage sourceMessage) throws TransformException, ParseException {
-
-        Hl7DateTime recordedDateTime = sourceMessage.getEvnSegment().getRecordedDateTime();
-
-        Validate.notNull(recordedDateTime, "EVN.getRecordedDateTime()");
-        Validate.notNull(recordedDateTime.getLocalDateTime(), "EVN.getRecordedDateTime().getLocalDateTime()");
-
-        return createIdentifyingString(EpisodeOfCareTransform.getUniqueIdentifyingString(sourceMessage),
-                ImmutableMap.of("EncounterDateTime", recordedDateTime.getLocalDateTime().format(DateTimeFormatter.ISO_LOCAL_DATE_TIME)));
     }
 }

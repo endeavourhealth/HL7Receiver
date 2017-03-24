@@ -22,7 +22,6 @@ import org.hl7.fhir.instance.model.valuesets.LocationPhysicalType;
 import org.hl7.fhir.instance.model.valuesets.V3RoleCode;
 
 import java.util.*;
-import java.util.stream.Collectors;
 
 public class LocationTransform extends TransformBase {
 
@@ -47,7 +46,8 @@ public class LocationTransform extends TransformBase {
                 .setPhysicalType(createLocationPhysicalType(LocationPhysicalType.BU))
                 .setMode(Location.LocationMode.INSTANCE);
 
-        mapAndSetId(getUniqueIdentifyingString(HomertonConstants.odsSiteCode, HomertonConstants.locationName), location);
+        UUID id = getId(HomertonConstants.odsSiteCode, HomertonConstants.locationName);
+        location.setId(id.toString());
 
         targetResources.addManagingLocation(location);
 
@@ -122,7 +122,8 @@ public class LocationTransform extends TransformBase {
                 .addAll(locationParentNames)
                 .build();
 
-        mapAndSetId(getUniqueIdentifyingString(getOdsSiteCode(topParentBuildingLocation), topParentBuildingLocation.getName(), locationHierarchy), location);
+        UUID id = getId(getOdsSiteCode(topParentBuildingLocation), topParentBuildingLocation.getName(), locationHierarchy);
+        location.setId(id.toString());
 
         location.setName(locationName);
 
@@ -141,6 +142,14 @@ public class LocationTransform extends TransformBase {
         setPartOf(location, directParentLocation);
 
         return location;
+    }
+
+    private UUID getId(String odsSiteCode, String locationName) throws MapperException {
+        return mapper.mapLocationUuid(odsSiteCode, locationName);
+    }
+
+    public UUID getId(String parentOdsSiteCode, String parentLocationName, List<String> locationNames) throws MapperException {
+        return mapper.mapLocationUuid(parentOdsSiteCode, parentLocationName, locationNames);
     }
 
     private static String getOdsSiteCode(Location location) {
@@ -171,27 +180,5 @@ public class LocationTransform extends TransformBase {
                                 .setCode(locationPhysicalType.toCode())
                                 .setSystem(locationPhysicalType.getSystem())
                                 .setDisplay(locationPhysicalType.getDisplay()));
-    }
-
-    private static String getUniqueIdentifyingString(String odsSiteCode, String locationName) {
-        Validate.notBlank(odsSiteCode, "odsSiteCode");
-        Validate.notBlank(locationName, "locationName");
-
-        return createIdentifyingString(ImmutableMap.of(
-                "OdsSiteCode", odsSiteCode,
-                "LocationName", locationName.replace(".", "")
-        ));
-    }
-
-    private static String getUniqueIdentifyingString(String parentOdsSiteCode, String parentLocationName, List<String> locationNames) {
-        Validate.notBlank(parentOdsSiteCode, "parentOdsSiteCode");
-        Validate.notBlank(parentLocationName, "parentLocationName");
-        Validate.notBlank(StringUtils.join(locationNames, ""), "locationNames");
-
-        return createIdentifyingString(ImmutableMap.of(
-                "ParentOdsSiteCode", parentOdsSiteCode,
-                "ParentLocationName", parentLocationName.replace(".", ""),
-                "LocationNameHierarchy", StringUtils.join(locationNames, repeatingValueSeperator)
-        ));
     }
 }
