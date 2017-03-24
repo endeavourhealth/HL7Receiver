@@ -7,6 +7,7 @@ import org.endeavourhealth.common.fhir.FhirUri;
 import org.endeavourhealth.common.fhir.ReferenceHelper;
 import org.endeavourhealth.common.fhir.schema.OrganisationType;
 import org.endeavourhealth.hl7parser.ParseException;
+import org.endeavourhealth.hl7parser.segments.Pv1Segment;
 import org.endeavourhealth.hl7transform.common.TransformException;
 import org.endeavourhealth.hl7transform.homerton.transforms.converters.IdentifierConverter;
 import org.endeavourhealth.hl7transform.mapper.Mapper;
@@ -22,12 +23,6 @@ import java.util.stream.Collectors;
 
 public class OrganizationTransform extends TransformBase {
 
-    public static final String homertonOrganisationName = "Homerton University Hospital NHS Foundation Trust";
-    public static final String homertonOdsCode = "RQX";
-    public static final String homertonAddressLine = "Homerton Row";
-    public static final String homertonCity = "London";
-    public static final String homertonPostcode = "E9 6SR";
-
     public OrganizationTransform(Mapper mapper, ResourceContainer resourceContainer) {
         super(mapper, resourceContainer);
     }
@@ -40,23 +35,28 @@ public class OrganizationTransform extends TransformBase {
     public Reference createHomertonManagingOrganisation() throws MapperException, TransformException, ParseException {
 
         Organization organization = new Organization()
-                .addIdentifier(IdentifierConverter.createOdsCodeIdentifier(homertonOdsCode))
+                .addIdentifier(IdentifierConverter.createOdsCodeIdentifier(HomertonConstants.odsCode))
                 .setType(getOrganisationType(OrganisationType.NHS_TRUST))
-                .setName(homertonOrganisationName)
-                .addAddress(AddressConverter.createWorkAddress(Arrays.asList(homertonAddressLine), homertonCity, homertonPostcode));
+                .setName(HomertonConstants.organisationName)
+                .addAddress(AddressConverter.createWorkAddress(Arrays.asList(HomertonConstants.addressLine), HomertonConstants.addressCity, HomertonConstants.addressPostcode));
 
-        mapAndSetId(getUniqueIdentifyingString(homertonOdsCode, homertonOrganisationName), organization);
+        mapAndSetId(getUniqueIdentifyingString(HomertonConstants.odsCode, HomertonConstants.organisationName), organization);
 
         targetResources.addManagingOrganisation(organization);
 
         return ReferenceHelper.createReference(ResourceType.Organization, organization.getId());
     }
 
-    public Reference createHomertonHospitalServiceOrganisation(String hospitalServiceName, String servicingFacilityName) throws TransformException, ParseException, MapperException {
+    public Reference createHomertonHospitalServiceOrganisation(Pv1Segment pv1Segment) throws TransformException, ParseException, MapperException {
+        Validate.notNull(pv1Segment);
+
+        String hospitalServiceName = pv1Segment.getHospitalService();
+        String servicingFacilityName = StringUtils.trim(pv1Segment.getServicingFacility()).toUpperCase();
+
         if (StringUtils.isBlank(hospitalServiceName))
             return null;
 
-        if (!StringUtils.trim(servicingFacilityName).toUpperCase().equals("HOMERTON UNIVER"))
+        if (!servicingFacilityName.equals(HomertonConstants.servicingFacility))
             throw new TransformException("Hospital servicing facility of " + servicingFacilityName + " not recognised");
 
         Reference managingOrganisationReference = createHomertonManagingOrganisation();
@@ -64,10 +64,10 @@ public class OrganizationTransform extends TransformBase {
         Organization organization = new Organization()
                 .setName(hospitalServiceName)
                 .setType(getOrganisationType(OrganisationType.NHS_TRUST_SERVICE))
-                .addAddress(AddressConverter.createWorkAddress(Arrays.asList(homertonOrganisationName, homertonAddressLine), homertonCity, homertonPostcode))
+                .addAddress(AddressConverter.createWorkAddress(Arrays.asList(HomertonConstants.organisationName, HomertonConstants.addressLine), HomertonConstants.addressCity, HomertonConstants.addressPostcode))
                 .setPartOf(managingOrganisationReference);
 
-        mapAndSetId(getUniqueIdentifyingString(homertonOdsCode, homertonOrganisationName, hospitalServiceName), organization);
+        mapAndSetId(getUniqueIdentifyingString(HomertonConstants.odsCode, HomertonConstants.addressLine, hospitalServiceName), organization);
 
         targetResources.addResource(organization);
 

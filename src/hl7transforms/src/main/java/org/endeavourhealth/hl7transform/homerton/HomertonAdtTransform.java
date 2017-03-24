@@ -48,7 +48,7 @@ public class HomertonAdtTransform implements Transform {
                 .createHomertonManagingOrganisation();
 
         new LocationTransform(mapper, targetResources)
-                .createHomertonLocation();
+                .createHomertonHospitalLocation();
 
         new MessageHeaderTransform(mapper, targetResources)
                 .transform(sourceMessage);

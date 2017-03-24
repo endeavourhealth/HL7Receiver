@@ -231,7 +231,7 @@ public class EncounterTransform extends TransformBase {
 
         if (location != null) {
             Reference assignedLocationReference = new LocationTransform(mapper, targetResources)
-                    .transformAndGetReference(location);
+                    .createHomertonConstituentLocation(location);
 
             if (assignedLocationReference != null) {
                 target.addLocation(new Encounter.EncounterLocationComponent()
@@ -295,7 +295,7 @@ public class EncounterTransform extends TransformBase {
         Pv1Segment pv1Segment = sourceMessage.getPv1Segment();
 
         OrganizationTransform organizationTransform = new OrganizationTransform(mapper, targetResources);
-        Reference reference = organizationTransform.createHomertonHospitalServiceOrganisation(pv1Segment.getHospitalService(), pv1Segment.getServicingFacility());
+        Reference reference = organizationTransform.createHomertonHospitalServiceOrganisation(pv1Segment);
 
         if (reference != null)
             target.setServiceProvider(reference);

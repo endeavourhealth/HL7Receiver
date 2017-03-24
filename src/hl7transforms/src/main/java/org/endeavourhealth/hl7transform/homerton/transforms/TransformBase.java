@@ -1,5 +1,6 @@
 package org.endeavourhealth.hl7transform.homerton.transforms;
 
+import com.google.common.collect.Lists;
 import org.apache.commons.lang3.StringUtils;
 import org.endeavourhealth.hl7parser.ParseException;
 import org.endeavourhealth.hl7transform.common.ResourceContainer;
@@ -27,9 +28,9 @@ public abstract class TransformBase {
     }
 
     public abstract ResourceType getResourceType();
-
+    
     protected static String createIdentifyingString(String prefix, Map<String, String> keyValuePairs) {
-        return StringUtils.join(prefix, createIdentifyingString(keyValuePairs), keyValuePairSeperator);
+        return StringUtils.join(Lists.newArrayList(prefix, createIdentifyingString(keyValuePairs)), keyValuePairSeperator);
     }
 
     protected static String createIdentifyingString(Map<String, String> keyValuePairs) {

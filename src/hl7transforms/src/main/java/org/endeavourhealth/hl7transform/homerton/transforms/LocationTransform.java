@@ -1,5 +1,6 @@
 package org.endeavourhealth.hl7transform.homerton.transforms;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import javafx.util.Pair;
@@ -34,107 +35,110 @@ public class LocationTransform extends TransformBase {
         return ResourceType.Location;
     }
 
-    public Reference createHomertonLocation() throws MapperException, TransformException, ParseException {
-
-        final String odsCode = "RQXM1";
-        final String locationName = "Homerton University Hospital";
+    public Reference createHomertonHospitalLocation() throws MapperException, TransformException, ParseException {
 
         Location location = new Location()
-                .setName(locationName)
-                .addIdentifier(IdentifierConverter.createOdsCodeIdentifier(odsCode))
+                .setName(HomertonConstants.locationName)
+                .addIdentifier(IdentifierConverter.createOdsCodeIdentifier(HomertonConstants.odsSiteCode))
                 .setStatus(Location.LocationStatus.ACTIVE)
-                .setAddress(AddressConverter.createWorkAddress(Arrays.asList(OrganizationTransform.homertonAddressLine), OrganizationTransform.homertonCity, OrganizationTransform.homertonPostcode))
+                .setAddress(AddressConverter.createWorkAddress(Arrays.asList(HomertonConstants.addressLine), HomertonConstants.addressCity, HomertonConstants.addressPostcode))
                 .setManagingOrganization(this.targetResources.getManagingOrganisationReference())
                 .setType(createType(V3RoleCode.HOSP))
                 .setPhysicalType(createLocationPhysicalType(LocationPhysicalType.BU))
                 .setMode(Location.LocationMode.INSTANCE);
 
-        mapAndSetId(getUniqueIdentifyingString(odsCode, locationName), location);
+        mapAndSetId(getUniqueIdentifyingString(HomertonConstants.odsSiteCode, HomertonConstants.locationName), location);
 
         targetResources.addManagingLocation(location);
 
         return ReferenceHelper.createReference(ResourceType.Location, location.getId());
     }
 
-    public Reference transformAndGetReference(Pl source) throws MapperException, TransformException, ParseException {
+    public Reference createHomertonConstituentLocation(Pl source) throws MapperException, TransformException, ParseException {
+
+        if (StringUtils.isBlank(source.getAsString()))
+            return null;
+
+        if (!HomertonConstants.locationFacility.equalsIgnoreCase(StringUtils.trim(source.getFacility())))
+            throw new TransformException("Location facility of " + source.getFacility() + " not recognised");
+
+        if (!HomertonConstants.locationBuilding.equalsIgnoreCase(StringUtils.trim(source.getBuilding())))
+            throw new TransformException("Building of " + source.getBuilding() + " not recognised");
+
+        Reference managingOrganisationReference = targetResources.getManagingOrganisationReference();
+        Location topParentBuildingLocation = targetResources.getManagingLocation();
 
         List<Pair<LocationPhysicalType, String>> locations = new ArrayList<>();
 
-        locations.add(new Pair<>(LocationPhysicalType.BU, source.getBuilding()));
-        locations.add(new Pair<>(LocationPhysicalType.WI, source.getPointOfCare()));
-        locations.add(new Pair<>(LocationPhysicalType.RO, source.getRoom()));
-        locations.add(new Pair<>(LocationPhysicalType.BD, source.getBed()));
+        if (StringUtils.isNotBlank(source.getPointOfCare()))
+            locations.add(new Pair<>(LocationPhysicalType.WI, source.getPointOfCare()));
 
-        Reference managingOrganisationReference = null;
-        Location managingLocation = null;
+        if (StringUtils.isNotBlank(source.getRoom()))
+            locations.add(new Pair<>(LocationPhysicalType.RO, source.getRoom()));
 
-        String facility = StringUtils.trim(StringUtils.defaultString(source.getFacility())).toLowerCase();
+        if (StringUtils.isNotBlank(source.getBed()))
+            locations.add(new Pair<>(LocationPhysicalType.BD, source.getBed()));
 
-        if (facility.equals("homerton univer") || facility.equals("homerton uh")) {
-            managingOrganisationReference = targetResources.getManagingOrganisationReference();
-            managingLocation = targetResources.getManagingLocation();
-        }
+        Location directParentLocation = topParentBuildingLocation;
 
-        locations = locations
-                .stream()
-                .filter(t -> StringUtils.isNotBlank(t.getValue()))
-                .collect(Collectors.toList());
+        List<String> locationParentNames = new ArrayList<>();
 
-        Location lastLocation = null;
+        for (int i = 0; i < locations.size(); i++) {
 
-        for (int i = 1; i <= locations.size(); i++) {
-            List<Pair<LocationPhysicalType, String>> location = Lists.reverse(locations
-                    .stream()
-                    .limit(i)
-                    .collect(Collectors.toList()));
+            String locationName = locations.get(i).getValue();
+            LocationPhysicalType locationPhysicalType = locations.get(i).getKey();
 
-            Location fhirLocation = createLocation(location, lastLocation, managingLocation, managingOrganisationReference);
+            Location fhirLocation = createLocationFromPl(locationName, locationPhysicalType, locationParentNames, directParentLocation, topParentBuildingLocation, managingOrganisationReference);
 
             if (fhirLocation != null)
                 targetResources.addResource(fhirLocation);
 
-            lastLocation = fhirLocation;
+            directParentLocation = fhirLocation;
+            locationParentNames.add(0, locationName);
         }
 
-        if (lastLocation == null)
-            return null;
-
-        return ReferenceHelper.createReference(ResourceType.Location, lastLocation.getId());
+        return ReferenceHelper.createReference(ResourceType.Location, directParentLocation.getId());
     }
 
-    private Location createLocation(List<Pair<LocationPhysicalType, String>> locations,
-                                    Location directParentLocation,
-                                    Location topParentLocation,
-                                    Reference managingOrganisation) throws MapperException, TransformException, ParseException {
-        if (locations.size() == 0)
-            return null;
+    private Location createLocationFromPl(String locationName,
+                                          LocationPhysicalType locationPhysicalType,
+                                          List<String> locationParentNames,
+                                          Location directParentLocation,
+                                          Location topParentBuildingLocation,
+                                          Reference managingOrganisation) throws MapperException, TransformException, ParseException {
 
-        String locationName = locations.get(0).getValue();
-
-        String[] locationsNames = locations
-                .stream()
-                .map(t -> t.getValue())
-                .collect(Collectors.toList())
-                .toArray(new String[locations.size()]);
-
-        String locationDescription = String.join(", ", locationsNames);
+        Validate.notNull(locationName, "locationName");
+        Validate.notNull(locationPhysicalType, "locationPhysicalType");
+        Validate.notNull(locationParentNames, "locationParentNames");
+        Validate.notNull(directParentLocation, "directParentLocation");
+        Validate.notNull(topParentBuildingLocation, "topParentBuildingLocation");
+        Validate.notNull(managingOrganisation, "managingOrganisation");
 
         Location location = new Location();
 
-        mapAndSetId(getUniqueIdentifyingString(getOdsSiteCode(topParentLocation), topParentLocation.getName(), locationsNames), location);
+        List<String> locationHierarchy = ImmutableList
+                .<String>builder()
+                .add(locationName)
+                .addAll(locationParentNames)
+                .build();
+
+        mapAndSetId(getUniqueIdentifyingString(getOdsSiteCode(topParentBuildingLocation), topParentBuildingLocation.getName(), locationHierarchy), location);
 
         location.setName(locationName);
-        location.setDescription(locationDescription);
+
+        location.setDescription(String.join(", ", ImmutableList
+                .<String>builder()
+                .addAll(locationHierarchy)
+                .add(topParentBuildingLocation.getName())
+                .build()));
+
         location.setMode(Location.LocationMode.INSTANCE);
-        location.setPhysicalType(createLocationPhysicalType(locations.get(0).getKey()));
+        location.setPhysicalType(createLocationPhysicalType(locationPhysicalType));
 
         if (managingOrganisation != null)
             location.setManagingOrganization(managingOrganisation);
 
-        if (directParentLocation != null)
-            setPartOf(location, directParentLocation);
-        else if (topParentLocation != null)
-            setPartOf(location, topParentLocation);
+        setPartOf(location, directParentLocation);
 
         return location;
     }
@@ -179,7 +183,7 @@ public class LocationTransform extends TransformBase {
         ));
     }
 
-    private static String getUniqueIdentifyingString(String parentOdsSiteCode, String parentLocationName, String[] locationNames) {
+    private static String getUniqueIdentifyingString(String parentOdsSiteCode, String parentLocationName, List<String> locationNames) {
         Validate.notBlank(parentOdsSiteCode, "parentOdsSiteCode");
         Validate.notBlank(parentLocationName, "parentLocationName");
         Validate.notBlank(StringUtils.join(locationNames, ""), "locationNames");
