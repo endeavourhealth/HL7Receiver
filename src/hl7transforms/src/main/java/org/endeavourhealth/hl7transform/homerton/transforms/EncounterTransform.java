@@ -122,12 +122,18 @@ public class EncounterTransform extends TransformBase {
     }
 
     private static void setClass(AdtMessage source, Encounter target) throws TransformException {
+
         target.setClass_(EncounterClassVs.convert(source.getPv1Segment().getPatientClass()));
 
-        if (target.getClass_() == Encounter.EncounterClass.OTHER)
-            target.addExtension(ExtensionHelper.createStringExtension(FhirExtensionUri.ENCOUNTER_PATIENT_CLASS, source.getPv1Segment().getPatientClass()));
-    }
+        if (target.getClass_() == Encounter.EncounterClass.OTHER) {
 
+            Extension extension = new Extension()
+                    .setUrl(FhirExtensionUri.ENCOUNTER_PATIENT_CLASS_OTHER)
+                    .setValue(new CodeType(EncounterClassVs.convertOtherValues(source.getPv1Segment().getPatientClass())));
+
+            target.getClass_Element().addExtension(extension);
+        }
+    }
 
     private static void setType(AdtMessage source, Encounter target) throws TransformException {
 

@@ -1,5 +1,6 @@
 package org.endeavourhealth.hl7parser;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Validate;
 
 import java.util.ArrayList;
@@ -50,6 +51,12 @@ public class GenericDatatype {
 
     public List<Component> getComponents() {
         return this.components;
+    }
+
+    public boolean allComponentsAreBlank() {
+        return this.components
+                .stream()
+                .allMatch(t -> StringUtils.isBlank(t.getAsString()));
     }
 
     //////////////////  Setters  //////////////////

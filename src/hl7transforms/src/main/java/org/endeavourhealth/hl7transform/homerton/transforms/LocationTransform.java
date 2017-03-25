@@ -54,7 +54,7 @@ public class LocationTransform extends TransformBase {
 
     public Reference createHomertonConstituentLocation(Pl source) throws MapperException, TransformException, ParseException {
 
-        if (StringUtils.isBlank(source.getAsString()))
+        if (source.allComponentsAreBlank())
             return null;
 
         if (!HomertonConstants.locationFacility.equalsIgnoreCase(StringUtils.trim(source.getFacility())))

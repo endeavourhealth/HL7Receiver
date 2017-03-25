@@ -41,6 +41,10 @@ public class Datatype {
         return this.datatype.getAsString();
     }
 
+    public boolean allComponentsAreBlank() {
+        return this.datatype.allComponentsAreBlank();
+    }
+
     public static <T extends Datatype> T instantiate(Class<T> dt, GenericDatatype datatype) {
         try {
             Constructor<T> constructor = dt.getConstructor(GenericDatatype.class);
