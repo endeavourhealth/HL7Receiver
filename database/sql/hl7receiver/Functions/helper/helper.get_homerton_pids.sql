@@ -22,7 +22,7 @@ begin
 		m.message_id,
 		mt.message_type, 
 		mt.description as message_type_description, 
-		to_char(m.log_date, 'YYYY-MM-DD HH:mm') as message_date, 
+		to_char(m.log_date, 'YYYY-MM-DD HH:MI') as message_date, 
 		m.pid1 as nhs_number, 
 		m.pid2 as cnn_number, 
 		pid.f18 as encounter_number,
