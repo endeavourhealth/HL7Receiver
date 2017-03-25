@@ -29,5 +29,4 @@ public class DateConverter {
             default: throw new ParseException("Could not parse date time");
         }
     }
-
 }

@@ -2,10 +2,11 @@ package org.endeavourhealth.hl7transform.homerton.transforms;
 
 import org.apache.commons.lang3.StringUtils;
 import org.endeavourhealth.common.fhir.FhirExtensionUri;
-import org.endeavourhealth.common.fhir.FhirValueSetUri;
 import org.endeavourhealth.common.fhir.ReferenceHelper;
 import org.endeavourhealth.common.fhir.schema.EncounterParticipantType;
 import org.endeavourhealth.common.fhir.schema.HomertonEncounterType;
+import org.endeavourhealth.hl7parser.segments.EvnSegment;
+import org.endeavourhealth.hl7transform.common.converters.DateConverter;
 import org.endeavourhealth.hl7transform.homerton.parser.zsegments.HomertonSegmentName;
 import org.endeavourhealth.hl7transform.homerton.parser.zsegments.ZviSegment;
 import org.endeavourhealth.hl7transform.homerton.transforms.valuesets.EncounterClassVs;
@@ -43,24 +44,29 @@ public class EncounterTransform extends TransformBase {
         if (!sourceMessage.hasPv1Segment())
             return;
 
+        if (!sourceMessage.hasEvnSegment())
+            throw new TransformException("EVN segment not found");
+
         Encounter target = new Encounter();
 
         setId(sourceMessage, target);
 
-        setStatus(sourceMessage, target);
-        setStatusHistory(sourceMessage, target);
+        // status, type, class, period
+        setStatusAndPeriod(sourceMessage, target);
         setClass(sourceMessage, target);
         setType(sourceMessage, target);
+
+        // patient, episodeofcare, serviceprovider, locations, practitioners
         setPatient(target, targetResources.getPatient());
         setEpisodeOfCare(target, targetResources.getEpisodeOfCare());
+        setServiceProvider(sourceMessage, target);
+        setLocations(sourceMessage, target);
         setParticipants(sourceMessage, target);
-        setPeriod(sourceMessage, target);
+
+        // other fields
+        setStatusHistory(sourceMessage, target);
         setReason(sourceMessage, target);
         setHospitalisationElement(sourceMessage.getPv1Segment(), target);
-        setLocations(sourceMessage, target);
-        setServiceProvider(sourceMessage, target);
-
-        // determine what to do with ACC segment information
 
         targetResources.addResource(target);
     }
@@ -80,12 +86,19 @@ public class EncounterTransform extends TransformBase {
         target.setId(encounterUuid.toString());
     }
 
-    private static void setStatus(AdtMessage source, Encounter target) throws TransformException {
+    private static void setStatusAndPeriod(AdtMessage source, Encounter target) throws TransformException, ParseException {
 
+        EvnSegment evnSegment = source.getEvnSegment();
         Pv1Segment pv1Segment = source.getPv1Segment();
 
         if (StringUtils.isNotBlank(pv1Segment.getAccountStatus()))
             target.setStatus(EncounterStateVs.convert(pv1Segment.getAccountStatus()));
+
+        if (evnSegment.getRecordedDateTime() == null)
+            throw new TransformException("Recorded date/time empty");
+
+        target.setPeriod(new Period()
+                .setStartElement((DateTimeType)DateConverter.getDateType(evnSegment.getRecordedDateTime())));
     }
 
     private static void setStatusHistory(AdtMessage source, Encounter target) throws ParseException {
@@ -200,39 +213,22 @@ public class EncounterTransform extends TransformBase {
 
         Pv1Segment pv1Segment = source.getPv1Segment();
 
-        addLocation(pv1Segment.getAssignedPatientLocation(), Encounter.EncounterLocationStatus.ACTIVE, target);
-        addLocation(pv1Segment.getPriorPatientLocation(), Encounter.EncounterLocationStatus.COMPLETED, target);
+        if (pv1Segment.getAssignedPatientLocation() != null)
+            addLocation(pv1Segment.getAssignedPatientLocation(), Encounter.EncounterLocationStatus.ACTIVE, target);
+
+        if (pv1Segment.getPriorPatientLocation() != null)
+            addLocation(pv1Segment.getPriorPatientLocation(), Encounter.EncounterLocationStatus.COMPLETED, target);
     }
 
     private void addLocation(Pl location, Encounter.EncounterLocationStatus encounterLocationStatus, Encounter target) throws MapperException, TransformException, ParseException {
 
-        if (location != null) {
-            Reference assignedLocationReference = new LocationTransform(mapper, targetResources)
-                    .createHomertonConstituentLocation(location);
+        Reference assignedLocationReference = new LocationTransform(mapper, targetResources)
+                .createHomertonConstituentLocation(location);
 
-            if (assignedLocationReference != null) {
-                target.addLocation(new Encounter.EncounterLocationComponent()
-                        .setLocation(assignedLocationReference)
-                        .setStatus(encounterLocationStatus));
-            }
-        }
-    }
-
-    private static void setPeriod(AdtMessage sourceMessage, Encounter target) throws ParseException {
-
-        Pv1Segment pv1Segment = sourceMessage.getPv1Segment();
-
-        if ((pv1Segment.getAdmitDateTime() != null) && (pv1Segment.getDischargeDateTime() != null)) {
-
-            Period period = new Period();
-
-            if (pv1Segment.getAdmitDateTime() != null)
-                period.setStart(pv1Segment.getAdmitDateTime().asDate());
-
-            if (pv1Segment.getDischargeDateTime() != null)
-                period.setEnd(pv1Segment.getDischargeDateTime().asDate());
-
-            target.setPeriod(period);
+        if (assignedLocationReference != null) {
+            target.addLocation(new Encounter.EncounterLocationComponent()
+                    .setLocation(assignedLocationReference)
+                    .setStatus(encounterLocationStatus));
         }
     }
 
@@ -265,6 +261,21 @@ public class EncounterTransform extends TransformBase {
 
             target.setHospitalization(hospitalComponent);
         }
+
+//        Pv1Segment pv1Segment = sourceMessage.getPv1Segment();
+//
+//        if ((pv1Segment.getAdmitDateTime() != null) && (pv1Segment.getDischargeDateTime() != null)) {
+//
+//            Period period = new Period();
+//
+//            if (pv1Segment.getAdmitDateTime() != null)
+//                period.setStart(pv1Segment.getAdmitDateTime().asDate());
+//
+//            if (pv1Segment.getDischargeDateTime() != null)
+//                period.setEnd(pv1Segment.getDischargeDateTime().asDate());
+//
+//            target.setPeriod(period);
+//        }
     }
 
     private void setServiceProvider(AdtMessage sourceMessage, Encounter target) throws TransformException, MapperException, ParseException {

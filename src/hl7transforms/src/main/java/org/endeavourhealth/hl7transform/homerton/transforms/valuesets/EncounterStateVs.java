@@ -10,12 +10,10 @@ public abstract class EncounterStateVs {
         state = StringUtils.defaultString(state).trim().toUpperCase();
 
         switch (state) {
-            case "CANCELLED": return Encounter.EncounterState.CANCELLED;
-            case "DISCHARGED": return Encounter.EncounterState.FINISHED;
-            case "PENDING ARRIVAL": return Encounter.EncounterState.PLANNED;
+            case "PREADMIT": return Encounter.EncounterState.PLANNED;
             case "ACTIVE": return Encounter.EncounterState.INPROGRESS;
-            case "PREADMIT": return Encounter.EncounterState.ARRIVED;
-            case "CANCELLED PENDING ARRIVAL": return Encounter.EncounterState.CANCELLED;
+            case "DISCHARGED": return Encounter.EncounterState.FINISHED;
+            case "CANCELLED": return Encounter.EncounterState.CANCELLED;
 
             default: throw new TransformException(state + " encounter state not recognised");
         }
