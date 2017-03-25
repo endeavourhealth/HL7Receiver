@@ -56,7 +56,7 @@ public class PractitionerTransform extends TransformBase {
     }
 
     // this method removes duplicates based on title, surname, forename, and merges the identifiers
-    public List<Reference> transformAndGetReferences(List<Xcn> source) throws TransformException, MapperException, ParseException {
+    public List<Reference> createHospitalPractitioners(List<Xcn> source, Reference hospitalOrganisationReference) throws TransformException, MapperException, ParseException {
         Collection<List<Xcn>> practitionerGroups = source
                 .stream()
                 .collect(Collectors.groupingBy(t -> t.getPrefix() + t.getFamilyName() + t.getGivenName()))
@@ -65,9 +65,7 @@ public class PractitionerTransform extends TransformBase {
         List<Reference> references = new ArrayList<>();
 
         for (List<Xcn> practitioners : practitionerGroups) {
-            Practitioner practitioner = createPractitionerFromDuplicates(practitioners);
-
-            targetResources.addResource(practitioner);
+            Practitioner practitioner = createPractitionerFromDuplicates(practitioners, hospitalOrganisationReference);
 
             references.add(ReferenceHelper.createReference(ResourceType.Practitioner, practitioner.getId()));
         }
@@ -75,7 +73,7 @@ public class PractitionerTransform extends TransformBase {
         return references;
     }
 
-    private Practitioner createPractitionerFromDuplicates(List<Xcn> sources) throws TransformException, MapperException, ParseException {
+    private Practitioner createPractitionerFromDuplicates(List<Xcn> sources, Reference hospitalOrganisationReference) throws TransformException, MapperException, ParseException {
         Validate.notNull(sources);
 
         if (sources.size() == 0)
@@ -91,6 +89,16 @@ public class PractitionerTransform extends TransformBase {
             if (identifier != null)
                 if (!hasIdentifierWithSystem(practitioner.getIdentifier(), identifier.getSystem()))
                     practitioner.addIdentifier(identifier);
+        }
+
+        if (hospitalOrganisationReference != null) {
+
+            if ((practitioner.getIdentifier().size() == 0)
+                    || ((practitioner.getIdentifier().size() == 1) && (practitioner.getIdentifier().get(0).getSystem().equals(FhirUri.IDENTIFIER_SYSTEM_GMC_NUMBER))))
+                throw new TransformException("Could not find hospital practitioner identifiers");
+
+            practitioner.addPractitionerRole(new Practitioner.PractitionerPractitionerRoleComponent()
+                            .setManagingOrganization(hospitalOrganisationReference));
         }
 
         UUID id = getId(practitioner);

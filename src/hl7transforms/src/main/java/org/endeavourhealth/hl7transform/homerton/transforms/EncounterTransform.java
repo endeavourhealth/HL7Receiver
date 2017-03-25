@@ -221,7 +221,7 @@ public class EncounterTransform extends TransformBase {
             return;
 
         PractitionerTransform practitionerTransform = new PractitionerTransform(mapper, targetResources);
-        List<Reference> references = practitionerTransform.transformAndGetReferences(xcns);
+        List<Reference> references = practitionerTransform.createHospitalPractitioners(xcns, targetResources.getManagingOrganisationReference());
 
         for (Reference reference : references) {
             target.addParticipant(new Encounter.EncounterParticipantComponent()
