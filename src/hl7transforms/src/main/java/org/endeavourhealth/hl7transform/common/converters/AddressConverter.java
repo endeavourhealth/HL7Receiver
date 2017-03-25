@@ -59,6 +59,16 @@ public class AddressConverter {
         if (StringUtils.isNotBlank(source.getProvince()))
             target.setDistrict(formatAddressLine(source.getProvince()));
 
+        if (StringUtils.isNotBlank(source.getOtherGeographicDesignation())) {
+
+            String otherGeographicDesignation = formatAddressLine(source.getOtherGeographicDesignation());
+
+            if (StringUtils.isBlank(target.getDistrict()))
+                target.setDistrict(otherGeographicDesignation);
+            else
+                target.setState(otherGeographicDesignation);
+        }
+
         if (StringUtils.isNotBlank(source.getPostCode()))
             target.setPostalCode(formatPostcode(source.getPostCode()));
 
@@ -69,7 +79,27 @@ public class AddressConverter {
     }
 
     private static String formatAddressLine(String line) {
-        return StringHelper.formatName(line);
+        return insertSpaceAfterComma(StringHelper.formatName(line));
+    }
+
+    private static String insertSpaceAfterComma(String text) {
+        boolean previousWasComma = false;
+        String result = "";
+
+        for (int i = 0; i < text.length(); i++) {
+
+            char character = text.charAt(i);
+
+            if (previousWasComma)
+                if (character != ' ')
+                    result += ' ';
+
+            result += character;
+
+            previousWasComma = (character == ',');
+        }
+
+        return result;
     }
 
     private static String formatPostcode(String postcode) {
