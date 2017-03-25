@@ -4,13 +4,16 @@ import org.apache.commons.lang3.StringUtils;
 import org.endeavourhealth.common.fhir.FhirExtensionUri;
 import org.endeavourhealth.common.fhir.ReferenceHelper;
 import org.endeavourhealth.common.fhir.schema.EncounterParticipantType;
+import org.endeavourhealth.common.fhir.schema.HomertonAdmissionType;
 import org.endeavourhealth.common.fhir.schema.HomertonEncounterType;
+import org.endeavourhealth.hl7parser.Hl7DateTime;
 import org.endeavourhealth.hl7parser.segments.EvnSegment;
 import org.endeavourhealth.hl7transform.common.converters.DateConverter;
 import org.endeavourhealth.hl7transform.homerton.parser.zsegments.HomertonSegmentName;
 import org.endeavourhealth.hl7transform.homerton.parser.zsegments.ZviSegment;
 import org.endeavourhealth.hl7transform.homerton.transforms.valuesets.EncounterClassVs;
 import org.endeavourhealth.hl7transform.homerton.transforms.valuesets.EncounterStateVs;
+import org.endeavourhealth.hl7transform.homerton.transforms.valuesets.HomertonAdmissionTypeVs;
 import org.endeavourhealth.hl7transform.homerton.transforms.valuesets.HomertonEncounterTypeVs;
 import org.endeavourhealth.hl7transform.mapper.MapperException;
 import org.endeavourhealth.hl7transform.common.ResourceContainer;
@@ -39,34 +42,36 @@ public class EncounterTransform extends TransformBase {
         return ResourceType.Encounter;
     }
 
-    public void transform(AdtMessage sourceMessage) throws ParseException, TransformException, MapperException {
+    public void transform(AdtMessage source) throws ParseException, TransformException, MapperException {
 
-        if (!sourceMessage.hasPv1Segment())
+        if (!source.hasPv1Segment())
             return;
 
-        if (!sourceMessage.hasEvnSegment())
+        if (!source.hasEvnSegment())
             throw new TransformException("EVN segment not found");
 
         Encounter target = new Encounter();
 
-        setId(sourceMessage, target);
+        setId(source, target);
 
         // status, type, class, period
-        setStatusAndPeriod(sourceMessage, target);
-        setClass(sourceMessage, target);
-        setType(sourceMessage, target);
+        setCurrentStatus(source, target);
+        setStatusHistory(source, target);
+        setClass(source, target);
+        setType(source, target);
+        setAdmissionType(source, target);
 
         // patient, episodeofcare, serviceprovider, locations, practitioners
         setPatient(target, targetResources.getPatient());
         setEpisodeOfCare(target, targetResources.getEpisodeOfCare());
-        setServiceProvider(sourceMessage, target);
-        setLocations(sourceMessage, target);
-        setParticipants(sourceMessage, target);
+        setServiceProvider(source, target);
+        setLocations(source, target);
+        setParticipants(source, target);
+
 
         // other fields
-        setStatusHistory(sourceMessage, target);
-        setReason(sourceMessage, target);
-        setHospitalisationElement(sourceMessage.getPv1Segment(), target);
+        setReason(source, target);
+        setHospitalisationElement(source.getPv1Segment(), target);
 
         targetResources.addResource(target);
     }
@@ -86,7 +91,7 @@ public class EncounterTransform extends TransformBase {
         target.setId(encounterUuid.toString());
     }
 
-    private static void setStatusAndPeriod(AdtMessage source, Encounter target) throws TransformException, ParseException {
+    private static void setCurrentStatus(AdtMessage source, Encounter target) throws TransformException, ParseException {
 
         EvnSegment evnSegment = source.getEvnSegment();
         Pv1Segment pv1Segment = source.getPv1Segment();
@@ -97,41 +102,53 @@ public class EncounterTransform extends TransformBase {
         if (evnSegment.getRecordedDateTime() == null)
             throw new TransformException("Recorded date/time empty");
 
-        target.setPeriod(new Period()
-                .setStartElement((DateTimeType)DateConverter.getDateType(evnSegment.getRecordedDateTime())));
+        target.setPeriod(createPeriod(evnSegment.getRecordedDateTime(), null));
+    }
+
+    private static Period createPeriod(Hl7DateTime start, Hl7DateTime end) throws ParseException {
+        if ((start == null) && (end == null))
+            return null;
+
+        Period period = new Period();
+
+        if (start != null)
+            period.setStartElement((DateTimeType)DateConverter.getDateType(start));
+
+        if (end != null)
+            period.setEndElement((DateTimeType)DateConverter.getDateType(end));
+
+        return period;
+    }
+
+    private static Encounter.EncounterStatusHistoryComponent createStatusHistoryComponent(Period period, Encounter.EncounterState encounterState) {
+        return new Encounter.EncounterStatusHistoryComponent()
+                .setPeriod(period)
+                .setStatus(encounterState);
+    }
+
+    private static void addStatusHistoryComponent(Period period, Encounter.EncounterState encounterState, Encounter target) {
+        if (period != null)
+            target.addStatusHistory(createStatusHistoryComponent(period, encounterState));
     }
 
     private static void setStatusHistory(AdtMessage source, Encounter target) throws ParseException {
 
+        Pv1Segment pv1Segment = source.getPv1Segment();
         Pv2Segment pv2Segment = source.getPv2Segment();
-        ZviSegment zviSegment = source.getSegment(HomertonSegmentName.ZVI, ZviSegment.class);
+
+        Period admissionDate = createPeriod(pv1Segment.getAdmitDateTime(), null);
+        addStatusHistoryComponent(admissionDate, Encounter.EncounterState.ARRIVED, target);
+
+        Period dischargeDate = createPeriod(null, pv1Segment.getDischargeDateTime());
+        addStatusHistoryComponent(dischargeDate, Encounter.EncounterState.FINISHED, target);
 
         if (pv2Segment != null) {
 
-            if (pv2Segment.getExpectedAdmitDateTime() != null || pv2Segment.getExpectedDischargeDateTime() != null) {
+            Period expectedAdmitDate = createPeriod(pv2Segment.getExpectedAdmitDateTime(), null);
+            addStatusHistoryComponent(expectedAdmitDate, Encounter.EncounterState.PLANNED, target);
 
-                Period period = new Period();
-
-                if (pv2Segment.getExpectedAdmitDateTime() != null)
-                    period.setStart(pv2Segment.getExpectedAdmitDateTime().asDate());
-
-                if (pv2Segment.getExpectedDischargeDateTime() != null)
-                    period.setEnd(pv2Segment.getExpectedDischargeDateTime().asDate());
-
-                target.addStatusHistory(new Encounter.EncounterStatusHistoryComponent()
-                        .setStatus(Encounter.EncounterState.PLANNED)
-                        .setPeriod(period));
-            }
-        }
-
-        if (zviSegment != null) {
-            if (zviSegment.getAssignToLocationDate() != null) {
-                target.addStatusHistory(
-                        new Encounter.EncounterStatusHistoryComponent()
-                                .setStatus(Encounter.EncounterState.ARRIVED)
-                                .setPeriod(new Period()
-                                        .setStart(zviSegment.getAssignToLocationDate().asDate())));
-            }
+            Period expectedDischargeDate = createPeriod(null, pv2Segment.getExpectedDischargeDateTime());
+            addStatusHistoryComponent(expectedDischargeDate, Encounter.EncounterState.PLANNED, target);
         }
     }
 
@@ -146,6 +163,24 @@ public class EncounterTransform extends TransformBase {
                     .setValue(new CodeType(EncounterClassVs.convertOtherValues(source.getPv1Segment().getPatientClass())));
 
             target.getClass_Element().addExtension(extension);
+        }
+    }
+
+    private static void setAdmissionType(AdtMessage source, Encounter target) {
+        Pv1Segment pv1Segment = source.getPv1Segment();
+
+        if (StringUtils.isNotEmpty(pv1Segment.getAdmissionType())) {
+
+            HomertonAdmissionType admissionType = HomertonAdmissionTypeVs.convert(pv1Segment.getAdmissionType());
+
+            target.addExtension(new Extension()
+                    .setUrl(FhirExtensionUri.ENCOUNTER_ADMISSION_TYPE)
+                    .setValue(new CodeableConcept()
+                            .addCoding(new Coding()
+                                    .setDisplay(admissionType.getDescription())
+                                    .setCode(admissionType.getCode())
+                                    .setSystem(admissionType.getSystem()))
+                            .setText(admissionType.getDescription())));
         }
     }
 
