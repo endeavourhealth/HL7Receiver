@@ -46,7 +46,7 @@ public class PatientTransform extends TransformBase {
 
         setId(source, target);
 
-        addNames(source.getPidSegment(), target);
+        addNames(source, target);
         setDateOfBirth(source.getPidSegment(), target);
         setDateOfDeath(source.getPidSegment(), target);
         setSex(source.getPidSegment(), target);
@@ -80,12 +80,25 @@ public class PatientTransform extends TransformBase {
                 .collect(StreamExtension.firstOrNullCollector());
     }
 
-    private static void addNames(PidSegment sourcePid, Patient target) throws TransformException {
-        for (HumanName name : NameConverter.convert(sourcePid.getPatientNames()))
-            target.addName(name);
+    private static List<XpnInterface> getPatientNames(PidSegment pidSegment) {
+        List<XpnInterface> names = new ArrayList<>();
 
-        for (HumanName name : NameConverter.convert(sourcePid.getPatientAlias()))
-            target.addName(name);
+        if (pidSegment.getPatientNames() != null)
+            names.addAll(pidSegment.getPatientNames());
+
+        if (pidSegment.getPatientAlias() != null)
+            names.addAll(pidSegment.getPatientAlias());
+
+        return names;
+    }
+
+    private static void addNames(AdtMessage source, Patient target) throws TransformException {
+
+        List<HumanName> names = NameConverter.convert(getPatientNames(source.getPidSegment()));
+
+        for (HumanName name : names)
+            if (name != null)
+                target.addName(name);
     }
 
     public static List<Cx> getAllPatientIdentifiers(AdtMessage source) {

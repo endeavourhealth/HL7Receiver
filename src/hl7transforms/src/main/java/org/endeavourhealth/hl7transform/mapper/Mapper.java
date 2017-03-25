@@ -70,7 +70,7 @@ public abstract class Mapper {
                 .put("EncounterDateTime", encounterDateTime.getLocalDateTime().format(DateTimeFormatter.ISO_LOCAL_DATE_TIME))
                 .createIdentifyingString();
 
-        return mapResourceUuid(ResourceType.EpisodeOfCare, identifier);
+        return mapResourceUuid(ResourceType.Encounter, identifier);
     }
 
     public UUID mapOrganisationUuid(String odsCode, String name) throws MapperException {

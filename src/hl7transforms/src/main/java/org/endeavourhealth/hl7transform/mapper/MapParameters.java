@@ -2,7 +2,7 @@ package org.endeavourhealth.hl7transform.mapper;
 
 import org.apache.commons.lang3.StringUtils;
 
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -11,7 +11,7 @@ public class MapParameters {
     private static final String keyValuePairSeperator = "-";
     protected static final String repeatingValueSeperator = "~";
 
-    private Map<String, String> parameters = new HashMap<>();
+    private Map<String, String> parameters = new LinkedHashMap<>();
 
     public static MapParameters create() {
         return new MapParameters();

@@ -7,6 +7,7 @@ import org.hl7.fhir.instance.model.HumanName;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class NameConverter {
     public static List<HumanName> convert(List<? extends XpnInterface> name) throws TransformException {
@@ -16,7 +17,7 @@ public class NameConverter {
             if (xpn != null)
                 result.add(NameConverter.convert(xpn));
 
-        return result;
+        return removeSuperfluousNameDuplicates(result);
     }
 
     public static HumanName createUsualName(String surname, String forenames, String title) {
@@ -69,38 +70,27 @@ public class NameConverter {
         switch (nameTypeCode) {
 
             // HL7v2 table 0200
-            case "a":                                     // alias
-                return HumanName.NameUse.NICKNAME;
-            case "l":                                     // legal
-                return HumanName.NameUse.OFFICIAL;
-            case "d":                                     // display
-                return HumanName.NameUse.USUAL;
-            case "m":                                     // maiden
-                return HumanName.NameUse.MAIDEN;
-            case "c":                                     // adopted
-                return HumanName.NameUse.OLD;
-            case "o":                                     // other
-                return HumanName.NameUse.TEMP;
+            case "a": return HumanName.NameUse.NICKNAME;  // alias
+            case "l": return HumanName.NameUse.OFFICIAL;  // legal
+            case "d": return HumanName.NameUse.USUAL;     // display
+            case "m": return HumanName.NameUse.MAIDEN;    // maiden
+            case "c": return HumanName.NameUse.OLD;       // adopted
+            case "o": return HumanName.NameUse.TEMP;      // other
 
             // Cerner Millenium
-            case "adopted":
-                return HumanName.NameUse.OLD;
-            case "alternate":
-                return HumanName.NameUse.NICKNAME;
+            case "alternate": return HumanName.NameUse.NICKNAME;
+            case "legal": return HumanName.NameUse.OFFICIAL;
+
             case "current":
-                return HumanName.NameUse.USUAL;
-            case "legal":
-                return HumanName.NameUse.OFFICIAL;
-            case "maiden":
-                return HumanName.NameUse.MAIDEN;
-            case "other":
-                return HumanName.NameUse.TEMP;
-            case "previous":
-                return HumanName.NameUse.OLD;
             case "preferred":
-                return HumanName.NameUse.USUAL;
-            case "personnel":                               // used in Xcn data type
-                return HumanName.NameUse.USUAL;
+            case "personnel": return HumanName.NameUse.USUAL;
+
+            case "maiden": return HumanName.NameUse.MAIDEN;
+
+            case "adopted":
+            case "previous": return HumanName.NameUse.OLD;
+
+            case "other": return HumanName.NameUse.TEMP;
 
             default:
                 throw new TransformException(nameTypeCode + " name type code not recognised");
@@ -121,7 +111,6 @@ public class NameConverter {
     private static String formatName(String name) {
         return StringHelper.formatName(name);
     }
-
 
     public static String formatSurname(String surname) {
         if (surname == null)
@@ -161,7 +150,7 @@ public class NameConverter {
         return stringBuilder.toString();
     }
 
-    public static String getNameAsString(XpnInterface source) {
+    public static String getNameAsCuiString(XpnInterface source) {
         String name = "";
 
         if (StringUtils.isNotBlank(source.getPrefix()))
@@ -174,5 +163,63 @@ public class NameConverter {
             name += formatName(source.getGivenName());
 
         return name;
+    }
+
+    private static List<HumanName> removeSuperfluousNameDuplicates(List<HumanName> names) throws TransformException {
+        names = removeDuplicateNames(names);
+
+        List<HumanName> usualNames = getNamesByUse(names, HumanName.NameUse.USUAL);
+
+        if (usualNames.size() == 0)
+            throw new TransformException("Patient does not have a usual name");
+
+        if (usualNames.size() > 1)
+            throw new TransformException("Patient has more than one usual name");
+
+        HumanName usualName = usualNames.get(0);
+
+        return removeNamesMatchingUsualNameExcludingNameUseField(names, usualName);
+    }
+
+    private static List<HumanName> removeNamesMatchingUsualNameExcludingNameUseField(List<HumanName> names, HumanName usualName) {
+        List<HumanName> result = new ArrayList<>();
+
+        for (HumanName name : names) {
+            if (name.equals(usualName)) {
+                result.add(name);
+            } else {
+                boolean nameIsEqualToUsualName = false;
+                HumanName.NameUse nameUse = name.getUse();
+                try {
+                    name.setUse(HumanName.NameUse.USUAL);   // temporarily set to usual
+
+                    nameIsEqualToUsualName = name.equalsDeep(usualName);
+                } finally {
+                    name.setUse(nameUse);                   // set back to previous value
+                }
+
+                if (!nameIsEqualToUsualName)
+                    result.add(name);
+            }
+        }
+
+        return result;
+    }
+
+    private static List<HumanName> removeDuplicateNames(List<HumanName> names) {
+        List<HumanName> result = new ArrayList<>();
+
+        for (HumanName name : names)
+            if (!result.stream().anyMatch(t -> name.equalsDeep(t)))
+                result.add(name);
+
+        return result;
+    }
+
+    private static List<HumanName> getNamesByUse(List<HumanName> names, HumanName.NameUse nameUse) {
+        return names
+                .stream()
+                .filter(t -> nameUse == t.getUse())
+                .collect(Collectors.toList());
     }
 }
