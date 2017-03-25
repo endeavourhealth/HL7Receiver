@@ -1,20 +1,17 @@
 package org.endeavourhealth.hl7transform.homerton.transforms;
 
+import org.apache.commons.lang3.NotImplementedException;
 import org.apache.commons.lang3.StringUtils;
 import org.endeavourhealth.common.fhir.FhirExtensionUri;
 import org.endeavourhealth.common.fhir.ReferenceHelper;
 import org.endeavourhealth.common.fhir.schema.EncounterParticipantType;
 import org.endeavourhealth.common.fhir.schema.HomertonAdmissionType;
+import org.endeavourhealth.common.fhir.schema.HomertonDischargeDisposition;
 import org.endeavourhealth.common.fhir.schema.HomertonEncounterType;
 import org.endeavourhealth.hl7parser.Hl7DateTime;
 import org.endeavourhealth.hl7parser.segments.EvnSegment;
 import org.endeavourhealth.hl7transform.common.converters.DateConverter;
-import org.endeavourhealth.hl7transform.homerton.parser.zsegments.HomertonSegmentName;
-import org.endeavourhealth.hl7transform.homerton.parser.zsegments.ZviSegment;
-import org.endeavourhealth.hl7transform.homerton.transforms.valuesets.EncounterClassVs;
-import org.endeavourhealth.hl7transform.homerton.transforms.valuesets.EncounterStateVs;
-import org.endeavourhealth.hl7transform.homerton.transforms.valuesets.HomertonAdmissionTypeVs;
-import org.endeavourhealth.hl7transform.homerton.transforms.valuesets.HomertonEncounterTypeVs;
+import org.endeavourhealth.hl7transform.homerton.transforms.valuesets.*;
 import org.endeavourhealth.hl7transform.mapper.MapperException;
 import org.endeavourhealth.hl7transform.common.ResourceContainer;
 import org.endeavourhealth.hl7transform.mapper.Mapper;
@@ -27,6 +24,7 @@ import org.endeavourhealth.hl7parser.segments.Pv2Segment;
 import org.endeavourhealth.hl7transform.common.TransformException;
 import org.hl7.fhir.instance.model.*;
 import org.hl7.fhir.instance.model.Encounter;
+import org.hl7.fhir.instance.model.valuesets.LocationPhysicalType;
 
 import java.util.List;
 import java.util.UUID;
@@ -68,10 +66,11 @@ public class EncounterTransform extends TransformBase {
         setLocations(source, target);
         setParticipants(source, target);
 
-
-        // other fields
+        // hospitalisation component
         setReason(source, target);
-        setHospitalisationElement(source.getPv1Segment(), target);
+        setDischargeDisposition(source, target);
+        setDischargeDestination(source, target);
+        setAdmitSource(source.getPv1Segment(), target);
 
         targetResources.addResource(target);
     }
@@ -180,7 +179,7 @@ public class EncounterTransform extends TransformBase {
                                     .setDisplay(admissionType.getDescription())
                                     .setCode(admissionType.getCode())
                                     .setSystem(admissionType.getSystem()))
-                            .setText(admissionType.getDescription())));
+                            .setText(pv1Segment.getAdmissionType())));
         }
     }
 
@@ -197,7 +196,7 @@ public class EncounterTransform extends TransformBase {
                             .setSystem(encounterType.getSystem())
                             .setCode(encounterType.getCode())
                             .setDisplay(encounterType.getDescription()))
-                    .setText(encounterType.getDescription());
+                    .setText(pv1Segment.getPatientType());
 
             target.addType(codeableConcept);
         }
@@ -278,39 +277,69 @@ public class EncounterTransform extends TransformBase {
             target.addReason(new CodeableConcept().setText(pv2Segment.getTransferReason().getAsString()));
     }
 
-    private static void setHospitalisationElement(Pv1Segment source, Encounter target) throws TransformException {
-        if (StringUtils.isNotBlank(source.getAdmitSource())
-                || StringUtils.isNotBlank(source.getDischargeDisposition())
-                || StringUtils.isNotBlank(source.getDischargedToLocation())) {
+    private static void setDischargeDisposition(AdtMessage source, Encounter target) throws TransformException {
+        Pv1Segment pv1Segment = source.getPv1Segment();
 
-            Encounter.EncounterHospitalizationComponent hospitalComponent = new Encounter.EncounterHospitalizationComponent();
+        if (StringUtils.isEmpty(pv1Segment.getDischargeDisposition()))
+            return;
 
-            if (StringUtils.isNotBlank(source.getAdmitSource()))
-                hospitalComponent.setAdmitSource(new CodeableConcept().setText(source.getAdmitSource()));
+        HomertonDischargeDisposition dischargeDisposition = HomertonDischargeDispositionVs.convert(pv1Segment.getDischargeDisposition());
 
-            if (StringUtils.isNotBlank(source.getDischargeDisposition()))
-                hospitalComponent.setDischargeDisposition(new CodeableConcept().setText(source.getDischargeDisposition()));
+        Encounter.EncounterHospitalizationComponent hospitalizationComponent = getHospitalisationComponent(target);
 
-            if (StringUtils.isNotBlank(source.getDischargedToLocation()))
-                hospitalComponent.setDestination(new Reference().setDisplay(source.getDischargedToLocation()));
+        hospitalizationComponent.setDischargeDisposition(new CodeableConcept()
+                .addCoding(new Coding()
+                        .setSystem(dischargeDisposition.getSystem())
+                        .setCode(dischargeDisposition.getCode())
+                        .setDisplay(dischargeDisposition.getDescription()))
+                .setText(pv1Segment.getDischargeDisposition()));
+    }
 
-            target.setHospitalization(hospitalComponent);
+    private void setDischargeDestination(AdtMessage source, Encounter target) throws MapperException {
+        Pv1Segment pv1Segment = source.getPv1Segment();
+
+        if (StringUtils.isEmpty(pv1Segment.getDischargedToLocation()))
+            return;
+
+        Reference dischargeClassOfLocation = getDischargeLocation(pv1Segment.getDischargedToLocation());
+
+        if (dischargeClassOfLocation == null)
+            return;
+
+        Encounter.EncounterHospitalizationComponent hospitalizationComponent = getHospitalisationComponent(target);
+        hospitalizationComponent.setDestination(dischargeClassOfLocation);
+    }
+
+    public Reference getDischargeLocation(String dischargeLocation) throws MapperException {
+
+        dischargeLocation = StringUtils.defaultString(dischargeLocation).trim().toLowerCase();
+
+        LocationTransform locationTransform = new LocationTransform(mapper, targetResources);
+
+        switch (dischargeLocation) {
+            case "nhs provider-general": return locationTransform.createClassOfLocation("NHS health care provider - general", null);
+            case "nhs provider-mental health": return locationTransform.createClassOfLocation("NHS health care provider - mental health", null);
+            case "usual place of residence": return locationTransform.createClassOfLocation("Usual place of residence", LocationPhysicalType.HO);
+            case "temporary home": return locationTransform.createClassOfLocation("Temporary place of residence", LocationPhysicalType.HO);
+            case "not applicable-died or stillbirth": return null;
+            case "not known": return null;
+            default: throw new NotImplementedException(dischargeLocation + " not recognised");
         }
+    }
 
-//        Pv1Segment pv1Segment = sourceMessage.getPv1Segment();
-//
-//        if ((pv1Segment.getAdmitDateTime() != null) && (pv1Segment.getDischargeDateTime() != null)) {
-//
-//            Period period = new Period();
-//
-//            if (pv1Segment.getAdmitDateTime() != null)
-//                period.setStart(pv1Segment.getAdmitDateTime().asDate());
-//
-//            if (pv1Segment.getDischargeDateTime() != null)
-//                period.setEnd(pv1Segment.getDischargeDateTime().asDate());
-//
-//            target.setPeriod(period);
-//        }
+    private static Encounter.EncounterHospitalizationComponent getHospitalisationComponent(Encounter target) {
+        if (target.getHospitalization() == null)
+            target.setHospitalization(new Encounter.EncounterHospitalizationComponent());
+
+        return target.getHospitalization();
+    }
+
+    private static void setAdmitSource(Pv1Segment source, Encounter target) throws TransformException {
+        if (StringUtils.isBlank(source.getAdmitSource()))
+            return;
+
+        Encounter.EncounterHospitalizationComponent hospitalizationComponent = getHospitalisationComponent(target);
+        hospitalizationComponent.setAdmitSource(new CodeableConcept().setText(source.getAdmitSource()));
     }
 
     private void setServiceProvider(AdtMessage sourceMessage, Encounter target) throws TransformException, MapperException, ParseException {

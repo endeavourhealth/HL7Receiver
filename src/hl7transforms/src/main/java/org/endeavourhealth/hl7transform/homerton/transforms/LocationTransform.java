@@ -98,6 +98,22 @@ public class LocationTransform extends TransformBase {
         return ReferenceHelper.createReference(ResourceType.Location, directParentLocation.getId());
     }
 
+    public Reference createClassOfLocation(String classOfLocationName, LocationPhysicalType locationPhysicalType) throws MapperException {
+        Validate.notEmpty(classOfLocationName, "classOfLocationName");
+
+        Location location = new Location()
+                .setName(classOfLocationName)
+                .setMode(Location.LocationMode.KIND);
+
+        if (locationPhysicalType != null)
+            location.setPhysicalType(createLocationPhysicalType(locationPhysicalType));
+
+        UUID id = getId(classOfLocationName);
+        location.setId(id.toString());
+
+        return ReferenceHelper.createReference(ResourceType.Location, classOfLocationName);
+    }
+
     private Location createLocationFromPl(String locationName,
                                           LocationPhysicalType locationPhysicalType,
                                           List<String> locationParentNames,
@@ -140,6 +156,10 @@ public class LocationTransform extends TransformBase {
         setPartOf(location, directParentLocation);
 
         return location;
+    }
+
+    private UUID getId(String classOfLocationName) throws MapperException {
+        return mapper.mapLocationUuid(classOfLocationName);
     }
 
     private UUID getId(String odsSiteCode, String locationName) throws MapperException {

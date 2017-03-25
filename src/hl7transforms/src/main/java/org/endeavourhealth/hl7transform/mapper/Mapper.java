@@ -99,6 +99,16 @@ public abstract class Mapper {
         return mapResourceUuid(ResourceType.Organization, identifier);
     }
 
+    public UUID mapLocationUuid(String classOfLocationName) throws MapperException {
+        Validate.notBlank(classOfLocationName, "classOfLocationName");
+
+        String identifier = MapParameters.create()
+                .put("ClassOfLocationName", classOfLocationName)
+                .createIdentifyingString();
+
+        return mapResourceUuid(ResourceType.Location, identifier);
+    }
+
     public UUID mapLocationUuid(String odsSiteCode, String locationName) throws MapperException {
         Validate.notBlank(odsSiteCode, "odsSiteCode");
         Validate.notBlank(locationName, "locationName");
