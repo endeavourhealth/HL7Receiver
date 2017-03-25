@@ -2,12 +2,15 @@ package org.endeavourhealth.hl7transform.homerton.transforms;
 
 import org.apache.commons.lang3.StringUtils;
 import org.endeavourhealth.common.fhir.FhirExtensionUri;
+import org.endeavourhealth.common.fhir.FhirValueSetUri;
 import org.endeavourhealth.common.fhir.ReferenceHelper;
 import org.endeavourhealth.common.fhir.schema.EncounterParticipantType;
+import org.endeavourhealth.common.fhir.schema.HomertonEncounterType;
 import org.endeavourhealth.hl7transform.homerton.parser.zsegments.HomertonSegmentName;
 import org.endeavourhealth.hl7transform.homerton.parser.zsegments.ZviSegment;
 import org.endeavourhealth.hl7transform.homerton.transforms.valuesets.EncounterClassVs;
 import org.endeavourhealth.hl7transform.homerton.transforms.valuesets.EncounterStateVs;
+import org.endeavourhealth.hl7transform.homerton.transforms.valuesets.HomertonEncounterTypeVs;
 import org.endeavourhealth.hl7transform.mapper.MapperException;
 import org.endeavourhealth.hl7transform.common.ResourceContainer;
 import org.endeavourhealth.hl7transform.mapper.Mapper;
@@ -18,8 +21,6 @@ import org.endeavourhealth.hl7parser.messages.AdtMessage;
 import org.endeavourhealth.hl7parser.segments.Pv1Segment;
 import org.endeavourhealth.hl7parser.segments.Pv2Segment;
 import org.endeavourhealth.hl7transform.common.TransformException;
-import org.endeavourhealth.hl7transform.common.converters.CodeableConceptHelper;
-import org.endeavourhealth.hl7transform.common.converters.ExtensionHelper;
 import org.hl7.fhir.instance.model.*;
 import org.hl7.fhir.instance.model.Encounter;
 
@@ -138,29 +139,20 @@ public class EncounterTransform extends TransformBase {
     private static void setType(AdtMessage source, Encounter target) throws TransformException {
 
         Pv1Segment pv1Segment = source.getPv1Segment();
-        Pv2Segment pv2Segment = source.getPv2Segment();
-        ZviSegment zviSegment = source.getSegment(HomertonSegmentName.ZVI, ZviSegment.class);
 
-        if (StringUtils.isNotBlank(pv1Segment.getAdmissionType()))
-            target.addType(CodeableConceptHelper.getCodeableConceptFromString(pv1Segment.getAdmissionType()));
+        if (StringUtils.isNotBlank(pv1Segment.getPatientType())) {
 
-        if (StringUtils.isNotBlank(pv1Segment.getHospitalService()))
-            target.addType(CodeableConceptHelper.getCodeableConceptFromString(pv1Segment.getHospitalService()));
+            HomertonEncounterType encounterType = HomertonEncounterTypeVs.convert(pv1Segment.getPatientType());
 
-        if (StringUtils.isNotBlank(pv1Segment.getPatientType()))
-            target.addType(CodeableConceptHelper.getCodeableConceptFromString(pv1Segment.getPatientType()));
+            CodeableConcept codeableConcept = new CodeableConcept()
+                    .addCoding(new Coding()
+                            .setSystem(encounterType.getSystem())
+                            .setCode(encounterType.getCode())
+                            .setDisplay(encounterType.getDescription()))
+                    .setText(encounterType.getDescription());
 
-        if (pv2Segment != null)
-            if (pv2Segment.getAccommodationCode() != null)
-                target.addType(CodeableConceptHelper.getCodeableConceptFromString(pv2Segment.getAccommodationCode().getAsString()));
-
-        if (zviSegment != null)
-            if (StringUtils.isNotBlank(zviSegment.getServiceCategory()))
-                target.addType(CodeableConceptHelper.getCodeableConceptFromString(zviSegment.getServiceCategory()));
-
-        if (zviSegment != null)
-            if (StringUtils.isNotBlank(zviSegment.getAdmitMode()))
-                target.addType(CodeableConceptHelper.getCodeableConceptFromString(zviSegment.getAdmitMode()));
+            target.addType(codeableConcept);
+        }
     }
 
     private static void setPatient(Encounter target, Patient patient) {
@@ -249,10 +241,10 @@ public class EncounterTransform extends TransformBase {
         Pv2Segment pv2Segment = sourceMessage.getPv2Segment();
 
         if (pv2Segment.getAdmitReason() != null)
-            target.addReason(CodeableConceptHelper.getCodeableConceptFromString(pv2Segment.getAdmitReason().getAsString()));
+            target.addReason(new CodeableConcept().setText(pv2Segment.getAdmitReason().getAsString()));
 
         if (pv2Segment.getTransferReason() != null)
-            target.addReason(CodeableConceptHelper.getCodeableConceptFromString(pv2Segment.getTransferReason().getAsString()));
+            target.addReason(new CodeableConcept().setText(pv2Segment.getTransferReason().getAsString()));
     }
 
     private static void setHospitalisationElement(Pv1Segment source, Encounter target) throws TransformException {
@@ -263,10 +255,10 @@ public class EncounterTransform extends TransformBase {
             Encounter.EncounterHospitalizationComponent hospitalComponent = new Encounter.EncounterHospitalizationComponent();
 
             if (StringUtils.isNotBlank(source.getAdmitSource()))
-                hospitalComponent.setAdmitSource(CodeableConceptHelper.getCodeableConceptFromString(source.getAdmitSource()));
+                hospitalComponent.setAdmitSource(new CodeableConcept().setText(source.getAdmitSource()));
 
             if (StringUtils.isNotBlank(source.getDischargeDisposition()))
-                hospitalComponent.setDischargeDisposition(CodeableConceptHelper.getCodeableConceptFromString(source.getDischargeDisposition()));
+                hospitalComponent.setDischargeDisposition(new CodeableConcept().setText(source.getDischargeDisposition()));
 
             if (StringUtils.isNotBlank(source.getDischargedToLocation()))
                 hospitalComponent.setDestination(new Reference().setDisplay(source.getDischargedToLocation()));

@@ -4,7 +4,6 @@ package org.endeavourhealth.hl7transform.homerton.transforms.legacy;
 import org.endeavourhealth.hl7parser.ParseException;
 import org.endeavourhealth.hl7parser.segments.ObxSegment;
 import org.endeavourhealth.hl7transform.common.TransformException;
-import org.endeavourhealth.hl7transform.common.converters.CodeableConceptHelper;
 import org.hl7.fhir.instance.model.*;
 
 public class ObservationTransform {
@@ -14,11 +13,11 @@ public class ObservationTransform {
 
         observation.setStatus(Observation.ObservationStatus.FINAL);
 
-        observation.setCode(CodeableConceptHelper.getCodeableConceptFromString(source.getObservationIdentifier().getAsString()));
+        observation.setCode(new CodeableConcept().setText(source.getObservationIdentifier().getAsString()));
 
         switch (source.getValueType()) {
             case "CE":
-                observation.setValue(CodeableConceptHelper.getCodeableConceptFromString(source.getObservationValue()));
+                observation.setValue(new CodeableConcept().setText(source.getObservationValue()));
                 break;
             case "DT":
                 observation.setValue(DateTimeType.parseV3(source.getObservationValue()));
@@ -32,7 +31,7 @@ public class ObservationTransform {
 
             //Homerton specific
             case "CD":
-                observation.setValue(CodeableConceptHelper.getCodeableConceptFromString(source.getObservationValue()));
+                observation.setValue(new CodeableConcept().setText(source.getObservationValue()));
                 break;
             //Default to string type
             default:

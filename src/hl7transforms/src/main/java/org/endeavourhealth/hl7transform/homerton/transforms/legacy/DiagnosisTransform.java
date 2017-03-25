@@ -4,7 +4,6 @@ package org.endeavourhealth.hl7transform.homerton.transforms.legacy;
 import org.endeavourhealth.hl7parser.ParseException;
 import org.endeavourhealth.hl7parser.segments.Dg1Segment;
 import org.endeavourhealth.hl7transform.common.TransformException;
-import org.endeavourhealth.hl7transform.common.converters.CodeableConceptHelper;
 import org.endeavourhealth.hl7transform.common.converters.DateConverter;
 import org.hl7.fhir.instance.model.*;
 
@@ -28,7 +27,7 @@ public class DiagnosisTransform {
 
         observation.setEffective(DateConverter.getDateType(source.getDiagnosisDateTime()));
 
-        observation.setCategory(CodeableConceptHelper.getCodeableConceptFromString(source.getDiagnosisType()));
+        observation.setCategory(new CodeableConcept().setText(source.getDiagnosisType()));
 
         return observation;
     }
