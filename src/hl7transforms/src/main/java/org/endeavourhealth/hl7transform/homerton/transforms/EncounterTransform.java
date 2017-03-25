@@ -1,22 +1,17 @@
 package org.endeavourhealth.hl7transform.homerton.transforms;
 
-import com.google.common.collect.ImmutableMap;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.Validate;
 import org.endeavourhealth.common.fhir.FhirExtensionUri;
-import org.endeavourhealth.common.fhir.FhirUri;
 import org.endeavourhealth.common.fhir.ReferenceHelper;
 import org.endeavourhealth.common.fhir.schema.EncounterParticipantType;
-import org.endeavourhealth.hl7parser.Hl7DateTime;
-import org.endeavourhealth.hl7parser.segments.EvnSegment;
-import org.endeavourhealth.hl7transform.Transform;
 import org.endeavourhealth.hl7transform.homerton.parser.zsegments.HomertonSegmentName;
 import org.endeavourhealth.hl7transform.homerton.parser.zsegments.ZviSegment;
+import org.endeavourhealth.hl7transform.homerton.transforms.valuesets.EncounterClassVs;
+import org.endeavourhealth.hl7transform.homerton.transforms.valuesets.EncounterStateVs;
 import org.endeavourhealth.hl7transform.mapper.MapperException;
 import org.endeavourhealth.hl7transform.common.ResourceContainer;
 import org.endeavourhealth.hl7transform.mapper.Mapper;
 import org.endeavourhealth.hl7parser.ParseException;
-import org.endeavourhealth.hl7parser.datatypes.Cx;
 import org.endeavourhealth.hl7parser.datatypes.Pl;
 import org.endeavourhealth.hl7parser.datatypes.Xcn;
 import org.endeavourhealth.hl7parser.messages.AdtMessage;
@@ -28,8 +23,6 @@ import org.endeavourhealth.hl7transform.common.converters.ExtensionHelper;
 import org.hl7.fhir.instance.model.*;
 import org.hl7.fhir.instance.model.Encounter;
 
-import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
@@ -91,7 +84,7 @@ public class EncounterTransform extends TransformBase {
         Pv1Segment pv1Segment = source.getPv1Segment();
 
         if (StringUtils.isNotBlank(pv1Segment.getAccountStatus()))
-            target.setStatus(getEncounterStatus(pv1Segment.getAccountStatus()));
+            target.setStatus(EncounterStateVs.convert(pv1Segment.getAccountStatus()));
     }
 
     private static void setStatusHistory(AdtMessage source, Encounter target) throws ParseException {
@@ -128,42 +121,13 @@ public class EncounterTransform extends TransformBase {
         }
     }
 
-    private static Encounter.EncounterState getEncounterStatus(String state) throws TransformException  {
-        state = state.trim().toUpperCase();
-
-        switch (state) {
-            case "CANCELLED": return Encounter.EncounterState.CANCELLED;
-            case "DISCHARGED": return Encounter.EncounterState.FINISHED;
-            case "PENDING ARRIVAL": return Encounter.EncounterState.PLANNED;
-            case "ACTIVE": return Encounter.EncounterState.INPROGRESS;
-            case "PREADMIT": return Encounter.EncounterState.ARRIVED;
-            case "CANCELLED PENDING ARRIVAL": return Encounter.EncounterState.CANCELLED;
-
-            default: throw new TransformException(state + " state not recognised");
-        }
-    }
-
     private static void setClass(AdtMessage source, Encounter target) throws TransformException {
-        target.setClass_(convertEncounterClass(source.getPv1Segment().getPatientClass()));
+        target.setClass_(EncounterClassVs.convert(source.getPv1Segment().getPatientClass()));
 
         if (target.getClass_() == Encounter.EncounterClass.OTHER)
             target.addExtension(ExtensionHelper.createStringExtension(FhirExtensionUri.ENCOUNTER_PATIENT_CLASS, source.getPv1Segment().getPatientClass()));
     }
 
-    private static Encounter.EncounterClass convertEncounterClass(String patientClass) throws TransformException {
-        patientClass = patientClass.trim().toUpperCase();
-
-        switch (patientClass) {
-            case "OUTPATIENT": return Encounter.EncounterClass.OUTPATIENT;
-            case "EMERGENCY": return Encounter.EncounterClass.EMERGENCY;
-            case "INPATIENT": return Encounter.EncounterClass.INPATIENT;
-
-            //Homerton Specific
-            case "RECURRING": return Encounter.EncounterClass.OTHER;
-            case "WAIT LIST": return Encounter.EncounterClass.OTHER;
-            default: throw new TransformException(patientClass + " patient class not recognised");
-        }
-    }
 
     private static void setType(AdtMessage source, Encounter target) throws TransformException {
 

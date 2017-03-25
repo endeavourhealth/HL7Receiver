@@ -11,7 +11,11 @@ import org.endeavourhealth.hl7parser.segments.Pd1Segment;
 import org.endeavourhealth.hl7transform.common.converters.ExtensionHelper;
 import org.endeavourhealth.hl7transform.homerton.parser.zsegments.HomertonSegmentName;
 import org.endeavourhealth.hl7transform.homerton.parser.zsegments.ZpiSegment;
+import org.endeavourhealth.hl7transform.homerton.transforms.converters.AddressConverter;
 import org.endeavourhealth.hl7transform.homerton.transforms.converters.IdentifierConverter;
+import org.endeavourhealth.hl7transform.homerton.transforms.converters.NameConverter;
+import org.endeavourhealth.hl7transform.homerton.transforms.converters.TelecomConverter;
+import org.endeavourhealth.hl7transform.homerton.transforms.valuesets.AdministrativeGenderVs;
 import org.endeavourhealth.hl7transform.mapper.Mapper;
 import org.endeavourhealth.hl7transform.mapper.MapperException;
 import org.endeavourhealth.hl7transform.common.ResourceContainer;
@@ -279,7 +283,7 @@ public class PatientTransform extends TransformBase {
     }
 
     private static Enumerations.AdministrativeGender getSex(String gender) throws TransformException {
-        return SexConverter.convert(gender);
+        return AdministrativeGenderVs.convert(gender);
     }
 
     private static void setDateOfBirth(PidSegment sourcePid, Patient target) throws ParseException, TransformException {

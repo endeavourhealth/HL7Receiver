@@ -1,9 +1,7 @@
 package org.endeavourhealth.hl7transform.homerton.transforms;
 
-import com.google.common.collect.ImmutableMap;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Validate;
-import org.endeavourhealth.common.fhir.FhirUri;
 import org.endeavourhealth.common.fhir.ReferenceHelper;
 import org.endeavourhealth.common.fhir.schema.OrganisationType;
 import org.endeavourhealth.hl7parser.ParseException;
@@ -13,13 +11,12 @@ import org.endeavourhealth.hl7transform.homerton.transforms.converters.Identifie
 import org.endeavourhealth.hl7transform.mapper.Mapper;
 import org.endeavourhealth.hl7transform.mapper.MapperException;
 import org.endeavourhealth.hl7transform.common.ResourceContainer;
-import org.endeavourhealth.hl7transform.common.converters.AddressConverter;
+import org.endeavourhealth.hl7transform.homerton.transforms.converters.AddressConverter;
 import org.endeavourhealth.hl7transform.common.converters.StringHelper;
-import org.endeavourhealth.hl7transform.common.converters.TelecomConverter;
+import org.endeavourhealth.hl7transform.homerton.transforms.converters.TelecomConverter;
 import org.hl7.fhir.instance.model.*;
 
 import java.util.*;
-import java.util.stream.Collectors;
 
 public class OrganizationTransform extends TransformBase {
 

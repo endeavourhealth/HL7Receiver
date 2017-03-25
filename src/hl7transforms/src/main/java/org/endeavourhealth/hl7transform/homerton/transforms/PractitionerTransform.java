@@ -12,7 +12,7 @@ import org.endeavourhealth.hl7transform.mapper.Mapper;
 import org.endeavourhealth.hl7transform.mapper.MapperException;
 import org.endeavourhealth.hl7parser.datatypes.Xcn;
 import org.endeavourhealth.hl7transform.common.TransformException;
-import org.endeavourhealth.hl7transform.common.converters.NameConverter;
+import org.endeavourhealth.hl7transform.homerton.transforms.converters.NameConverter;
 import org.hl7.fhir.instance.model.*;
 
 import java.util.*;

@@ -1,8 +1,10 @@
-package org.endeavourhealth.hl7transform.common.converters;
+package org.endeavourhealth.hl7transform.homerton.transforms.converters;
 
 import org.apache.commons.lang3.StringUtils;
 import org.endeavourhealth.hl7parser.datatypes.Xad;
 import org.endeavourhealth.hl7transform.common.TransformException;
+import org.endeavourhealth.hl7transform.common.converters.StringHelper;
+import org.endeavourhealth.hl7transform.homerton.transforms.valuesets.AddressUseVs;
 import org.hl7.fhir.instance.model.Address;
 
 import java.util.ArrayList;
@@ -73,7 +75,7 @@ public class AddressConverter {
             target.setPostalCode(formatPostcode(source.getPostCode()));
 
         if (StringUtils.isNotBlank(source.getAddressType()))
-            target.setUse(convertAddressType(source.getAddressType()));
+            target.setUse(AddressUseVs.convert(source.getAddressType()));
 
         return target;
     }
@@ -113,22 +115,5 @@ public class AddressConverter {
         }
 
         return formattedPostcode;
-    }
-
-    private static Address.AddressUse convertAddressType(String addressType) throws TransformException {
-        addressType = addressType.trim().toLowerCase();
-
-        switch (addressType) {
-            case "home": return Address.AddressUse.HOME;
-            case "temporary": return Address.AddressUse.TEMP;
-            case "previous": return Address.AddressUse.OLD;
-
-            //Homerton Specific
-            case "mailing": return Address.AddressUse.HOME;
-            case "alternate": return Address.AddressUse.TEMP;
-            case "birth": return Address.AddressUse.OLD;
-
-            default: throw new TransformException(addressType + " address type not recognised");
-        }
     }
 }
