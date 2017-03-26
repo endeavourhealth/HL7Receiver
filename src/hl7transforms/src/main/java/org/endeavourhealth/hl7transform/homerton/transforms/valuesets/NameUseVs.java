@@ -22,11 +22,12 @@ public abstract class NameUseVs {
             case "o": return HumanName.NameUse.TEMP;      // other
 
             // Cerner Millenium
+            case "preferred":
             case "alternate": return HumanName.NameUse.NICKNAME;
+
             case "legal": return HumanName.NameUse.OFFICIAL;
 
             case "current":
-            case "preferred":
             case "personnel": return HumanName.NameUse.USUAL;
 
             case "maiden": return HumanName.NameUse.MAIDEN;
