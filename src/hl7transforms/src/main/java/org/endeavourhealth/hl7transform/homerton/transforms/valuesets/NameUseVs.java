@@ -31,6 +31,7 @@ public abstract class NameUseVs {
 
             case "maiden": return HumanName.NameUse.MAIDEN;
 
+            case "birth": 
             case "adopted":
             case "previous": return HumanName.NameUse.OLD;
 
