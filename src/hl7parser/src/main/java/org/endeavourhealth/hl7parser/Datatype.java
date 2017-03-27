@@ -20,12 +20,11 @@ public class Datatype {
     }
 
     public String getComponentAsString(int componentNumber) {
-        Component component = getComponent(componentNumber);
+        return this.datatype.getComponentAsString(componentNumber);
+    }
 
-        if (component == null)
-            return null;
-
-        return component.getAsString();
+    public String getSubcomponentAsString(int componentNumber, int subcomponentNumber) {
+        return this.datatype.getSubcomponentAsString(componentNumber, subcomponentNumber);
     }
 
     public LocalDateTime getComponentAsDate(int componentNumber) throws ParseException {

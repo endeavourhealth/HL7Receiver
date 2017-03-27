@@ -2,6 +2,8 @@ package org.endeavourhealth.hl7parser;
 
 import org.apache.commons.lang3.Validate;
 
+import java.util.List;
+
 public class Component {
     private static final int FIRST = 0;
 
@@ -28,6 +30,17 @@ public class Component {
 
     public String getAsString() {
         return this.compose();
+    }
+
+    public String getSubcomponentAsString(int subcomponentNumber) {
+        int subcomponentIndex = subcomponentNumber - 1;
+
+        if (componentText == null)
+            return null;
+
+        List<String> subcomponents = Helpers.split(componentText, this.seperators.getSubcomponentSeperator());
+
+        return Helpers.getSafely(subcomponents, subcomponentIndex);
     }
 
     //////////////////  Setters  //////////////////

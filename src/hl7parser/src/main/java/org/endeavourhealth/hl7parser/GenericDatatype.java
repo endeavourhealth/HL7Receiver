@@ -49,6 +49,15 @@ public class GenericDatatype {
         return component.getAsString();
     }
 
+    public String getSubcomponentAsString(int componentNumber, int subcomponentNumber) {
+        Component component = getComponent(componentNumber);
+
+        if (component == null)
+            return null;
+
+        return component.getSubcomponentAsString(subcomponentNumber);
+    }
+
     public List<Component> getComponents() {
         return this.components;
     }
