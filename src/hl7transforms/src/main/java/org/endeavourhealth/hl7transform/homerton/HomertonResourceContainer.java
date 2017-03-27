@@ -24,7 +24,7 @@ public class HomertonResourceContainer extends ResourceContainer {
 
     public Reference getHomertonOrganisationReference() throws TransformException {
         if (this.homertonOrganisation == null)
-            throw new TransformException("Homerton organisation not created");
+            throw new TransformException("Homerton organisation not set");
 
         return ReferenceHelper.createReference(ResourceType.Organization, this.homertonOrganisation.getId());
     }
@@ -39,7 +39,7 @@ public class HomertonResourceContainer extends ResourceContainer {
 
     public Location getHomertonLocation() throws TransformException {
         if (this.homertonLocation == null)
-            throw new TransformException("Homerton location not created");
+            throw new TransformException("Homerton location not set");
 
         return this.homertonLocation;
     }
@@ -54,7 +54,7 @@ public class HomertonResourceContainer extends ResourceContainer {
 
     public Organization getGeneralPracticeOrganisation() throws TransformException {
         if (this.generalPracticeOrganisation == null)
-            throw new TransformException("General practice organisation not created");
+            throw new TransformException("General practice organisation not set");
 
         return this.generalPracticeOrganisation;
     }

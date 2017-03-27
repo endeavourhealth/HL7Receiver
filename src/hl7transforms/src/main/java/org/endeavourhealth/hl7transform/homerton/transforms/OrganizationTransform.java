@@ -9,10 +9,10 @@ import org.endeavourhealth.hl7parser.segments.Pv1Segment;
 import org.endeavourhealth.hl7transform.common.TransformException;
 import org.endeavourhealth.hl7transform.homerton.HomertonResourceContainer;
 import org.endeavourhealth.hl7transform.homerton.parser.zdatatypes.Zpd;
+import org.endeavourhealth.hl7transform.homerton.transforms.constants.HomertonConstants;
 import org.endeavourhealth.hl7transform.homerton.transforms.converters.IdentifierConverter;
 import org.endeavourhealth.hl7transform.mapper.Mapper;
 import org.endeavourhealth.hl7transform.mapper.MapperException;
-import org.endeavourhealth.hl7transform.common.ResourceContainer;
 import org.endeavourhealth.hl7transform.homerton.transforms.converters.AddressConverter;
 import org.endeavourhealth.hl7transform.common.converters.StringHelper;
 import org.endeavourhealth.hl7transform.homerton.transforms.converters.TelecomConverter;
@@ -102,7 +102,7 @@ public class OrganizationTransform extends HomertonTransformBase {
 
         organization.setType(getOrganisationType(OrganisationType.GP_PRACTICE));
 
-        targetResources.addResource(organization);
+        targetResources.setGeneralPracticeOrganisation(organization);
 
         return ReferenceHelper.createReference(ResourceType.Organization, organization.getId());
     }

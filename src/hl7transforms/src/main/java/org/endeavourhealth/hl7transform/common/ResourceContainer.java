@@ -1,15 +1,9 @@
 package org.endeavourhealth.hl7transform.common;
 
-import com.google.common.collect.Iterables;
-import com.google.common.collect.Lists;
 import org.apache.commons.lang3.Validate;
-import org.endeavourhealth.common.fhir.ReferenceHelper;
-import org.endeavourhealth.common.utility.StreamExtension;
 import org.hl7.fhir.instance.model.*;
 
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -23,15 +17,6 @@ public class ResourceContainer {
         if (!this.hasResource(resource.getClass(), resource.getId()))
             this.resources.add(resource);
     }
-
-//    protected <T extends Resource> Reference getResourceReference(Class<T> resourceType, String id) throws TransformException {
-//        T resource = getResourceSingleOrNull(resourceType, id);
-//
-//        if (resource == null)
-//            throw new TransformException("Could not find resource " + resourceType.getName() + " with id " + id);
-//
-//        return ReferenceHelper.createReference(resource.getResourceType(), id);
-//    }
 
     protected <T extends Resource> boolean hasResource(Class<T> resourceType, String id) throws TransformException {
         Validate.notNull(resourceType);

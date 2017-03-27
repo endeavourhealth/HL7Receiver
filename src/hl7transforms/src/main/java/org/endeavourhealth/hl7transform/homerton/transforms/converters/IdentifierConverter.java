@@ -35,6 +35,14 @@ public class IdentifierConverter {
                 .setValue(StringUtils.deleteWhitespace(odsCode.toUpperCase()));
     }
 
+    public static boolean looksLikeGmcCode(String gmcCode) {
+        return StringUtils.trim(StringUtils.defaultString(gmcCode)).toLowerCase().startsWith("g");
+    }
+
+    public static boolean looksLikeConsultantCode(String consultantCode) {
+        return StringUtils.trim(StringUtils.defaultString(consultantCode)).toLowerCase().startsWith("c");
+    }
+
     private static String getIdentifierSystem(CxInterface source, ResourceType resourceType) throws TransformException {
         String id = StringUtils.trim(StringUtils.defaultString(source.getId())).toLowerCase();
         String identifierTypeCode = StringUtils.trim(StringUtils.defaultString(source.getIdentifierTypeCode())).toLowerCase();
@@ -68,13 +76,13 @@ public class IdentifierConverter {
                 case "nhs consultant number | non gp":
                 case "community dr nbr | community dr nbr":
                 case " | community dr nbr":
-                    if (id.startsWith("c"))
+                    if (looksLikeConsultantCode(id))
                         return FhirUri.IDENTIFIER_SYSTEM_CONSULTANT_CODE;
                     else
                         return null;
 
                 case "external id | external identifier":
-                    if (id.startsWith("g"))
+                    if (looksLikeGmcCode(id))
                         return FhirUri.IDENTIFIER_SYSTEM_GMC_NUMBER;
                     else
                         return null;

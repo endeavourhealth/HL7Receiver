@@ -1,4 +1,4 @@
-package org.endeavourhealth.hl7transform.homerton.transforms;
+package org.endeavourhealth.hl7transform.homerton.transforms.constants;
 
 public class HomertonConstants {
     public static final String odsCode = "RQX";

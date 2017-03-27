@@ -5,14 +5,13 @@ import org.apache.commons.lang3.Validate;
 import org.endeavourhealth.common.fhir.FhirExtensionUri;
 import org.endeavourhealth.common.fhir.FhirUri;
 import org.endeavourhealth.common.utility.StreamExtension;
-import org.endeavourhealth.hl7parser.Field;
-import org.endeavourhealth.hl7parser.Helpers;
 import org.endeavourhealth.hl7parser.segments.Pd1Segment;
 import org.endeavourhealth.hl7transform.common.converters.ExtensionHelper;
 import org.endeavourhealth.hl7transform.homerton.HomertonResourceContainer;
 import org.endeavourhealth.hl7transform.homerton.parser.zdatatypes.Zpd;
 import org.endeavourhealth.hl7transform.homerton.parser.zsegments.HomertonSegmentName;
 import org.endeavourhealth.hl7transform.homerton.parser.zsegments.ZpiSegment;
+import org.endeavourhealth.hl7transform.homerton.transforms.constants.HomertonConstants;
 import org.endeavourhealth.hl7transform.homerton.transforms.converters.AddressConverter;
 import org.endeavourhealth.hl7transform.homerton.transforms.converters.IdentifierConverter;
 import org.endeavourhealth.hl7transform.homerton.transforms.converters.NameConverter;
@@ -20,7 +19,6 @@ import org.endeavourhealth.hl7transform.homerton.transforms.converters.TelecomCo
 import org.endeavourhealth.hl7transform.homerton.transforms.valuesets.AdministrativeGenderVs;
 import org.endeavourhealth.hl7transform.mapper.Mapper;
 import org.endeavourhealth.hl7transform.mapper.MapperException;
-import org.endeavourhealth.hl7transform.common.ResourceContainer;
 import org.endeavourhealth.hl7transform.common.TransformException;
 import org.endeavourhealth.hl7transform.common.converters.*;
 import org.endeavourhealth.hl7parser.ParseException;
@@ -158,21 +156,14 @@ public class PatientTransform extends HomertonTransformBase {
 
         Zpd zpd = pd1Segment.getFieldAsDatatype(4, Zpd.class);
 
-        List<String> addressLines = new ArrayList<>();
-
-        addressLines.add(zpd.getAddressLine1());
-
-        if (StringUtils.isNotEmpty(zpd.getAddressLine2()))
-            addressLines.add(zpd.getAddressLine2());
-
         OrganizationTransform organizationTransform = new OrganizationTransform(mapper, targetResources);
         Reference organisationReference = organizationTransform.createGeneralPracticeOrganisation(zpd);
 
-        PractitionerTransform practitionerTransform = new PractitionerTransform(mapper, targetResources);
-        Reference practitionerReference = practitionerTransform.createPrimaryCarePractitioner(zpd.getGmcCode(), zpd.getSurname(), zpd.getForenames(), organisationReference);
-
         if (organisationReference != null)
             target.addCareProvider(organisationReference);
+
+        PractitionerTransform practitionerTransform = new PractitionerTransform(mapper, targetResources);
+        Reference practitionerReference = practitionerTransform.createPrimaryCarePractitioner(zpd, organisationReference);
 
         if (practitionerReference != null)
             target.addCareProvider(practitionerReference);

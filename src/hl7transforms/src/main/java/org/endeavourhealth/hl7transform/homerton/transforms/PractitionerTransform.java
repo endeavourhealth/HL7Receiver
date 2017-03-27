@@ -6,8 +6,9 @@ import org.endeavourhealth.common.fhir.FhirUri;
 import org.endeavourhealth.common.fhir.ReferenceHelper;
 import org.endeavourhealth.common.utility.StreamExtension;
 import org.endeavourhealth.hl7parser.ParseException;
-import org.endeavourhealth.hl7transform.common.ResourceContainer;
 import org.endeavourhealth.hl7transform.homerton.HomertonResourceContainer;
+import org.endeavourhealth.hl7transform.homerton.parser.zdatatypes.Zpd;
+import org.endeavourhealth.hl7transform.homerton.transforms.constants.HomertonConstants;
 import org.endeavourhealth.hl7transform.homerton.transforms.converters.IdentifierConverter;
 import org.endeavourhealth.hl7transform.mapper.Mapper;
 import org.endeavourhealth.hl7transform.mapper.MapperException;
@@ -30,28 +31,31 @@ public class PractitionerTransform extends HomertonTransformBase {
         return ResourceType.Practitioner;
     }
 
-    public Reference createPrimaryCarePractitioner(String gmcCode, String surname, String forenames, Reference primaryCareOrganizationReference) throws MapperException, TransformException, ParseException {
+    public Reference createPrimaryCarePractitioner(Zpd zpd, Reference primaryCareOrganizationReference) throws MapperException, TransformException, ParseException {
+        if (StringUtils.isBlank(zpd.getSurname()))
+            return null;
+
         Practitioner practitioner = new Practitioner();
 
-        if (StringUtils.isNotBlank(gmcCode)) {
-            gmcCode = StringUtils.deleteWhitespace(gmcCode).toUpperCase();
+        if (StringUtils.isNotBlank(zpd.getGmcCode())) {
+            String gmcCode = StringUtils.deleteWhitespace(zpd.getGmcCode()).toUpperCase();
 
-            if (gmcCode.startsWith("G")) {
+            if (IdentifierConverter.looksLikeGmcCode(gmcCode)) {
                 practitioner.addIdentifier(new Identifier()
                         .setSystem(FhirUri.IDENTIFIER_SYSTEM_GMC_NUMBER)
                         .setValue(gmcCode));
             }
         }
 
-        practitioner.setName(NameConverter.createUsualName(surname, forenames, null));
+        practitioner.setName(NameConverter.createUsualName(zpd.getSurname(), zpd.getForenames(), null));
 
         UUID id = getId(practitioner);
         practitioner.setId(id.toString());
 
-        targetResources.addResource(practitioner);
-
         if (primaryCareOrganizationReference != null)
             practitioner.addPractitionerRole(new Practitioner.PractitionerPractitionerRoleComponent().setManagingOrganization(primaryCareOrganizationReference));
+
+        targetResources.addResource(practitioner);
 
         return ReferenceHelper.createReference(ResourceType.Practitioner, practitioner.getId());
     }
