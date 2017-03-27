@@ -11,6 +11,7 @@ import org.endeavourhealth.common.fhir.schema.HomertonEncounterType;
 import org.endeavourhealth.hl7parser.Hl7DateTime;
 import org.endeavourhealth.hl7parser.segments.EvnSegment;
 import org.endeavourhealth.hl7transform.common.converters.DateConverter;
+import org.endeavourhealth.hl7transform.homerton.HomertonResourceContainer;
 import org.endeavourhealth.hl7transform.homerton.transforms.valuesets.*;
 import org.endeavourhealth.hl7transform.mapper.MapperException;
 import org.endeavourhealth.hl7transform.common.ResourceContainer;
@@ -29,9 +30,9 @@ import org.hl7.fhir.instance.model.valuesets.LocationPhysicalType;
 import java.util.List;
 import java.util.UUID;
 
-public class EncounterTransform extends TransformBase {
+public class EncounterTransform extends HomertonTransformBase {
 
-    public EncounterTransform(Mapper mapper, ResourceContainer targetResources) {
+    public EncounterTransform(Mapper mapper, HomertonResourceContainer targetResources) {
         super(mapper, targetResources);
     }
 
@@ -230,7 +231,7 @@ public class EncounterTransform extends TransformBase {
             return;
 
         PractitionerTransform practitionerTransform = new PractitionerTransform(mapper, targetResources);
-        List<Reference> references = practitionerTransform.createHospitalPractitioners(xcns, targetResources.getManagingOrganisationReference());
+        List<Reference> references = practitionerTransform.createHospitalPractitioners(xcns, targetResources.getHomertonOrganisationReference());
 
         for (Reference reference : references) {
             target.addParticipant(new Encounter.EncounterParticipantComponent()

@@ -7,6 +7,7 @@ import org.endeavourhealth.common.fhir.ReferenceHelper;
 import org.endeavourhealth.common.utility.StreamExtension;
 import org.endeavourhealth.hl7parser.ParseException;
 import org.endeavourhealth.hl7transform.common.ResourceContainer;
+import org.endeavourhealth.hl7transform.homerton.HomertonResourceContainer;
 import org.endeavourhealth.hl7transform.homerton.transforms.converters.IdentifierConverter;
 import org.endeavourhealth.hl7transform.mapper.Mapper;
 import org.endeavourhealth.hl7transform.mapper.MapperException;
@@ -18,9 +19,9 @@ import org.hl7.fhir.instance.model.*;
 import java.util.*;
 import java.util.stream.Collectors;
 
-public class PractitionerTransform extends TransformBase {
+public class PractitionerTransform extends HomertonTransformBase {
 
-    public PractitionerTransform(Mapper mapper, ResourceContainer targetResources) {
+    public PractitionerTransform(Mapper mapper, HomertonResourceContainer targetResources) {
         super(mapper, targetResources);
     }
 

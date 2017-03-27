@@ -1,15 +1,15 @@
 package org.endeavourhealth.hl7transform.homerton.transforms;
 
-import org.endeavourhealth.hl7transform.common.ResourceContainer;
+import org.endeavourhealth.hl7transform.homerton.HomertonResourceContainer;
 import org.endeavourhealth.hl7transform.mapper.Mapper;
 import org.hl7.fhir.instance.model.ResourceType;
 
-public abstract class TransformBase {
+public abstract class HomertonTransformBase {
 
     protected Mapper mapper;
-    protected ResourceContainer targetResources;
+    protected HomertonResourceContainer targetResources;
 
-    public TransformBase(Mapper mapper, ResourceContainer targetResources) {
+    public HomertonTransformBase(Mapper mapper, HomertonResourceContainer targetResources) {
         this.mapper = mapper;
         this.targetResources = targetResources;
     }

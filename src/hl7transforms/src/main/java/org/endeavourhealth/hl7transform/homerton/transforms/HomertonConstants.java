@@ -10,6 +10,7 @@ public class HomertonConstants {
     public static final String odsSiteCode = "RQXM1";
     public static final String locationName = "Homerton University Hospital";
 
+    public static final String sendingFacility = "HOMERTON";  //MSH.4
     public static final String servicingFacility = "HOMERTON UNIVER";  // PV1.39
     public static final String locationFacility = servicingFacility;   // PV1.3.4
     public static final String locationBuilding = "HOMERTON UH";       // PV1.3.7

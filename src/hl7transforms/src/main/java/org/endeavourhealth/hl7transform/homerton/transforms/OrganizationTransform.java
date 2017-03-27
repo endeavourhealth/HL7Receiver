@@ -7,6 +7,7 @@ import org.endeavourhealth.common.fhir.schema.OrganisationType;
 import org.endeavourhealth.hl7parser.ParseException;
 import org.endeavourhealth.hl7parser.segments.Pv1Segment;
 import org.endeavourhealth.hl7transform.common.TransformException;
+import org.endeavourhealth.hl7transform.homerton.HomertonResourceContainer;
 import org.endeavourhealth.hl7transform.homerton.transforms.converters.IdentifierConverter;
 import org.endeavourhealth.hl7transform.mapper.Mapper;
 import org.endeavourhealth.hl7transform.mapper.MapperException;
@@ -18,9 +19,9 @@ import org.hl7.fhir.instance.model.*;
 
 import java.util.*;
 
-public class OrganizationTransform extends TransformBase {
+public class OrganizationTransform extends HomertonTransformBase {
 
-    public OrganizationTransform(Mapper mapper, ResourceContainer resourceContainer) {
+    public OrganizationTransform(Mapper mapper, HomertonResourceContainer resourceContainer) {
         super(mapper, resourceContainer);
     }
 
@@ -40,7 +41,7 @@ public class OrganizationTransform extends TransformBase {
         UUID id = mapper.mapOrganisationUuid(HomertonConstants.odsCode, HomertonConstants.organisationName);
         organization.setId(id.toString());
 
-        targetResources.addManagingOrganisation(organization);
+        targetResources.setHomertonOrganisation(organization);
 
         return ReferenceHelper.createReference(ResourceType.Organization, organization.getId());
     }

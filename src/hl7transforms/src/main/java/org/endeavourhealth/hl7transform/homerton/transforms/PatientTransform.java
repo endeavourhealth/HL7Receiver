@@ -9,6 +9,7 @@ import org.endeavourhealth.hl7parser.Field;
 import org.endeavourhealth.hl7parser.Helpers;
 import org.endeavourhealth.hl7parser.segments.Pd1Segment;
 import org.endeavourhealth.hl7transform.common.converters.ExtensionHelper;
+import org.endeavourhealth.hl7transform.homerton.HomertonResourceContainer;
 import org.endeavourhealth.hl7transform.homerton.parser.zsegments.HomertonSegmentName;
 import org.endeavourhealth.hl7transform.homerton.parser.zsegments.ZpiSegment;
 import org.endeavourhealth.hl7transform.homerton.transforms.converters.AddressConverter;
@@ -32,9 +33,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
-public class PatientTransform extends TransformBase {
+public class PatientTransform extends HomertonTransformBase {
 
-    public PatientTransform(Mapper mapper, ResourceContainer targetResources) {
+    public PatientTransform(Mapper mapper, HomertonResourceContainer targetResources) {
         super(mapper, targetResources);
     }
 
@@ -367,6 +368,6 @@ public class PatientTransform extends TransformBase {
     }
 
     private void setManagingOrganization(AdtMessage source, Patient target) throws MapperException, TransformException {
-        target.setManagingOrganization(this.targetResources.getManagingOrganisationReference());
+        target.setManagingOrganization(this.targetResources.getHomertonOrganisationReference());
     }
 }
