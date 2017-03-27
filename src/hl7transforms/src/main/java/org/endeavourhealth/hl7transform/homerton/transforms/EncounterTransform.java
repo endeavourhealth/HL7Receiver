@@ -231,7 +231,7 @@ public class EncounterTransform extends HomertonTransformBase {
             return;
 
         PractitionerTransform practitionerTransform = new PractitionerTransform(mapper, targetResources);
-        List<Reference> references = practitionerTransform.createHospitalPractitioners(xcns, targetResources.getHomertonOrganisationReference());
+        List<Reference> references = practitionerTransform.createPractitioner(xcns);
 
         for (Reference reference : references) {
             target.addParticipant(new Encounter.EncounterParticipantComponent()

@@ -6,6 +6,7 @@ import org.endeavourhealth.hl7transform.common.TransformException;
 import org.endeavourhealth.hl7transform.common.converters.StringHelper;
 import org.endeavourhealth.hl7transform.homerton.transforms.valuesets.AddressUseVs;
 import org.hl7.fhir.instance.model.Address;
+import org.hl7.fhir.instance.model.Organization;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -118,5 +119,17 @@ public class AddressConverter {
         }
 
         return formattedPostcode;
+    }
+
+    public static String getPostcode(List<Address> addresses) {
+        if (addresses == null)
+            return null;
+
+        if (addresses.size() == 0)
+            return null;
+
+        Address address = addresses.get(0);
+
+        return addresses.get(0).getPostalCode();
     }
 }

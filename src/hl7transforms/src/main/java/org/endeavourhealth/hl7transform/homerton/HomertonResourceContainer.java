@@ -13,6 +13,7 @@ public class HomertonResourceContainer extends ResourceContainer {
     private Organization homertonOrganisation = null;
     private Location homertonLocation = null;
     private Organization primaryCareProviderOrganisation = null;
+    private Practitioner primaryCareProviderPractitioner = null;
 
     public void setHomertonOrganisation(Organization organisation) throws TransformException {
         if (homertonOrganisation != null)
@@ -66,6 +67,21 @@ public class HomertonResourceContainer extends ResourceContainer {
             return null;
 
         return ReferenceHelper.createReference(ResourceType.Organization, organization.getId());
+    }
+
+    public void setPrimaryCareProviderPractitioner(Practitioner practitioner) throws TransformException {
+        if (practitioner != null)
+            throw new TransformException("Primary care provider practitioner is already set");
+
+        this.primaryCareProviderPractitioner = practitioner;
+        this.addResource(practitioner);
+    }
+
+    public Practitioner getPrimaryCareProviderPractitioner() throws TransformException {
+        if (this.primaryCareProviderPractitioner == null)
+            throw new TransformException("Primary care provider practitioner not set");
+
+        return this.primaryCareProviderPractitioner;
     }
 
     public Patient getPatient() throws TransformException {

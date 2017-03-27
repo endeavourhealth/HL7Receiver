@@ -6,9 +6,11 @@ import org.endeavourhealth.common.fhir.FhirUri;
 import org.endeavourhealth.common.fhir.ReferenceHelper;
 import org.endeavourhealth.common.utility.StreamExtension;
 import org.endeavourhealth.hl7parser.ParseException;
+import org.endeavourhealth.hl7transform.Transform;
 import org.endeavourhealth.hl7transform.homerton.HomertonResourceContainer;
 import org.endeavourhealth.hl7transform.homerton.parser.zdatatypes.Zpd;
 import org.endeavourhealth.hl7transform.homerton.transforms.constants.HomertonConstants;
+import org.endeavourhealth.hl7transform.homerton.transforms.converters.AddressConverter;
 import org.endeavourhealth.hl7transform.homerton.transforms.converters.IdentifierConverter;
 import org.endeavourhealth.hl7transform.mapper.Mapper;
 import org.endeavourhealth.hl7transform.mapper.MapperException;
@@ -61,7 +63,7 @@ public class PractitionerTransform extends HomertonTransformBase {
     }
 
     // this method removes duplicates based on title, surname, forename, and merges the identifiers
-    public List<Reference> createHospitalPractitioners(List<Xcn> source, Reference hospitalOrganisationReference) throws TransformException, MapperException, ParseException {
+    public List<Reference> createPractitioner(List<Xcn> source) throws TransformException, MapperException, ParseException {
         Collection<List<Xcn>> practitionerGroups = source
                 .stream()
                 .collect(Collectors.groupingBy(t -> t.getPrefix() + t.getFamilyName() + t.getGivenName()))
@@ -70,7 +72,7 @@ public class PractitionerTransform extends HomertonTransformBase {
         List<Reference> references = new ArrayList<>();
 
         for (List<Xcn> practitioners : practitionerGroups) {
-            Practitioner practitioner = createPractitionerFromDuplicates(practitioners, hospitalOrganisationReference);
+            Practitioner practitioner = createPractitionerFromDuplicates(practitioners);
 
             references.add(ReferenceHelper.createReference(ResourceType.Practitioner, practitioner.getId()));
         }
@@ -78,14 +80,22 @@ public class PractitionerTransform extends HomertonTransformBase {
         return references;
     }
 
-    private Practitioner createPractitionerFromDuplicates(List<Xcn> sources, Reference hospitalOrganisationReference) throws TransformException, MapperException, ParseException {
+    private Practitioner createPractitionerFromDuplicates(List<Xcn> sources) throws TransformException, MapperException, ParseException {
         Validate.notNull(sources);
 
         if (sources.size() == 0)
             return null;
 
         Practitioner practitioner = new Practitioner();
+
+        // name
+        if (StringUtils.isBlank(sources.get(0).getFamilyName()))
+            throw new TransformException("Family name is blank");
+
         practitioner.setName(NameConverter.convert(sources.get(0)));
+
+
+        // identifiers
 
         for (Xcn source : sources) {
 
@@ -96,15 +106,92 @@ public class PractitionerTransform extends HomertonTransformBase {
                     practitioner.addIdentifier(identifier);
         }
 
-        if (hospitalOrganisationReference != null) {
+        // role - pseudocode
 
-            if ((practitioner.getIdentifier().size() == 0)
-                    || ((practitioner.getIdentifier().size() == 1) && (practitioner.getIdentifier().get(0).getSystem().equals(FhirUri.IDENTIFIER_SYSTEM_GMC_NUMBER))))
-                throw new TransformException("Could not find hospital practitioner identifiers");
+        /*
+            if (practitioner has gmc code)
+            {
+                if (gmc code matches primary care providing practitioner)
+                    get existing primary care providing practitioner
+                else if (postcode matches primary care providing organisation)
+                    add in primary care providing organisation role
+                else
+                    throw exception;
+            }
+            else if (practitioner has primary personnel identifier)
+            {
+                add in hospital role
+            }
+            else
+            {
+                throw Exception("don't know which organisation to add a role for");
+            }
+
+         */
+
+        // role - collect identifiers to help determine role
+
+        String gmcCode = getIdentifierValue(practitioner.getIdentifier(), FhirUri.IDENTIFIER_SYSTEM_GMC_NUMBER);
+        String primaryPersonnelId = getIdentifierValue(practitioner.getIdentifier(), FhirUri.IDENTIFIER_SYSTEM_HOMERTON_PRIMARY_PRACTITIONER_ID);
+        String postcode = sources  // practitioner's organisation postcode is stored as a identifier
+                .stream()
+                .filter(t -> StringUtils.isNotEmpty(t.getId()))
+                .filter(t -> StringUtils.deleteWhitespace(StringUtils.defaultString(t.getIdentifierTypeCode())).equalsIgnoreCase("postcode"))
+                .map(t -> t.getId())
+                .collect(StreamExtension.firstOrNullCollector());
+
+
+        // role - determine and set role
+
+        if (StringUtils.isNotEmpty(gmcCode)) {
+
+            String existingPrimaryCarePractitionerGmcCode = getIdentifierValue(this.targetResources.getPrimaryCareProviderPractitioner().getIdentifier(), FhirUri.IDENTIFIER_SYSTEM_GMC_NUMBER);
+
+            if (gmcCode.equalsIgnoreCase(existingPrimaryCarePractitionerGmcCode)) {
+
+                // attempt match on primary care provider practitioner GMC code
+
+                practitioner.addPractitionerRole(new Practitioner.PractitionerPractitionerRoleComponent()
+                    .setManagingOrganization(targetResources.getPrimaryCareProviderOrganisationReference()));
+
+                // todo - this may end up with duplicate GP practitioners if one has more identifiers than the other
+
+            } else {
+
+                // attempt match on primary care provider organisation postcode
+                if (StringUtils.isNotEmpty(postcode)) {
+
+                    String existingPrimaryCareOrganisationPostcode = AddressConverter.getPostcode(this.targetResources.getPrimaryCareProviderOrganisation().getAddress());
+
+                    if ((StringUtils.deleteWhitespace(postcode)
+                            .equalsIgnoreCase(StringUtils.deleteWhitespace(StringUtils.defaultString(existingPrimaryCareOrganisationPostcode))))) {
+
+                        // post code matches existing primary care provider organisation - add role
+
+                        practitioner.addPractitionerRole(new Practitioner.PractitionerPractitionerRoleComponent()
+                                .setManagingOrganization(targetResources.getPrimaryCareProviderOrganisationReference()));
+
+                    } else {
+                        throw new TransformException("Could not determine GP organisation the practitioner has a role with (no match on postcode)");
+                    }
+
+                } else {
+                    throw new TransformException("Could not determine GP organisation the practitioner has a role with (no postcode)");
+                }
+            }
+
+        } else if (StringUtils.isNotEmpty(primaryPersonnelId)) {
+
+            Reference hospitalOrganisationReference = this.targetResources.getHomertonOrganisationReference();
 
             practitioner.addPractitionerRole(new Practitioner.PractitionerPractitionerRoleComponent()
-                            .setManagingOrganization(hospitalOrganisationReference));
+                    .setManagingOrganization(hospitalOrganisationReference));
+
+        } else {
+            throw new TransformException("Could not determine which organisation the practitioner has a role with");
         }
+
+        // id
 
         UUID id = getId(practitioner);
         practitioner.setId(id.toString());
@@ -113,14 +200,26 @@ public class PractitionerTransform extends HomertonTransformBase {
     }
 
     private boolean hasIdentifierWithSystem(List<Identifier> identifiers, String system) {
-        return (getIdentifierValue(identifiers, system) != null);
+        return (getIdentifierWithSystem(identifiers, system) != null);
     }
 
     private String getIdentifierValue(List<Identifier> identifiers, String system) {
+        Identifier identifier = getIdentifierWithSystem(identifiers, system);
+
+        if (identifier == null)
+            return null;
+
+        return identifier.getValue();
+    }
+
+    private String getGmcCode(Practitioner practitioner) {
+        return getIdentifierValue(practitioner.getIdentifier(), FhirUri.IDENTIFIER_SYSTEM_GMC_NUMBER);
+    }
+
+    private Identifier getIdentifierWithSystem(List<Identifier> identifiers, String system) {
         return identifiers
                 .stream()
-                .filter(t -> t.getSystem().equals(system))
-                .map(t -> t.getValue())
+                .filter(t -> t.getSystem().equalsIgnoreCase(system))
                 .collect(StreamExtension.firstOrNullCollector());
     }
 
