@@ -5,6 +5,7 @@ import org.apache.commons.lang3.Validate;
 import org.endeavourhealth.common.fhir.ReferenceHelper;
 import org.endeavourhealth.common.fhir.schema.OrganisationType;
 import org.endeavourhealth.hl7parser.ParseException;
+import org.endeavourhealth.hl7parser.messages.AdtMessage;
 import org.endeavourhealth.hl7parser.segments.Pv1Segment;
 import org.endeavourhealth.hl7transform.common.TransformException;
 import org.endeavourhealth.hl7transform.homerton.HomertonResourceContainer;
@@ -31,7 +32,7 @@ public class OrganizationTransform extends HomertonTransformBase {
         return ResourceType.Organization;
     }
 
-    public Reference createHomertonManagingOrganisation() throws MapperException, TransformException, ParseException {
+    public Reference createHomertonManagingOrganisation(AdtMessage source) throws MapperException, TransformException, ParseException {
 
         Organization organization = new Organization()
                 .addIdentifier(IdentifierConverter.createOdsCodeIdentifier(HomertonConstants.odsCode))
@@ -59,7 +60,7 @@ public class OrganizationTransform extends HomertonTransformBase {
         if (!servicingFacilityName.equals(HomertonConstants.servicingFacility))
             throw new TransformException("Hospital servicing facility of " + servicingFacilityName + " not recognised");
 
-        Reference managingOrganisationReference = createHomertonManagingOrganisation();
+        Reference managingOrganisationReference = this.targetResources.getHomertonOrganisationReference();
 
         Organization organization = new Organization()
                 .setName(hospitalServiceName)
@@ -75,7 +76,9 @@ public class OrganizationTransform extends HomertonTransformBase {
         return ReferenceHelper.createReference(ResourceType.Organization, organization.getId());
     }
 
-    public Reference createGeneralPracticeOrganisation(Zpd zpd) throws MapperException, TransformException, ParseException {
+    public Reference createPrimaryCareProviderOrganisation(Zpd zpd) throws MapperException, TransformException, ParseException {
+        if (zpd == null)
+            return null;
 
         if (StringUtils.isBlank(zpd.getPracticeName()))
             return null;
@@ -102,7 +105,7 @@ public class OrganizationTransform extends HomertonTransformBase {
 
         organization.setType(getOrganisationType(OrganisationType.GP_PRACTICE));
 
-        targetResources.setGeneralPracticeOrganisation(organization);
+        targetResources.setPrimaryCareProviderOrganisation(organization);
 
         return ReferenceHelper.createReference(ResourceType.Organization, organization.getId());
     }

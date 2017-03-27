@@ -46,6 +46,9 @@ public class PatientTransform extends HomertonTransformBase {
     public void transform(AdtMessage source) throws Exception {
         Validate.notNull(source);
 
+        if (!source.hasPidSegment())
+            throw new TransformException("PID segment not found");
+
         Patient target = new Patient();
 
         setId(source, target);
@@ -154,10 +157,10 @@ public class PatientTransform extends HomertonTransformBase {
         if (pd1Segment == null)
             return;
 
-        Zpd zpd = pd1Segment.getFieldAsDatatype(4, Zpd.class);
+        Zpd zpd = pd1Segment.getFieldAsDatatype(HomertonConstants.homertonXpdPrimaryCarePd1FieldNumber, Zpd.class);
 
         OrganizationTransform organizationTransform = new OrganizationTransform(mapper, targetResources);
-        Reference organisationReference = organizationTransform.createGeneralPracticeOrganisation(zpd);
+        Reference organisationReference = organizationTransform.createPrimaryCareProviderOrganisation(zpd);
 
         if (organisationReference != null)
             target.addCareProvider(organisationReference);

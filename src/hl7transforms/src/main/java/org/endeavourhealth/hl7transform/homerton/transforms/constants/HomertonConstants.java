@@ -17,4 +17,6 @@ public class HomertonConstants {
     public static final String primaryPatientIdentifierTypeCode = "CNN";  // PID.3
     public static final String primaryEpisodeIdentifierAssigningAuthority = "Homerton FIN";  // PID.19
     public static final String primaryPractitionerIdentifierTypeCode = "Personnel Primary Identifier";
+
+    public static final int homertonXpdPrimaryCarePd1FieldNumber = 4;
 }

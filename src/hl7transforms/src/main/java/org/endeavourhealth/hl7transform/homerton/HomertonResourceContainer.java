@@ -12,7 +12,7 @@ import java.util.List;
 public class HomertonResourceContainer extends ResourceContainer {
     private Organization homertonOrganisation = null;
     private Location homertonLocation = null;
-    private Organization generalPracticeOrganisation = null;
+    private Organization primaryCareProviderOrganisation = null;
 
     public void setHomertonOrganisation(Organization organisation) throws TransformException {
         if (homertonOrganisation != null)
@@ -44,19 +44,28 @@ public class HomertonResourceContainer extends ResourceContainer {
         return this.homertonLocation;
     }
 
-    public void setGeneralPracticeOrganisation(Organization organisation) throws TransformException {
+    public void setPrimaryCareProviderOrganisation(Organization organisation) throws TransformException {
         if (organisation != null)
-            throw new TransformException("General practice organisation is already set");
+            throw new TransformException("Primary care provider organisation is already set");
 
-        this.generalPracticeOrganisation = organisation;
+        this.primaryCareProviderOrganisation = organisation;
         this.addResource(organisation);
     }
 
-    public Organization getGeneralPracticeOrganisation() throws TransformException {
-        if (this.generalPracticeOrganisation == null)
-            throw new TransformException("General practice organisation not set");
+    public Organization getPrimaryCareProviderOrganisation() throws TransformException {
+        if (this.primaryCareProviderOrganisation == null)
+            throw new TransformException("Primary care provider organisation not set");
 
-        return this.generalPracticeOrganisation;
+        return this.primaryCareProviderOrganisation;
+    }
+
+    public Reference getPrimaryCareProviderOrganisationReference() throws TransformException {
+        Organization organization = getPrimaryCareProviderOrganisation();
+
+        if (organization == null)
+            return null;
+
+        return ReferenceHelper.createReference(ResourceType.Organization, organization.getId());
     }
 
     public Patient getPatient() throws TransformException {
