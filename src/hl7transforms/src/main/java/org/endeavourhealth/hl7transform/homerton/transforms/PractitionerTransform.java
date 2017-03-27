@@ -75,6 +75,8 @@ public class PractitionerTransform extends TransformBase {
         for (List<Xcn> practitioners : practitionerGroups) {
             Practitioner practitioner = createPractitionerFromDuplicates(practitioners);
 
+            targetResources.addResource(practitioner);
+
             references.add(ReferenceHelper.createReference(ResourceType.Practitioner, practitioner.getId()));
         }
 

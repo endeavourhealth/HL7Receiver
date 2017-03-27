@@ -30,8 +30,8 @@ public class Zpd extends Datatype {
     public String getForenames() { return this.getComponentAsString(3); }
     public String getPhoneNumber() { return this.getComponentAsString(5); }
     public String getOdsCode() { return this.getComponentAsString(6); }
-    public String getPracticeName() { return this.getComponentAsString(5); }
-    public String getAddressLine1() { return this.getComponentAsString(6); }
+    public String getPracticeName() { return this.getComponentAsString(7); }
+    public String getAddressLine1() { return this.getComponentAsString(8); }
     public String getAddressLine2() { return this.getSubcomponentAsString(9, 1); }
     public String getTown() { return this.getSubcomponentAsString(9, 2); }
     public String getPostcode() { return this.getSubcomponentAsString(9, 3); };

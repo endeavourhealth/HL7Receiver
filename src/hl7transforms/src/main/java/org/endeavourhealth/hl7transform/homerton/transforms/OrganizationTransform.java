@@ -34,7 +34,7 @@ public class OrganizationTransform extends TransformBase {
         return ResourceType.Organization;
     }
 
-    public Reference createHomertonManagingOrganisation(AdtMessage source) throws MapperException, TransformException, ParseException {
+    public void createHomertonManagingOrganisation(AdtMessage source) throws MapperException, TransformException, ParseException {
 
         Organization organization = new Organization()
                 .addIdentifier(IdentifierConverter.createOdsCodeIdentifier(HomertonConstants.odsCode))
@@ -46,8 +46,6 @@ public class OrganizationTransform extends TransformBase {
         organization.setId(id.toString());
 
         targetResources.addResource(organization, ResourceTag.MainHospitalOrganisation);
-
-        return ReferenceHelper.createReference(ResourceType.Organization, organization.getId());
     }
 
     public Reference createHomertonHospitalServiceOrganisation(Pv1Segment pv1Segment) throws TransformException, ParseException, MapperException {

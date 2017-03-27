@@ -34,7 +34,9 @@ public class ResourceContainer {
         if (this.hasResource(resource.getId()))
             throw new TransformException("ResourceContainer already contains resource with id " + resource.getId());
 
-        this.addResource(resource, resourceTag);
+        this.resources.add(new ResourceContainerItem()
+                .setResource(resource)
+                .setResourceTag(resourceTag));
     }
 
     public <T extends Resource> Reference getResourceReference(ResourceTag resourceTag, Class<T> resourceClass) throws TransformException {

@@ -70,7 +70,7 @@ public class PatientTransform extends TransformBase {
         addPatientContacts(source, target);
         setManagingOrganization(source, target);
 
-        targetResources.addResource(target);
+        targetResources.addResource(target, ResourceTag.PatientSubject);
     }
 
     public void setId(AdtMessage source, Patient target) throws TransformException, MapperException {

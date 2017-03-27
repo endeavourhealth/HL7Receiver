@@ -35,7 +35,7 @@ public class LocationTransform extends TransformBase {
         return ResourceType.Location;
     }
 
-    public Reference createHomertonHospitalLocation() throws MapperException, TransformException, ParseException {
+    public void createHomertonHospitalLocation() throws MapperException, TransformException, ParseException {
 
         Location location = new Location()
                 .setName(HomertonConstants.locationName)
@@ -51,8 +51,6 @@ public class LocationTransform extends TransformBase {
         location.setId(id.toString());
 
         targetResources.addResource(location, ResourceTag.MainHospitalLocation);
-
-        return ReferenceHelper.createReference(ResourceType.Location, location.getId());
     }
 
     public Reference createHomertonConstituentLocation(Pl source) throws MapperException, TransformException, ParseException {
