@@ -22,17 +22,20 @@ public class AddressConverter {
         return result;
     }
 
-    public static Address createWorkAddress(List<String> addressLines, String city, String postcode) {
-        if (addressLines.stream().allMatch(t -> StringUtils.isBlank(t))
+    public static Address createWorkAddress(String addressLine1, String addressLine2, String city, String postcode) {
+        if (StringUtils.isBlank(addressLine1)
+                && (StringUtils.isBlank(addressLine2))
                 && StringUtils.isBlank(city)
                 && StringUtils.isBlank(postcode))
             return null;
 
         Address address = new Address();
 
-        for (String line : addressLines)
-            if (!StringUtils.isEmpty(line))
-                address.addLine(formatAddressLine(line));
+        if (StringUtils.isNotBlank(addressLine1))
+            address.addLine(formatAddressLine(addressLine1));
+
+        if (StringUtils.isNotBlank(addressLine2))
+            address.addLine(formatAddressLine(addressLine2));
 
         if (StringUtils.isNotBlank(city))
             address.setCity(formatAddressLine(city));

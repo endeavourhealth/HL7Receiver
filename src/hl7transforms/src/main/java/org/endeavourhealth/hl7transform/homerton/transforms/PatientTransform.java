@@ -10,6 +10,7 @@ import org.endeavourhealth.hl7parser.Helpers;
 import org.endeavourhealth.hl7parser.segments.Pd1Segment;
 import org.endeavourhealth.hl7transform.common.converters.ExtensionHelper;
 import org.endeavourhealth.hl7transform.homerton.HomertonResourceContainer;
+import org.endeavourhealth.hl7transform.homerton.parser.zdatatypes.Zpd;
 import org.endeavourhealth.hl7transform.homerton.parser.zsegments.HomertonSegmentName;
 import org.endeavourhealth.hl7transform.homerton.parser.zsegments.ZpiSegment;
 import org.endeavourhealth.hl7transform.homerton.transforms.converters.AddressConverter;
@@ -155,57 +156,20 @@ public class PatientTransform extends HomertonTransformBase {
         if (pd1Segment == null)
             return;
 
-        /*
-            Homerton specific
+        Zpd zpd = pd1Segment.getFieldAsDatatype(4, Zpd.class);
 
-            PD1.4 incorrectly contains both primary care organisation and doctor
-            It should only contain the doctor.
-
-            Homerton's PD1.4:
-
-            1          2       3         5           6       7            8        9.1      9.2      9.3          14.1       14.2
-            DoctorCode^Surname^Forename^^PhoneNumber^OdsCode^PracticeName^Address1^Address2&Address3&Address4^^^^^PctOdsCode&ShaOdsCode
-
-            Examples:
-
-            G3339325^SMITH^A^^1937573848^B86010^DR SR LIGHTFOOT & PARTNERS^Church View Surgery^School Lane&&LS22 5BQ^^^^^Q12&5HJ
-            G3426500^LYLE^ROBERT^^020 89867111^F84003^LOWER CLAPTON GROUP PRACTICE^Lower Clapton Health Ctr.^36 Lower Clapton Road&London&E5 0PD^^^^^Q06&5C3
-         */
-
-        Field field = pd1Segment.getField(4);
-
-        String phoneNumber;
-        String odsCode;
-        String practiceName;
         List<String> addressLines = new ArrayList<>();
-        String city = null;
-        String postcode = null;
 
-        phoneNumber = field.getComponentAsString(5);
-        odsCode = field.getComponentAsString(6);
-        practiceName = field.getComponentAsString(7);
-        addressLines.add(field.getComponentAsString(8));
+        addressLines.add(zpd.getAddressLine1());
 
-        List<String> components = Helpers.split(field.getComponentAsString(9), "&");
-
-        if (components.size() > 0)
-            addressLines.add(components.get(0));
-
-        if (components.size() > 1)
-            city = components.get(1);
-
-        if (components.size() > 2)
-            postcode = components.get(2);
+        if (StringUtils.isNotEmpty(zpd.getAddressLine2()))
+            addressLines.add(zpd.getAddressLine2());
 
         OrganizationTransform organizationTransform = new OrganizationTransform(mapper, targetResources);
-        Reference organisationReference = organizationTransform.createGeneralPracticeOrganisation(odsCode, practiceName, addressLines, city, postcode, phoneNumber);
-
-        String gmcCode = field.getComponentAsString(1);
-        String surname = field.getComponentAsString(2);
-        String forenames = field.getComponentAsString(3);
+        Reference organisationReference = organizationTransform.createGeneralPracticeOrganisation(zpd);
 
         PractitionerTransform practitionerTransform = new PractitionerTransform(mapper, targetResources);
-        Reference practitionerReference = practitionerTransform.createPrimaryCarePractitioner(gmcCode, surname, forenames, organisationReference);
+        Reference practitionerReference = practitionerTransform.createPrimaryCarePractitioner(zpd.getGmcCode(), zpd.getSurname(), zpd.getForenames(), organisationReference);
 
         if (organisationReference != null)
             target.addCareProvider(organisationReference);

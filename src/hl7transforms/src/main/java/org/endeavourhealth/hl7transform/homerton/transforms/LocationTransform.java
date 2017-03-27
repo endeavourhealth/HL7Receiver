@@ -39,7 +39,7 @@ public class LocationTransform extends HomertonTransformBase {
                 .setName(HomertonConstants.locationName)
                 .addIdentifier(IdentifierConverter.createOdsCodeIdentifier(HomertonConstants.odsSiteCode))
                 .setStatus(Location.LocationStatus.ACTIVE)
-                .setAddress(AddressConverter.createWorkAddress(Arrays.asList(HomertonConstants.addressLine), HomertonConstants.addressCity, HomertonConstants.addressPostcode))
+                .setAddress(AddressConverter.createWorkAddress(HomertonConstants.addressLine, null, HomertonConstants.addressCity, HomertonConstants.addressPostcode))
                 .setManagingOrganization(this.targetResources.getHomertonOrganisationReference())
                 .setType(createType(V3RoleCode.HOSP))
                 .setPhysicalType(createLocationPhysicalType(LocationPhysicalType.BU))

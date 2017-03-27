@@ -8,6 +8,7 @@ import org.endeavourhealth.hl7parser.ParseException;
 import org.endeavourhealth.hl7parser.segments.Pv1Segment;
 import org.endeavourhealth.hl7transform.common.TransformException;
 import org.endeavourhealth.hl7transform.homerton.HomertonResourceContainer;
+import org.endeavourhealth.hl7transform.homerton.parser.zdatatypes.Zpd;
 import org.endeavourhealth.hl7transform.homerton.transforms.converters.IdentifierConverter;
 import org.endeavourhealth.hl7transform.mapper.Mapper;
 import org.endeavourhealth.hl7transform.mapper.MapperException;
@@ -36,7 +37,7 @@ public class OrganizationTransform extends HomertonTransformBase {
                 .addIdentifier(IdentifierConverter.createOdsCodeIdentifier(HomertonConstants.odsCode))
                 .setType(getOrganisationType(OrganisationType.NHS_TRUST))
                 .setName(HomertonConstants.organisationName)
-                .addAddress(AddressConverter.createWorkAddress(Arrays.asList(HomertonConstants.addressLine), HomertonConstants.addressCity, HomertonConstants.addressPostcode));
+                .addAddress(AddressConverter.createWorkAddress(HomertonConstants.addressLine, null, HomertonConstants.addressCity, HomertonConstants.addressPostcode));
 
         UUID id = mapper.mapOrganisationUuid(HomertonConstants.odsCode, HomertonConstants.organisationName);
         organization.setId(id.toString());
@@ -63,7 +64,7 @@ public class OrganizationTransform extends HomertonTransformBase {
         Organization organization = new Organization()
                 .setName(hospitalServiceName)
                 .setType(getOrganisationType(OrganisationType.NHS_TRUST_SERVICE))
-                .addAddress(AddressConverter.createWorkAddress(Arrays.asList(HomertonConstants.organisationName, HomertonConstants.addressLine), HomertonConstants.addressCity, HomertonConstants.addressPostcode))
+                .addAddress(AddressConverter.createWorkAddress(HomertonConstants.organisationName, HomertonConstants.addressLine, HomertonConstants.addressCity, HomertonConstants.addressPostcode))
                 .setPartOf(managingOrganisationReference);
 
         UUID id = mapper.mapOrganisationUuid(HomertonConstants.odsCode, HomertonConstants.organisationName, hospitalServiceName);
@@ -74,27 +75,27 @@ public class OrganizationTransform extends HomertonTransformBase {
         return ReferenceHelper.createReference(ResourceType.Organization, organization.getId());
     }
 
-    public Reference createGeneralPracticeOrganisation(String odsCode, String practiceName, List<String> addressLines, String city, String postcode, String phoneNumber) throws MapperException, TransformException, ParseException {
+    public Reference createGeneralPracticeOrganisation(Zpd zpd) throws MapperException, TransformException, ParseException {
 
-        if (StringUtils.isBlank(practiceName))
+        if (StringUtils.isBlank(zpd.getPracticeName()))
             return null;
 
         Organization organization = new Organization();
 
-        UUID id = mapper.mapOrganisationUuid(odsCode, practiceName);
+        UUID id = mapper.mapOrganisationUuid(zpd.getOdsCode(), zpd.getPracticeName());
         organization.setId(id.toString());
 
-        Identifier identifier = IdentifierConverter.createOdsCodeIdentifier(odsCode);
+        Identifier identifier = IdentifierConverter.createOdsCodeIdentifier(zpd.getOdsCode());
 
         if (identifier != null)
             organization.addIdentifier(identifier);
 
-        organization.setName(StringHelper.formatName(practiceName));
+        organization.setName(StringHelper.formatName(zpd.getPracticeName()));
 
-        if (StringUtils.isNotBlank(phoneNumber))
-            organization.addTelecom(TelecomConverter.createWorkPhone(phoneNumber));
+        if (StringUtils.isNotBlank(zpd.getPhoneNumber()))
+            organization.addTelecom(TelecomConverter.createWorkPhone(zpd.getPhoneNumber()));
 
-        Address address = AddressConverter.createWorkAddress(addressLines, city, postcode);
+        Address address = AddressConverter.createWorkAddress(zpd.getAddressLine1(), zpd.getAddressLine2(), zpd.getTown(), zpd.getPostcode());
 
         if (address != null)
             organization.addAddress(address);
