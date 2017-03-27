@@ -8,8 +8,10 @@ import org.endeavourhealth.common.fhir.FhirUri;
 import org.endeavourhealth.common.fhir.ReferenceHelper;
 import org.endeavourhealth.common.utility.StreamExtension;
 import org.endeavourhealth.hl7parser.ParseException;
+import org.endeavourhealth.hl7transform.common.ResourceContainer;
+import org.endeavourhealth.hl7transform.common.ResourceTag;
+import org.endeavourhealth.hl7transform.common.TransformBase;
 import org.endeavourhealth.hl7transform.common.TransformException;
-import org.endeavourhealth.hl7transform.homerton.HomertonResourceContainer;
 import org.endeavourhealth.hl7transform.homerton.transforms.constants.HomertonConstants;
 import org.endeavourhealth.hl7transform.homerton.transforms.converters.AddressConverter;
 import org.endeavourhealth.hl7transform.homerton.transforms.converters.IdentifierConverter;
@@ -22,9 +24,9 @@ import org.hl7.fhir.instance.model.valuesets.V3RoleCode;
 
 import java.util.*;
 
-public class LocationTransform extends HomertonTransformBase {
+public class LocationTransform extends TransformBase {
 
-    public LocationTransform(Mapper mapper, HomertonResourceContainer targetResources) {
+    public LocationTransform(Mapper mapper, ResourceContainer targetResources) {
         super(mapper, targetResources);
     }
 
@@ -40,7 +42,7 @@ public class LocationTransform extends HomertonTransformBase {
                 .addIdentifier(IdentifierConverter.createOdsCodeIdentifier(HomertonConstants.odsSiteCode))
                 .setStatus(Location.LocationStatus.ACTIVE)
                 .setAddress(AddressConverter.createWorkAddress(HomertonConstants.addressLine, null, HomertonConstants.addressCity, HomertonConstants.addressPostcode))
-                .setManagingOrganization(this.targetResources.getHomertonOrganisationReference())
+                .setManagingOrganization(this.targetResources.getResourceReference(ResourceTag.MainHospitalOrganisation, Organization.class))
                 .setType(createType(V3RoleCode.HOSP))
                 .setPhysicalType(createLocationPhysicalType(LocationPhysicalType.BU))
                 .setMode(Location.LocationMode.INSTANCE);
@@ -48,7 +50,7 @@ public class LocationTransform extends HomertonTransformBase {
         UUID id = getId(HomertonConstants.odsSiteCode, HomertonConstants.locationName);
         location.setId(id.toString());
 
-        targetResources.setHomertonLocation(location);
+        targetResources.addResource(location, ResourceTag.MainHospitalLocation);
 
         return ReferenceHelper.createReference(ResourceType.Location, location.getId());
     }
@@ -64,8 +66,8 @@ public class LocationTransform extends HomertonTransformBase {
         if (!HomertonConstants.locationBuilding.equalsIgnoreCase(StringUtils.trim(source.getBuilding())))
             throw new TransformException("Building of " + source.getBuilding() + " not recognised");
 
-        Reference managingOrganisationReference = targetResources.getHomertonOrganisationReference();
-        Location topParentBuildingLocation = targetResources.getHomertonLocation();
+        Reference managingOrganisationReference = targetResources.getResourceReference(ResourceTag.MainHospitalOrganisation, Organization.class);
+        Location topParentBuildingLocation = targetResources.getResource(ResourceTag.MainHospitalLocation, Location.class);
 
         List<Pair<LocationPhysicalType, String>> locations = new ArrayList<>();
 
@@ -90,7 +92,7 @@ public class LocationTransform extends HomertonTransformBase {
             Location fhirLocation = createLocationFromPl(locationName, locationPhysicalType, locationParentNames, directParentLocation, topParentBuildingLocation, managingOrganisationReference);
 
             if (fhirLocation != null)
-                targetResources.addResource(fhirLocation);
+                targetResources.addResource(fhirLocation, null);
 
             directParentLocation = fhirLocation;
             locationParentNames.add(0, locationName);

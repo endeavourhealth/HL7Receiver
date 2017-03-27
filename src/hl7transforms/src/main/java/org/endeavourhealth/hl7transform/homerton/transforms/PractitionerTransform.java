@@ -6,8 +6,9 @@ import org.endeavourhealth.common.fhir.FhirUri;
 import org.endeavourhealth.common.fhir.ReferenceHelper;
 import org.endeavourhealth.common.utility.StreamExtension;
 import org.endeavourhealth.hl7parser.ParseException;
-import org.endeavourhealth.hl7transform.Transform;
-import org.endeavourhealth.hl7transform.homerton.HomertonResourceContainer;
+import org.endeavourhealth.hl7transform.common.ResourceContainer;
+import org.endeavourhealth.hl7transform.common.ResourceTag;
+import org.endeavourhealth.hl7transform.common.TransformBase;
 import org.endeavourhealth.hl7transform.homerton.parser.zdatatypes.Zpd;
 import org.endeavourhealth.hl7transform.homerton.transforms.constants.HomertonConstants;
 import org.endeavourhealth.hl7transform.homerton.transforms.converters.AddressConverter;
@@ -22,9 +23,9 @@ import org.hl7.fhir.instance.model.*;
 import java.util.*;
 import java.util.stream.Collectors;
 
-public class PractitionerTransform extends HomertonTransformBase {
+public class PractitionerTransform extends TransformBase {
 
-    public PractitionerTransform(Mapper mapper, HomertonResourceContainer targetResources) {
+    public PractitionerTransform(Mapper mapper, ResourceContainer targetResources) {
         super(mapper, targetResources);
     }
 
@@ -145,14 +146,18 @@ public class PractitionerTransform extends HomertonTransformBase {
 
         if (StringUtils.isNotEmpty(gmcCode)) {
 
-            String existingPrimaryCarePractitionerGmcCode = getIdentifierValue(this.targetResources.getPrimaryCareProviderPractitioner().getIdentifier(), FhirUri.IDENTIFIER_SYSTEM_GMC_NUMBER);
+            Organization primaryCareProviderOrganisation = targetResources.getResource(ResourceTag.MainPrimaryCareProviderOrganisation, Organization.class);
+            Practitioner primaryCareProviderPractitioner = targetResources.getResource(ResourceTag.MainPrimaryCareProviderPractitioner, Practitioner.class);
+
+            String existingPrimaryCarePractitionerGmcCode = getIdentifierValue(primaryCareProviderPractitioner.getIdentifier(), FhirUri.IDENTIFIER_SYSTEM_GMC_NUMBER);
+
 
             if (gmcCode.equalsIgnoreCase(existingPrimaryCarePractitionerGmcCode)) {
 
                 // attempt match on primary care provider practitioner GMC code
 
                 practitioner.addPractitionerRole(new Practitioner.PractitionerPractitionerRoleComponent()
-                    .setManagingOrganization(targetResources.getPrimaryCareProviderOrganisationReference()));
+                    .setManagingOrganization(ReferenceHelper.createReferenceExternal(primaryCareProviderOrganisation)));
 
                 // todo - this may end up with duplicate GP practitioners if one has more identifiers than the other
 
@@ -161,7 +166,7 @@ public class PractitionerTransform extends HomertonTransformBase {
                 // attempt match on primary care provider organisation postcode
                 if (StringUtils.isNotEmpty(postcode)) {
 
-                    String existingPrimaryCareOrganisationPostcode = AddressConverter.getPostcode(this.targetResources.getPrimaryCareProviderOrganisation().getAddress());
+                    String existingPrimaryCareOrganisationPostcode = AddressConverter.getPostcode(primaryCareProviderOrganisation.getAddress());
 
                     if ((StringUtils.deleteWhitespace(postcode)
                             .equalsIgnoreCase(StringUtils.deleteWhitespace(StringUtils.defaultString(existingPrimaryCareOrganisationPostcode))))) {
@@ -169,7 +174,7 @@ public class PractitionerTransform extends HomertonTransformBase {
                         // post code matches existing primary care provider organisation - add role
 
                         practitioner.addPractitionerRole(new Practitioner.PractitionerPractitionerRoleComponent()
-                                .setManagingOrganization(targetResources.getPrimaryCareProviderOrganisationReference()));
+                                .setManagingOrganization(ReferenceHelper.createReferenceExternal(primaryCareProviderOrganisation)));
 
                     } else {
                         throw new TransformException("Could not determine GP organisation the practitioner has a role with (no match on postcode)");
@@ -182,7 +187,7 @@ public class PractitionerTransform extends HomertonTransformBase {
 
         } else if (StringUtils.isNotEmpty(primaryPersonnelId)) {
 
-            Reference hospitalOrganisationReference = this.targetResources.getHomertonOrganisationReference();
+            Reference hospitalOrganisationReference = this.targetResources.getResourceReference(ResourceTag.MainHospitalOrganisation, Organization.class);
 
             practitioner.addPractitionerRole(new Practitioner.PractitionerPractitionerRoleComponent()
                     .setManagingOrganization(hospitalOrganisationReference));

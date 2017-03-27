@@ -3,7 +3,9 @@ package org.endeavourhealth.hl7transform.homerton.transforms;
 import org.apache.commons.lang3.Validate;
 import org.endeavourhealth.common.fhir.FhirExtensionUri;
 import org.endeavourhealth.common.fhir.FhirUri;
-import org.endeavourhealth.hl7transform.homerton.HomertonResourceContainer;
+import org.endeavourhealth.hl7transform.common.ResourceContainer;
+import org.endeavourhealth.hl7transform.common.ResourceTag;
+import org.endeavourhealth.hl7transform.common.TransformBase;
 import org.endeavourhealth.hl7transform.homerton.transforms.constants.HomertonConstants;
 import org.endeavourhealth.hl7transform.homerton.transforms.valuesets.MessageTypeVs;
 import org.endeavourhealth.hl7transform.mapper.MapperException;
@@ -19,9 +21,9 @@ import org.hl7.fhir.instance.model.*;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
-public class MessageHeaderTransform extends HomertonTransformBase {
+public class MessageHeaderTransform extends TransformBase {
 
-    public MessageHeaderTransform(Mapper mapper, HomertonResourceContainer targetResources) {
+    public MessageHeaderTransform(Mapper mapper, ResourceContainer targetResources) {
         super(mapper, targetResources);
     }
 
@@ -61,7 +63,7 @@ public class MessageHeaderTransform extends HomertonTransformBase {
                 .setName(source.getReceivingFacility())
                 .addExtension(ExtensionHelper.createStringExtension(FhirExtensionUri.EXTENSION_HL7V2_DESTINATION_SOFTWARE, source.getReceivingApplication()));
 
-        target.setResponsible(this.targetResources.getHomertonOrganisationReference());
+        target.setResponsible(this.targetResources.getResourceReference(ResourceTag.MainHospitalOrganisation, Organization.class));
 
         target.addExtension(ExtensionHelper.createStringExtension(FhirExtensionUri.EXTENSION_HL7V2_MESSAGE_CONTROL_ID, source.getMessageControlId()));
 

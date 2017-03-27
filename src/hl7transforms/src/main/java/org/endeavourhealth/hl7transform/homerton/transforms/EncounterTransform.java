@@ -10,8 +10,10 @@ import org.endeavourhealth.common.fhir.schema.HomertonDischargeDisposition;
 import org.endeavourhealth.common.fhir.schema.HomertonEncounterType;
 import org.endeavourhealth.hl7parser.Hl7DateTime;
 import org.endeavourhealth.hl7parser.segments.EvnSegment;
+import org.endeavourhealth.hl7transform.common.ResourceContainer;
+import org.endeavourhealth.hl7transform.common.ResourceTag;
+import org.endeavourhealth.hl7transform.common.TransformBase;
 import org.endeavourhealth.hl7transform.common.converters.DateConverter;
-import org.endeavourhealth.hl7transform.homerton.HomertonResourceContainer;
 import org.endeavourhealth.hl7transform.homerton.transforms.constants.HomertonConstants;
 import org.endeavourhealth.hl7transform.homerton.transforms.valuesets.*;
 import org.endeavourhealth.hl7transform.mapper.MapperException;
@@ -30,9 +32,9 @@ import org.hl7.fhir.instance.model.valuesets.LocationPhysicalType;
 import java.util.List;
 import java.util.UUID;
 
-public class EncounterTransform extends HomertonTransformBase {
+public class EncounterTransform extends TransformBase {
 
-    public EncounterTransform(Mapper mapper, HomertonResourceContainer targetResources) {
+    public EncounterTransform(Mapper mapper, ResourceContainer targetResources) {
         super(mapper, targetResources);
     }
 
@@ -61,8 +63,8 @@ public class EncounterTransform extends HomertonTransformBase {
         setAdmissionType(source, target);
 
         // patient, episodeofcare, serviceprovider, locations, practitioners
-        setPatient(target, targetResources.getPatient());
-        setEpisodeOfCare(target, targetResources.getEpisodeOfCare());
+        setPatient(target);
+        setEpisodeOfCare(target);
         setServiceProvider(source, target);
         setLocations(source, target);
         setParticipants(source, target);
@@ -203,12 +205,14 @@ public class EncounterTransform extends HomertonTransformBase {
         }
     }
 
-    private static void setPatient(Encounter target, Patient patient) {
-        target.setPatient(ReferenceHelper.createReference(ResourceType.Patient, patient.getId()));
+    private void setPatient(Encounter target) throws TransformException {
+        target.setPatient(targetResources.getResourceReference(ResourceTag.PatientSubject, Patient.class));
     }
 
-    private static void setEpisodeOfCare(Encounter target, EpisodeOfCare episodeOfCare) {
-        target.addEpisodeOfCare(ReferenceHelper.createReference(ResourceType.EpisodeOfCare, episodeOfCare.getId()));
+    private void setEpisodeOfCare(Encounter target) throws TransformException {
+        EpisodeOfCare episodeOfCare = targetResources.getResourceSingle(EpisodeOfCare.class);
+
+        target.addEpisodeOfCare(ReferenceHelper.createReferenceExternal(episodeOfCare));
     }
 
     private void setParticipants(AdtMessage source, Encounter target) throws TransformException, ParseException, MapperException {

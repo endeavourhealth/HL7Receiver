@@ -42,7 +42,7 @@ public class HomertonAdtTransform implements Transform {
     public Bundle transform(AdtMessage sourceMessage, Mapper mapper) throws Exception {
         Validate.notNull(sourceMessage);
 
-        HomertonResourceContainer targetResources = new HomertonResourceContainer();
+        ResourceContainer targetResources = new ResourceContainer();
 
         new OrganizationTransform(mapper, targetResources)
                 .createHomertonManagingOrganisation(sourceMessage);

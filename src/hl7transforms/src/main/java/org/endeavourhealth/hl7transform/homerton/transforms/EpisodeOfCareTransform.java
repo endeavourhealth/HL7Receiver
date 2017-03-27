@@ -1,11 +1,12 @@
 package org.endeavourhealth.hl7transform.homerton.transforms;
 
-import org.endeavourhealth.common.fhir.ReferenceHelper;
 import org.endeavourhealth.common.utility.StreamExtension;
 import org.endeavourhealth.hl7parser.ParseException;
 import org.endeavourhealth.hl7parser.datatypes.Cx;
 import org.endeavourhealth.hl7parser.messages.AdtMessage;
-import org.endeavourhealth.hl7transform.homerton.HomertonResourceContainer;
+import org.endeavourhealth.hl7transform.common.ResourceContainer;
+import org.endeavourhealth.hl7transform.common.ResourceTag;
+import org.endeavourhealth.hl7transform.common.TransformBase;
 import org.endeavourhealth.hl7transform.homerton.transforms.constants.HomertonConstants;
 import org.endeavourhealth.hl7transform.homerton.transforms.converters.IdentifierConverter;
 import org.endeavourhealth.hl7transform.mapper.Mapper;
@@ -17,9 +18,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
-public class EpisodeOfCareTransform extends HomertonTransformBase {
+public class EpisodeOfCareTransform extends TransformBase {
 
-    public EpisodeOfCareTransform(Mapper mapper, HomertonResourceContainer targetResources) {
+    public EpisodeOfCareTransform(Mapper mapper, ResourceContainer targetResources) {
         super(mapper, targetResources);
     }
 
@@ -41,7 +42,7 @@ public class EpisodeOfCareTransform extends HomertonTransformBase {
 
         // set status
 
-        setPatient(targetResources.getPatient(), target);
+        setPatient(target);
 
         // set managing organisation
 
@@ -73,8 +74,8 @@ public class EpisodeOfCareTransform extends HomertonTransformBase {
             target.addIdentifier(alternateVisitId);
     }
 
-    private static void setPatient(Patient patient, EpisodeOfCare target) {
-        target.setPatient(ReferenceHelper.createReference(ResourceType.Patient, patient.getId()));
+    private void setPatient(EpisodeOfCare target) throws TransformException {
+        target.setPatient(targetResources.getResourceReference(ResourceTag.PatientSubject, Patient.class));
     }
 
     public static List<Cx> getAllEpisodeIdentifiers(AdtMessage source) {

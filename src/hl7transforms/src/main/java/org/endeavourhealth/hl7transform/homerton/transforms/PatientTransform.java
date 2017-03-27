@@ -6,8 +6,10 @@ import org.endeavourhealth.common.fhir.FhirExtensionUri;
 import org.endeavourhealth.common.fhir.FhirUri;
 import org.endeavourhealth.common.utility.StreamExtension;
 import org.endeavourhealth.hl7parser.segments.Pd1Segment;
+import org.endeavourhealth.hl7transform.common.ResourceContainer;
+import org.endeavourhealth.hl7transform.common.ResourceTag;
+import org.endeavourhealth.hl7transform.common.TransformBase;
 import org.endeavourhealth.hl7transform.common.converters.ExtensionHelper;
-import org.endeavourhealth.hl7transform.homerton.HomertonResourceContainer;
 import org.endeavourhealth.hl7transform.homerton.parser.zdatatypes.Zpd;
 import org.endeavourhealth.hl7transform.homerton.parser.zsegments.HomertonSegmentName;
 import org.endeavourhealth.hl7transform.homerton.parser.zsegments.ZpiSegment;
@@ -32,9 +34,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
-public class PatientTransform extends HomertonTransformBase {
+public class PatientTransform extends TransformBase {
 
-    public PatientTransform(Mapper mapper, HomertonResourceContainer targetResources) {
+    public PatientTransform(Mapper mapper, ResourceContainer targetResources) {
         super(mapper, targetResources);
     }
 
@@ -326,6 +328,6 @@ public class PatientTransform extends HomertonTransformBase {
     }
 
     private void setManagingOrganization(AdtMessage source, Patient target) throws MapperException, TransformException {
-        target.setManagingOrganization(this.targetResources.getHomertonOrganisationReference());
+        target.setManagingOrganization(this.targetResources.getResourceReference(ResourceTag.MainHospitalOrganisation, Organization.class));
     }
 }

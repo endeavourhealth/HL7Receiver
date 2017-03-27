@@ -2,15 +2,15 @@ package org.endeavourhealth.hl7transform.homerton.transforms;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Validate;
-import org.endeavourhealth.common.fhir.FhirUri;
 import org.endeavourhealth.common.fhir.ReferenceHelper;
 import org.endeavourhealth.common.fhir.schema.OrganisationType;
-import org.endeavourhealth.common.utility.StreamExtension;
 import org.endeavourhealth.hl7parser.ParseException;
 import org.endeavourhealth.hl7parser.messages.AdtMessage;
 import org.endeavourhealth.hl7parser.segments.Pv1Segment;
+import org.endeavourhealth.hl7transform.common.ResourceContainer;
+import org.endeavourhealth.hl7transform.common.ResourceTag;
+import org.endeavourhealth.hl7transform.common.TransformBase;
 import org.endeavourhealth.hl7transform.common.TransformException;
-import org.endeavourhealth.hl7transform.homerton.HomertonResourceContainer;
 import org.endeavourhealth.hl7transform.homerton.parser.zdatatypes.Zpd;
 import org.endeavourhealth.hl7transform.homerton.transforms.constants.HomertonConstants;
 import org.endeavourhealth.hl7transform.homerton.transforms.converters.IdentifierConverter;
@@ -23,9 +23,9 @@ import org.hl7.fhir.instance.model.*;
 
 import java.util.*;
 
-public class OrganizationTransform extends HomertonTransformBase {
+public class OrganizationTransform extends TransformBase {
 
-    public OrganizationTransform(Mapper mapper, HomertonResourceContainer resourceContainer) {
+    public OrganizationTransform(Mapper mapper, ResourceContainer resourceContainer) {
         super(mapper, resourceContainer);
     }
 
@@ -45,7 +45,7 @@ public class OrganizationTransform extends HomertonTransformBase {
         UUID id = mapper.mapOrganisationUuid(HomertonConstants.odsCode, HomertonConstants.organisationName);
         organization.setId(id.toString());
 
-        targetResources.setHomertonOrganisation(organization);
+        targetResources.addResource(organization, ResourceTag.MainHospitalOrganisation);
 
         return ReferenceHelper.createReference(ResourceType.Organization, organization.getId());
     }
@@ -62,7 +62,7 @@ public class OrganizationTransform extends HomertonTransformBase {
         if (!servicingFacilityName.equals(HomertonConstants.servicingFacility))
             throw new TransformException("Hospital servicing facility of " + servicingFacilityName + " not recognised");
 
-        Reference managingOrganisationReference = this.targetResources.getHomertonOrganisationReference();
+        Reference managingOrganisationReference = this.targetResources.getResourceReference(ResourceTag.MainHospitalOrganisation, Organization.class);
 
         Organization organization = new Organization()
                 .setName(hospitalServiceName)
@@ -107,7 +107,7 @@ public class OrganizationTransform extends HomertonTransformBase {
 
         organization.setType(getOrganisationType(OrganisationType.GP_PRACTICE));
 
-        targetResources.setPrimaryCareProviderOrganisation(organization);
+        targetResources.addResource(organization, ResourceTag.MainPrimaryCareProviderOrganisation);
 
         return ReferenceHelper.createReference(ResourceType.Organization, organization.getId());
     }
