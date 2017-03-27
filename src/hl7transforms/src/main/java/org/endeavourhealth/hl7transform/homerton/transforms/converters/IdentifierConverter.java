@@ -68,7 +68,10 @@ public class IdentifierConverter {
                 case "nhs consultant number | non gp":
                 case "community dr nbr | community dr nbr":
                 case " | community dr nbr":
-                    return FhirUri.IDENTIFIER_SYSTEM_CONSULTANT_CODE;
+                    if (id.startsWith("c"))
+                        return FhirUri.IDENTIFIER_SYSTEM_CONSULTANT_CODE;
+                    else
+                        return null;
 
                 case "external id | external identifier":
                     if (id.startsWith("g"))
