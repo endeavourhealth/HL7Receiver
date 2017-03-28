@@ -8,7 +8,7 @@ import org.endeavourhealth.common.utility.StreamExtension;
 import org.endeavourhealth.hl7parser.segments.Pd1Segment;
 import org.endeavourhealth.hl7transform.common.ResourceContainer;
 import org.endeavourhealth.hl7transform.common.ResourceTag;
-import org.endeavourhealth.hl7transform.common.TransformBase;
+import org.endeavourhealth.hl7transform.common.ResourceTransformBase;
 import org.endeavourhealth.hl7transform.common.converters.ExtensionHelper;
 import org.endeavourhealth.hl7transform.homerton.parser.zdatatypes.Zpd;
 import org.endeavourhealth.hl7transform.homerton.parser.zsegments.HomertonSegmentName;
@@ -34,7 +34,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
-public class PatientTransform extends TransformBase {
+public class PatientTransform extends ResourceTransformBase {
 
     public PatientTransform(Mapper mapper, ResourceContainer targetResources) {
         super(mapper, targetResources);
@@ -162,13 +162,13 @@ public class PatientTransform extends TransformBase {
         Zpd zpd = pd1Segment.getFieldAsDatatype(HomertonConstants.homertonXpdPrimaryCarePd1FieldNumber, Zpd.class);
 
         OrganizationTransform organizationTransform = new OrganizationTransform(mapper, targetResources);
-        Reference organisationReference = organizationTransform.createPrimaryCareProviderOrganisation(zpd);
+        Reference organisationReference = organizationTransform.createMainPrimaryCareProviderOrganisation(zpd);
 
         if (organisationReference != null)
             target.addCareProvider(organisationReference);
 
         PractitionerTransform practitionerTransform = new PractitionerTransform(mapper, targetResources);
-        Reference practitionerReference = practitionerTransform.createPrimaryCarePractitioner(zpd, organisationReference);
+        Reference practitionerReference = practitionerTransform.createMainPrimaryCareProviderPractitioner(zpd, organisationReference);
 
         if (practitionerReference != null)
             target.addCareProvider(practitionerReference);

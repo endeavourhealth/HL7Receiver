@@ -12,7 +12,7 @@ import org.endeavourhealth.hl7parser.Hl7DateTime;
 import org.endeavourhealth.hl7parser.segments.EvnSegment;
 import org.endeavourhealth.hl7transform.common.ResourceContainer;
 import org.endeavourhealth.hl7transform.common.ResourceTag;
-import org.endeavourhealth.hl7transform.common.TransformBase;
+import org.endeavourhealth.hl7transform.common.ResourceTransformBase;
 import org.endeavourhealth.hl7transform.common.converters.DateConverter;
 import org.endeavourhealth.hl7transform.homerton.transforms.constants.HomertonConstants;
 import org.endeavourhealth.hl7transform.homerton.transforms.valuesets.*;
@@ -32,7 +32,7 @@ import org.hl7.fhir.instance.model.valuesets.LocationPhysicalType;
 import java.util.List;
 import java.util.UUID;
 
-public class EncounterTransform extends TransformBase {
+public class EncounterTransform extends ResourceTransformBase {
 
     public EncounterTransform(Mapper mapper, ResourceContainer targetResources) {
         super(mapper, targetResources);

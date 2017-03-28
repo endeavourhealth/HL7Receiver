@@ -9,7 +9,7 @@ import org.endeavourhealth.hl7parser.messages.AdtMessage;
 import org.endeavourhealth.hl7parser.segments.Pv1Segment;
 import org.endeavourhealth.hl7transform.common.ResourceContainer;
 import org.endeavourhealth.hl7transform.common.ResourceTag;
-import org.endeavourhealth.hl7transform.common.TransformBase;
+import org.endeavourhealth.hl7transform.common.ResourceTransformBase;
 import org.endeavourhealth.hl7transform.common.TransformException;
 import org.endeavourhealth.hl7transform.homerton.parser.zdatatypes.Zpd;
 import org.endeavourhealth.hl7transform.homerton.transforms.constants.HomertonConstants;
@@ -23,7 +23,7 @@ import org.hl7.fhir.instance.model.*;
 
 import java.util.*;
 
-public class OrganizationTransform extends TransformBase {
+public class OrganizationTransform extends ResourceTransformBase {
 
     public OrganizationTransform(Mapper mapper, ResourceContainer resourceContainer) {
         super(mapper, resourceContainer);
@@ -76,7 +76,7 @@ public class OrganizationTransform extends TransformBase {
         return ReferenceHelper.createReference(ResourceType.Organization, organization.getId());
     }
 
-    public Reference createPrimaryCareProviderOrganisation(Zpd zpd) throws MapperException, TransformException, ParseException {
+    public Reference createMainPrimaryCareProviderOrganisation(Zpd zpd) throws MapperException, TransformException, ParseException {
         if (zpd == null)
             return null;
 
@@ -107,7 +107,7 @@ public class OrganizationTransform extends TransformBase {
 
         targetResources.addResource(organization, ResourceTag.MainPrimaryCareProviderOrganisation);
 
-        return ReferenceHelper.createReference(ResourceType.Organization, organization.getId());
+        return ReferenceHelper.createReferenceExternal(organization);
     }
 
     private CodeableConcept getOrganisationType(OrganisationType organisationType) {

@@ -8,7 +8,7 @@ import org.endeavourhealth.common.utility.StreamExtension;
 import org.endeavourhealth.hl7parser.ParseException;
 import org.endeavourhealth.hl7transform.common.ResourceContainer;
 import org.endeavourhealth.hl7transform.common.ResourceTag;
-import org.endeavourhealth.hl7transform.common.TransformBase;
+import org.endeavourhealth.hl7transform.common.ResourceTransformBase;
 import org.endeavourhealth.hl7transform.homerton.parser.zdatatypes.Zpd;
 import org.endeavourhealth.hl7transform.homerton.transforms.constants.HomertonConstants;
 import org.endeavourhealth.hl7transform.homerton.transforms.converters.AddressConverter;
@@ -23,7 +23,7 @@ import org.hl7.fhir.instance.model.*;
 import java.util.*;
 import java.util.stream.Collectors;
 
-public class PractitionerTransform extends TransformBase {
+public class PractitionerTransform extends ResourceTransformBase {
 
     public PractitionerTransform(Mapper mapper, ResourceContainer targetResources) {
         super(mapper, targetResources);
@@ -34,7 +34,7 @@ public class PractitionerTransform extends TransformBase {
         return ResourceType.Practitioner;
     }
 
-    public Reference createPrimaryCarePractitioner(Zpd zpd, Reference primaryCareOrganizationReference) throws MapperException, TransformException, ParseException {
+    public Reference createMainPrimaryCareProviderPractitioner(Zpd zpd, Reference primaryCareOrganizationReference) throws MapperException, TransformException, ParseException {
         if (StringUtils.isBlank(zpd.getSurname()))
             return null;
 
@@ -58,9 +58,9 @@ public class PractitionerTransform extends TransformBase {
         if (primaryCareOrganizationReference != null)
             practitioner.addPractitionerRole(new Practitioner.PractitionerPractitionerRoleComponent().setManagingOrganization(primaryCareOrganizationReference));
 
-        targetResources.addResource(practitioner);
+        targetResources.addResource(practitioner, ResourceTag.MainPrimaryCareProviderPractitioner);
 
-        return ReferenceHelper.createReference(ResourceType.Practitioner, practitioner.getId());
+        return ReferenceHelper.createReferenceExternal(practitioner);
     }
 
     // this method removes duplicates based on title, surname, forename, and merges the identifiers
@@ -75,9 +75,7 @@ public class PractitionerTransform extends TransformBase {
         for (List<Xcn> practitioners : practitionerGroups) {
             Practitioner practitioner = createPractitionerFromDuplicates(practitioners);
 
-            targetResources.addResource(practitioner);
-
-            references.add(ReferenceHelper.createReference(ResourceType.Practitioner, practitioner.getId()));
+            references.add(ReferenceHelper.createReferenceExternal(practitioner));
         }
 
         return references;
@@ -109,29 +107,6 @@ public class PractitionerTransform extends TransformBase {
                     practitioner.addIdentifier(identifier);
         }
 
-        // role - pseudocode
-
-        /*
-            if (practitioner has gmc code)
-            {
-                if (gmc code matches primary care providing practitioner)
-                    get existing primary care providing practitioner
-                else if (postcode matches primary care providing organisation)
-                    add in primary care providing organisation role
-                else
-                    throw exception;
-            }
-            else if (practitioner has primary personnel identifier)
-            {
-                add in hospital role
-            }
-            else
-            {
-                throw Exception("don't know which organisation to add a role for");
-            }
-
-         */
-
         // role - collect identifiers to help determine role
 
         String gmcCode = getIdentifierValue(practitioner.getIdentifier(), FhirUri.IDENTIFIER_SYSTEM_GMC_NUMBER);
@@ -145,6 +120,8 @@ public class PractitionerTransform extends TransformBase {
 
 
         // role - determine and set role
+
+        boolean practitionerAlreadyExists = false;
 
         if (StringUtils.isNotEmpty(gmcCode)) {
 
@@ -161,7 +138,7 @@ public class PractitionerTransform extends TransformBase {
                 practitioner.addPractitionerRole(new Practitioner.PractitionerPractitionerRoleComponent()
                     .setManagingOrganization(ReferenceHelper.createReferenceExternal(primaryCareProviderOrganisation)));
 
-                // todo - this may end up with duplicate GP practitioners if one has more identifiers than the other
+                practitionerAlreadyExists = true;
 
             } else {
 
@@ -202,6 +179,12 @@ public class PractitionerTransform extends TransformBase {
 
         UUID id = getId(practitioner);
         practitioner.setId(id.toString());
+
+
+        // add to resources collection
+
+        if (!practitionerAlreadyExists)
+            targetResources.addResource(practitioner);
 
         return practitioner;
     }

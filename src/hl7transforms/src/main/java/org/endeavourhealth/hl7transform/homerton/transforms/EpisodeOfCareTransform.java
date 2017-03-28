@@ -6,7 +6,7 @@ import org.endeavourhealth.hl7parser.datatypes.Cx;
 import org.endeavourhealth.hl7parser.messages.AdtMessage;
 import org.endeavourhealth.hl7transform.common.ResourceContainer;
 import org.endeavourhealth.hl7transform.common.ResourceTag;
-import org.endeavourhealth.hl7transform.common.TransformBase;
+import org.endeavourhealth.hl7transform.common.ResourceTransformBase;
 import org.endeavourhealth.hl7transform.homerton.transforms.constants.HomertonConstants;
 import org.endeavourhealth.hl7transform.homerton.transforms.converters.IdentifierConverter;
 import org.endeavourhealth.hl7transform.mapper.Mapper;
@@ -18,7 +18,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
-public class EpisodeOfCareTransform extends TransformBase {
+public class EpisodeOfCareTransform extends ResourceTransformBase {
 
     public EpisodeOfCareTransform(Mapper mapper, ResourceContainer targetResources) {
         super(mapper, targetResources);

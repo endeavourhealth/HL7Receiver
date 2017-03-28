@@ -10,7 +10,7 @@ import org.endeavourhealth.common.utility.StreamExtension;
 import org.endeavourhealth.hl7parser.ParseException;
 import org.endeavourhealth.hl7transform.common.ResourceContainer;
 import org.endeavourhealth.hl7transform.common.ResourceTag;
-import org.endeavourhealth.hl7transform.common.TransformBase;
+import org.endeavourhealth.hl7transform.common.ResourceTransformBase;
 import org.endeavourhealth.hl7transform.common.TransformException;
 import org.endeavourhealth.hl7transform.homerton.transforms.constants.HomertonConstants;
 import org.endeavourhealth.hl7transform.homerton.transforms.converters.AddressConverter;
@@ -24,7 +24,7 @@ import org.hl7.fhir.instance.model.valuesets.V3RoleCode;
 
 import java.util.*;
 
-public class LocationTransform extends TransformBase {
+public class LocationTransform extends ResourceTransformBase {
 
     public LocationTransform(Mapper mapper, ResourceContainer targetResources) {
         super(mapper, targetResources);

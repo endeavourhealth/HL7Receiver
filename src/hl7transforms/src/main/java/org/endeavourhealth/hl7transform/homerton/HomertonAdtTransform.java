@@ -5,9 +5,11 @@ import org.endeavourhealth.hl7parser.ParseException;
 import org.endeavourhealth.hl7parser.Segment;
 import org.endeavourhealth.hl7parser.messages.AdtMessage;
 import org.endeavourhealth.hl7transform.Transform;
+import org.endeavourhealth.hl7transform.common.TransformException;
 import org.endeavourhealth.hl7transform.homerton.parser.zsegments.*;
 import org.endeavourhealth.hl7transform.homerton.pretransform.HomertonPreTransform;
 import org.endeavourhealth.hl7transform.homerton.transforms.*;
+import org.endeavourhealth.hl7transform.homerton.transforms.constants.HomertonConstants;
 import org.endeavourhealth.hl7transform.mapper.Mapper;
 import org.endeavourhealth.hl7transform.common.ResourceContainer;
 import org.hl7.fhir.instance.model.*;
@@ -16,7 +18,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 
-public class HomertonAdtTransform implements Transform {
+public class HomertonAdtTransform extends Transform {
 
     private HashMap<String, Class<? extends Segment>> zSegments = new HashMap<>();
 
@@ -35,12 +37,16 @@ public class HomertonAdtTransform implements Transform {
         return zSegments;
     }
 
-    public AdtMessage preTransform(AdtMessage sourceMessage) throws ParseException {
+    public AdtMessage preTransform(AdtMessage sourceMessage) throws Exception {
+        Validate.notNull(sourceMessage);
+        validateSendingFacility(sourceMessage);
+
         return HomertonPreTransform.preTransform(sourceMessage);
     }
 
     public Bundle transform(AdtMessage sourceMessage, Mapper mapper) throws Exception {
         Validate.notNull(sourceMessage);
+        validateSendingFacility(sourceMessage);
 
         ResourceContainer targetResources = new ResourceContainer();
 
@@ -65,5 +71,12 @@ public class HomertonAdtTransform implements Transform {
         return targetResources
                 .orderByResourceType()
                 .createBundle();
+    }
+
+    private void validateSendingFacility(AdtMessage sourceMessage) throws TransformException {
+        Validate.notNull(sourceMessage.getMshSegment());
+
+        if (!supportsSendingFacility(sourceMessage.getMshSegment().getSendingFacility()))
+            throw new TransformException("Sending facility of " + sourceMessage.getMshSegment().getSendingFacility() + " not recognised");
     }
 }
