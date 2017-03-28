@@ -117,7 +117,7 @@ public class MessageHeaderTransform extends ResourceTransformBase {
 
     private void setId(AdtMessage source, MessageHeader target) throws MapperException {
 
-        UUID id = mapper.mapMessageHeaderUuid(source.getMshSegment().getMessageControlId());
+        UUID id = mapper.getResourceMapper().mapMessageHeaderUuid(source.getMshSegment().getMessageControlId());
         target.setId(id.toString());
     }
 }

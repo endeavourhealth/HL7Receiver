@@ -7,27 +7,27 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-public class MapParameters {
+public class ResourceMapParameters {
     private static final String keyValuePairSeperator = "-";
     protected static final String repeatingValueSeperator = "~";
 
     private Map<String, String> parameters = new LinkedHashMap<>();
 
-    public static MapParameters create() {
-        return new MapParameters();
+    public static ResourceMapParameters create() {
+        return new ResourceMapParameters();
     }
 
-    public MapParameters putExisting(MapParameters mapParameters) {
-        parameters.putAll(mapParameters.parameters);
+    public ResourceMapParameters putExisting(ResourceMapParameters resourceMapParameters) {
+        parameters.putAll(resourceMapParameters.parameters);
         return this;
     }
 
-    public MapParameters put(String key, List<String> multiValues) {
+    public ResourceMapParameters put(String key, List<String> multiValues) {
         put(key, StringUtils.join(multiValues, repeatingValueSeperator));
         return this;
     }
 
-    public MapParameters put(String key, String value) {
+    public ResourceMapParameters put(String key, String value) {
         parameters.put(key, value);
         return this;
     }

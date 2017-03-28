@@ -1,8 +1,8 @@
-package org.endeavourhealth.hl7receiver.model.db;
+package org.endeavourhealth.hl7transform.mapper;
 
-public class DbCode {
+public class CodeMapping {
     private boolean isMapped;
-    private String targetAction;
+    private CodeMappingAction action;
     private String code;
     private String system;
     private String term;
@@ -11,17 +11,17 @@ public class DbCode {
         return isMapped;
     }
 
-    public DbCode setMapped(boolean mapped) {
+    public CodeMapping setMapped(boolean mapped) {
         isMapped = mapped;
         return this;
     }
 
-    public String getTargetAction() {
-        return targetAction;
+    public CodeMappingAction getAction() {
+        return action;
     }
 
-    public DbCode setTargetAction(String targetAction) {
-        this.targetAction = targetAction;
+    public CodeMapping setTargetAction(CodeMappingAction action) {
+        this.action = action;
         return this;
     }
 
@@ -29,7 +29,7 @@ public class DbCode {
         return code;
     }
 
-    public DbCode setCode(String code) {
+    public CodeMapping setCode(String code) {
         this.code = code;
         return this;
     }
@@ -38,7 +38,7 @@ public class DbCode {
         return system;
     }
 
-    public DbCode setSystem(String system) {
+    public CodeMapping setSystem(String system) {
         this.system = system;
         return this;
     }
@@ -47,7 +47,7 @@ public class DbCode {
         return term;
     }
 
-    public DbCode setTerm(String term) {
+    public CodeMapping setTerm(String term) {
         this.term = term;
         return this;
     }

@@ -83,7 +83,7 @@ public class EncounterTransform extends ResourceTransformBase {
         String patientIdentifierValue = PatientTransform.getPatientIdentifierValue(source, HomertonConstants.primaryPatientIdentifierTypeCode);
         String episodeIdentifierValue = EpisodeOfCareTransform.getEpisodeIdentifierValue(source, HomertonConstants.primaryEpisodeIdentifierAssigningAuthority);
 
-        UUID encounterUuid = mapper.mapEncounterUuid(
+        UUID encounterUuid = mapper.getResourceMapper().mapEncounterUuid(
                 HomertonConstants.primaryPatientIdentifierTypeCode,
                 patientIdentifierValue,
                 HomertonConstants.primaryEpisodeIdentifierAssigningAuthority,

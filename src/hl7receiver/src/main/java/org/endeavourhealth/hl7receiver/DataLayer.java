@@ -309,20 +309,22 @@ public class DataLayer implements IDBDigestLogger {
         return pgStoredProc.executeSingleRow((resultSet) -> UUID.fromString(resultSet.getString("get_resource_uuid")));
     }
 
-    public DbCode getCode(String codeSetName, String codeContextName, String originalCode, String originalSystem, String originalTerm) throws PgStoredProcException {
+    public DbCode getCode(String sourceCodeOriginName, String sourceCodeContextName, String sourceCode, String sourceCodeSystemIdentifier, String sourceTerm) throws PgStoredProcException {
 
         PgStoredProc pgStoredProc = new PgStoredProc(dataSource)
                 .setName("mapping.code")
-                .addParameter("_code_set_name", codeSetName)
-                .addParameter("_code_context_name", codeContextName)
-                .addParameter("_original_code", originalCode)
-                .addParameter("_original_system", originalSystem)
-                .addParameter("_original_term", originalTerm);
+                .addParameter("_source_code_origin_name", sourceCodeOriginName)
+                .addParameter("_source_code_context_name", sourceCodeContextName)
+                .addParameter("_source_code", sourceCode)
+                .addParameter("_source_code_system_identifier", sourceCodeSystemIdentifier)
+                .addParameter("_source_term", sourceTerm);
 
         return pgStoredProc.executeSingleOrEmptyRow((resultSet) ->
                 new DbCode()
-                        .setCode(resultSet.getString("mapped_code"))
-                        .setSystem(resultSet.getString("mapped_system"))
-                        .setTerm("mapped_term"));
+                        .setMapped(resultSet.getBoolean("is_mapped"))
+                        .setTargetAction(resultSet.getString("target_code_action_id"))
+                        .setCode(resultSet.getString("target_code"))
+                        .setSystem(resultSet.getString("target_code_system_identifier"))
+                        .setTerm("target_term"));
     }
 }

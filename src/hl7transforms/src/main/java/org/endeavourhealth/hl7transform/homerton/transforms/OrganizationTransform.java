@@ -43,7 +43,7 @@ public class OrganizationTransform extends ResourceTransformBase {
                 .setName(HomertonConstants.organisationName)
                 .addAddress(AddressConverter.createWorkAddress(HomertonConstants.addressLine, null, HomertonConstants.addressCity, HomertonConstants.addressPostcode));
 
-        UUID id = mapper.mapOrganisationUuid(HomertonConstants.odsCode, HomertonConstants.organisationName);
+        UUID id = mapper.getResourceMapper().mapOrganisationUuid(HomertonConstants.odsCode, HomertonConstants.organisationName);
         organization.setId(id.toString());
 
         return organization;
@@ -69,7 +69,7 @@ public class OrganizationTransform extends ResourceTransformBase {
                 .addAddress(AddressConverter.createWorkAddress(HomertonConstants.organisationName, HomertonConstants.addressLine, HomertonConstants.addressCity, HomertonConstants.addressPostcode))
                 .setPartOf(managingOrganisationReference);
 
-        UUID id = mapper.mapOrganisationUuid(HomertonConstants.odsCode, HomertonConstants.organisationName, hospitalServiceName);
+        UUID id = mapper.getResourceMapper().mapOrganisationUuid(HomertonConstants.odsCode, HomertonConstants.organisationName, hospitalServiceName);
         organization.setId(id.toString());
 
         targetResources.addResource(organization);
@@ -99,7 +99,7 @@ public class OrganizationTransform extends ResourceTransformBase {
 
         Organization organization = new Organization();
 
-        UUID id = mapper.mapOrganisationUuid(zpd.getOdsCode(), zpd.getPracticeName());
+        UUID id = mapper.getResourceMapper().mapOrganisationUuid(zpd.getOdsCode(), zpd.getPracticeName());
         organization.setId(id.toString());
 
         Identifier identifier = IdentifierConverter.createOdsCodeIdentifier(zpd.getOdsCode());

@@ -76,7 +76,7 @@ public class PatientTransform extends ResourceTransformBase {
     public void setId(AdtMessage source, Patient target) throws TransformException, MapperException {
 
         String patientIdentifierValue = getPatientIdentifierValue(source, HomertonConstants.primaryPatientIdentifierTypeCode);
-        UUID patientUuid = mapper.mapPatientUuid(HomertonConstants.primaryPatientIdentifierTypeCode, patientIdentifierValue);
+        UUID patientUuid = mapper.getResourceMapper().mapPatientUuid(HomertonConstants.primaryPatientIdentifierTypeCode, patientIdentifierValue);
 
         target.setId(patientUuid.toString());
     }

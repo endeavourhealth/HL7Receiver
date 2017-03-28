@@ -160,15 +160,15 @@ public class LocationTransform extends ResourceTransformBase {
     }
 
     private UUID getId(String classOfLocationName) throws MapperException {
-        return mapper.mapLocationUuid(classOfLocationName);
+        return mapper.getResourceMapper().mapLocationUuid(classOfLocationName);
     }
 
     private UUID getId(String odsSiteCode, String locationName) throws MapperException {
-        return mapper.mapLocationUuid(odsSiteCode, locationName);
+        return mapper.getResourceMapper().mapLocationUuid(odsSiteCode, locationName);
     }
 
     public UUID getId(String parentOdsSiteCode, String parentLocationName, List<String> locationNames) throws MapperException {
-        return mapper.mapLocationUuid(parentOdsSiteCode, parentLocationName, locationNames);
+        return mapper.getResourceMapper().mapLocationUuid(parentOdsSiteCode, parentLocationName, locationNames);
     }
 
     private static String getOdsSiteCode(Location location) {
