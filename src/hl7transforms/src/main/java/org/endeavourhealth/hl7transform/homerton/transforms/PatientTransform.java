@@ -45,7 +45,7 @@ public class PatientTransform extends ResourceTransformBase {
         return ResourceType.Patient;
     }
 
-    public void transform(AdtMessage source) throws Exception {
+    public Patient transform(AdtMessage source) throws Exception {
         Validate.notNull(source);
 
         if (!source.hasPidSegment())
@@ -70,7 +70,7 @@ public class PatientTransform extends ResourceTransformBase {
         addPatientContacts(source, target);
         setManagingOrganization(source, target);
 
-        targetResources.addResource(target, ResourceTag.PatientSubject);
+        return target;
     }
 
     public void setId(AdtMessage source, Patient target) throws TransformException, MapperException {
@@ -161,14 +161,12 @@ public class PatientTransform extends ResourceTransformBase {
 
         Zpd zpd = pd1Segment.getFieldAsDatatype(HomertonConstants.homertonXpdPrimaryCarePd1FieldNumber, Zpd.class);
 
-        OrganizationTransform organizationTransform = new OrganizationTransform(mapper, targetResources);
-        Reference organisationReference = organizationTransform.createMainPrimaryCareProviderOrganisation(zpd);
+        Reference organisationReference = targetResources.getResourceReference(ResourceTag.MainPrimaryCareProviderOrganisation, Organization.class);
 
         if (organisationReference != null)
             target.addCareProvider(organisationReference);
 
-        PractitionerTransform practitionerTransform = new PractitionerTransform(mapper, targetResources);
-        Reference practitionerReference = practitionerTransform.createMainPrimaryCareProviderPractitioner(zpd, organisationReference);
+        Reference practitionerReference = targetResources.getResourceReference(ResourceTag.MainPrimaryCareProviderPractitioner, Practitioner.class);
 
         if (practitionerReference != null)
             target.addCareProvider(practitionerReference);

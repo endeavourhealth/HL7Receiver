@@ -3,6 +3,8 @@ package org.endeavourhealth.hl7transform.homerton.transforms;
 import org.apache.commons.lang3.Validate;
 import org.endeavourhealth.common.fhir.FhirExtensionUri;
 import org.endeavourhealth.common.fhir.FhirUri;
+import org.endeavourhealth.hl7parser.datatypes.Xcn;
+import org.endeavourhealth.hl7parser.segments.EvnSegment;
 import org.endeavourhealth.hl7transform.common.ResourceContainer;
 import org.endeavourhealth.hl7transform.common.ResourceTag;
 import org.endeavourhealth.hl7transform.common.ResourceTransformBase;
@@ -18,6 +20,7 @@ import org.endeavourhealth.hl7transform.common.converters.ExtensionHelper;
 import org.hl7.fhir.instance.model.*;
 
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.UUID;
 
 public class MessageHeaderTransform extends ResourceTransformBase {
@@ -31,11 +34,14 @@ public class MessageHeaderTransform extends ResourceTransformBase {
         return ResourceType.MessageHeader;
     }
 
-    public void transform(AdtMessage sourceMessage) throws ParseException, MapperException, TransformException {
+    public MessageHeader transform(AdtMessage sourceMessage) throws ParseException, MapperException, TransformException {
         Validate.notNull(sourceMessage);
         Validate.notNull(sourceMessage.getMshSegment());
+        Validate.notNull(sourceMessage.getEvnSegment());
 
         MshSegment mshSegment = sourceMessage.getMshSegment();
+        EvnSegment evnSegment = sourceMessage.getEvnSegment();
+
         MessageHeader target = new MessageHeader();
 
         setId(sourceMessage, target);
@@ -46,8 +52,9 @@ public class MessageHeaderTransform extends ResourceTransformBase {
         setResponsible(mshSegment, target);
         setMessageControlId(mshSegment, target);
         setSequenceNumber(mshSegment, target);
+        setEnterer(evnSegment, target);
 
-        targetResources.addResource(target);
+        return target;
     }
 
     private void setTimestamp(MshSegment source, MessageHeader target) {
@@ -91,6 +98,21 @@ public class MessageHeaderTransform extends ResourceTransformBase {
 
         if (sequenceNumber != null)
             target.addExtension(ExtensionHelper.createIntegerExtension(FhirExtensionUri.EXTENSION_HL7V2_SEQUENCE_NUMBER, sequenceNumber));
+    }
+
+    private void setEnterer(EvnSegment evnSegment, MessageHeader target) throws TransformException, MapperException, ParseException {
+
+        if (evnSegment.getOperators() == null)
+            return;
+
+        PractitionerTransform practitionerTransform = new PractitionerTransform(mapper, targetResources);
+        List<Reference> references = practitionerTransform.createPractitioners(evnSegment.getOperators());
+
+        if (references.size() > 1)
+            throw new TransformException("More than one entering user found");
+
+        if (references.size() == 1)
+            target.setEnterer(references.get(0));
     }
 
     private void setId(AdtMessage source, MessageHeader target) throws MapperException {

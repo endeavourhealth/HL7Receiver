@@ -73,6 +73,15 @@ public class Message {
                 .collect(Collectors.toList());
     }
 
+    public long getSegmentCount(String segmentName) {
+        Validate.notBlank(segmentName);
+
+        return this.segments
+                .stream()
+                .filter(t -> t.getSegmentName().equals(segmentName))
+                .count();
+    }
+
     public List<Component> getAllComponents() {
         return getSegments()
                 .stream()

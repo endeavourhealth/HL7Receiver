@@ -6,6 +6,7 @@ import org.endeavourhealth.common.fhir.ReferenceHelper;
 import org.endeavourhealth.common.fhir.schema.OrganisationType;
 import org.endeavourhealth.hl7parser.ParseException;
 import org.endeavourhealth.hl7parser.messages.AdtMessage;
+import org.endeavourhealth.hl7parser.segments.Pd1Segment;
 import org.endeavourhealth.hl7parser.segments.Pv1Segment;
 import org.endeavourhealth.hl7transform.common.ResourceContainer;
 import org.endeavourhealth.hl7transform.common.ResourceTag;
@@ -34,7 +35,7 @@ public class OrganizationTransform extends ResourceTransformBase {
         return ResourceType.Organization;
     }
 
-    public void createHomertonManagingOrganisation(AdtMessage source) throws MapperException, TransformException, ParseException {
+    public Organization createHomertonManagingOrganisation(AdtMessage source) throws MapperException, TransformException, ParseException {
 
         Organization organization = new Organization()
                 .addIdentifier(IdentifierConverter.createOdsCodeIdentifier(HomertonConstants.odsCode))
@@ -45,7 +46,7 @@ public class OrganizationTransform extends ResourceTransformBase {
         UUID id = mapper.mapOrganisationUuid(HomertonConstants.odsCode, HomertonConstants.organisationName);
         organization.setId(id.toString());
 
-        targetResources.addResource(organization, ResourceTag.MainHospitalOrganisation);
+        return organization;
     }
 
     public Reference createHomertonHospitalServiceOrganisation(Pv1Segment pv1Segment) throws TransformException, ParseException, MapperException {
@@ -76,7 +77,20 @@ public class OrganizationTransform extends ResourceTransformBase {
         return ReferenceHelper.createReference(ResourceType.Organization, organization.getId());
     }
 
-    public Reference createMainPrimaryCareProviderOrganisation(Zpd zpd) throws MapperException, TransformException, ParseException {
+    public static Zpd getZpd(AdtMessage adtMessage) {
+        Validate.notNull(adtMessage);
+
+        Pd1Segment pd1Segment = adtMessage.getPd1Segment();
+
+        if (pd1Segment == null)
+            return null;
+
+        return pd1Segment.getFieldAsDatatype(HomertonConstants.homertonXpdPrimaryCarePd1FieldNumber, Zpd.class);
+    }
+
+    public Organization createMainPrimaryCareProviderOrganisation(AdtMessage adtMessage) throws MapperException, TransformException, ParseException {
+        Zpd zpd = getZpd(adtMessage);
+
         if (zpd == null)
             return null;
 
@@ -105,9 +119,7 @@ public class OrganizationTransform extends ResourceTransformBase {
 
         organization.setType(getOrganisationType(OrganisationType.GP_PRACTICE));
 
-        targetResources.addResource(organization, ResourceTag.MainPrimaryCareProviderOrganisation);
-
-        return ReferenceHelper.createReferenceExternal(organization);
+        return organization;
     }
 
     private CodeableConcept getOrganisationType(OrganisationType organisationType) {

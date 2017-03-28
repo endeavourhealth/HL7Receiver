@@ -43,10 +43,10 @@ public class EncounterTransform extends ResourceTransformBase {
         return ResourceType.Encounter;
     }
 
-    public void transform(AdtMessage source) throws ParseException, TransformException, MapperException {
+    public Encounter transform(AdtMessage source) throws ParseException, TransformException, MapperException {
 
         if (!source.hasPv1Segment())
-            return;
+            return null;
 
         if (!source.hasEvnSegment())
             throw new TransformException("EVN segment not found");
@@ -75,7 +75,7 @@ public class EncounterTransform extends ResourceTransformBase {
         setDischargeDestination(source, target);
         setAdmitSource(source.getPv1Segment(), target);
 
-        targetResources.addResource(target);
+        return target;
     }
 
     protected void setId(AdtMessage source, Encounter target) throws TransformException, ParseException, MapperException {
@@ -235,7 +235,7 @@ public class EncounterTransform extends ResourceTransformBase {
             return;
 
         PractitionerTransform practitionerTransform = new PractitionerTransform(mapper, targetResources);
-        List<Reference> references = practitionerTransform.createPractitioner(xcns);
+        List<Reference> references = practitionerTransform.createPractitioners(xcns);
 
         for (Reference reference : references) {
             target.addParticipant(new Encounter.EncounterParticipantComponent()

@@ -29,10 +29,10 @@ public class EpisodeOfCareTransform extends ResourceTransformBase {
         return ResourceType.EpisodeOfCare;
     }
 
-    public void transform(AdtMessage sourceMessage) throws TransformException, MapperException, ParseException {
+    public EpisodeOfCare transform(AdtMessage sourceMessage) throws TransformException, MapperException, ParseException {
 
         if (!sourceMessage.hasPv1Segment())
-            return;
+            return null;
 
         EpisodeOfCare target = new EpisodeOfCare();
 
@@ -48,8 +48,7 @@ public class EpisodeOfCareTransform extends ResourceTransformBase {
 
         // period
 
-
-        targetResources.addResource(target);
+        return target;
     }
 
     protected void setId(AdtMessage source, EpisodeOfCare target) throws TransformException, MapperException {

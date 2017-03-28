@@ -6,6 +6,7 @@ import org.endeavourhealth.common.fhir.FhirUri;
 import org.endeavourhealth.common.fhir.ReferenceHelper;
 import org.endeavourhealth.common.utility.StreamExtension;
 import org.endeavourhealth.hl7parser.ParseException;
+import org.endeavourhealth.hl7parser.messages.AdtMessage;
 import org.endeavourhealth.hl7transform.common.ResourceContainer;
 import org.endeavourhealth.hl7transform.common.ResourceTag;
 import org.endeavourhealth.hl7transform.common.ResourceTransformBase;
@@ -34,7 +35,12 @@ public class PractitionerTransform extends ResourceTransformBase {
         return ResourceType.Practitioner;
     }
 
-    public Reference createMainPrimaryCareProviderPractitioner(Zpd zpd, Reference primaryCareOrganizationReference) throws MapperException, TransformException, ParseException {
+    public Practitioner createMainPrimaryCareProviderPractitioner(AdtMessage adtMessage) throws MapperException, TransformException, ParseException {
+        Zpd zpd = OrganizationTransform.getZpd(adtMessage);
+
+        if (zpd == null)
+            return null;
+
         if (StringUtils.isBlank(zpd.getSurname()))
             return null;
 
@@ -55,16 +61,16 @@ public class PractitionerTransform extends ResourceTransformBase {
         UUID id = getId(practitioner);
         practitioner.setId(id.toString());
 
+        Reference primaryCareOrganizationReference = targetResources.getResourceReference(ResourceTag.MainPrimaryCareProviderOrganisation, Organization.class);
+
         if (primaryCareOrganizationReference != null)
             practitioner.addPractitionerRole(new Practitioner.PractitionerPractitionerRoleComponent().setManagingOrganization(primaryCareOrganizationReference));
 
-        targetResources.addResource(practitioner, ResourceTag.MainPrimaryCareProviderPractitioner);
-
-        return ReferenceHelper.createReferenceExternal(practitioner);
+        return practitioner;
     }
 
     // this method removes duplicates based on title, surname, forename, and merges the identifiers
-    public List<Reference> createPractitioner(List<Xcn> source) throws TransformException, MapperException, ParseException {
+    public List<Reference> createPractitioners(List<Xcn> source) throws TransformException, MapperException, ParseException {
         Collection<List<Xcn>> practitionerGroups = source
                 .stream()
                 .collect(Collectors.groupingBy(t -> t.getPrefix() + t.getFamilyName() + t.getGivenName()))

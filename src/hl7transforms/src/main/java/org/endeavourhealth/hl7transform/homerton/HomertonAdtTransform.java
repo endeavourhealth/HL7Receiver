@@ -4,7 +4,9 @@ import org.apache.commons.lang3.Validate;
 import org.endeavourhealth.hl7parser.ParseException;
 import org.endeavourhealth.hl7parser.Segment;
 import org.endeavourhealth.hl7parser.messages.AdtMessage;
+import org.endeavourhealth.hl7parser.segments.SegmentName;
 import org.endeavourhealth.hl7transform.Transform;
+import org.endeavourhealth.hl7transform.common.ResourceTag;
 import org.endeavourhealth.hl7transform.common.TransformException;
 import org.endeavourhealth.hl7transform.homerton.parser.zsegments.*;
 import org.endeavourhealth.hl7transform.homerton.pretransform.HomertonPreTransform;
@@ -47,27 +49,78 @@ public class HomertonAdtTransform extends Transform {
     public Bundle transform(AdtMessage sourceMessage, Mapper mapper) throws Exception {
         Validate.notNull(sourceMessage);
         validateSendingFacility(sourceMessage);
+        validateSegmentCounts(sourceMessage);
 
         ResourceContainer targetResources = new ResourceContainer();
 
-        new OrganizationTransform(mapper, targetResources)
-                .createHomertonManagingOrganisation(sourceMessage);
+        ///////////////////////////////////////////////////////////////////////////
+        // create main hospital organisation
+        //
+        OrganizationTransform organizationTransform = new OrganizationTransform(mapper, targetResources);
+        Organization mainHospitalOrganisation = organizationTransform.createHomertonManagingOrganisation(sourceMessage);
+        targetResources.addResource(mainHospitalOrganisation, ResourceTag.MainHospitalOrganisation);
 
-        new LocationTransform(mapper, targetResources)
-                .createHomertonHospitalLocation();
+        ///////////////////////////////////////////////////////////////////////////
+        // create main hospital location
+        //
+        LocationTransform locationTransform = new LocationTransform(mapper, targetResources);
+        Location location = locationTransform.createHomertonHospitalLocation();
+        targetResources.addResource(location, ResourceTag.MainHospitalLocation);
 
-        new MessageHeaderTransform(mapper, targetResources)
-                .transform(sourceMessage);
+        ///////////////////////////////////////////////////////////////////////////
+        // create usual gp organisation
+        //
+        Organization mainGPOrganisation = organizationTransform.createMainPrimaryCareProviderOrganisation(sourceMessage);
 
-        new PatientTransform(mapper, targetResources)
-                .transform(sourceMessage);
+        if (mainGPOrganisation != null)
+            targetResources.addResource(mainGPOrganisation, ResourceTag.MainPrimaryCareProviderOrganisation);
 
-        new EpisodeOfCareTransform(mapper, targetResources)
-                .transform(sourceMessage);
+        ///////////////////////////////////////////////////////////////////////////
+        // create usual gp practitioner
+        //
+        PractitionerTransform practitionerTransform = new PractitionerTransform(mapper, targetResources);
+        Practitioner mainGPPractitioner = practitionerTransform.createMainPrimaryCareProviderPractitioner(sourceMessage);
 
-        new EncounterTransform(mapper, targetResources)
-                .transform(sourceMessage);
+        if (mainGPPractitioner != null)
+            targetResources.addResource(mainGPPractitioner, ResourceTag.MainPrimaryCareProviderPractitioner);
 
+        ///////////////////////////////////////////////////////////////////////////
+        // create message header
+        //
+        MessageHeaderTransform messageHeaderTransform = new MessageHeaderTransform(mapper, targetResources);
+        MessageHeader messageHeader = messageHeaderTransform.transform(sourceMessage);
+        targetResources.addResource(messageHeader);
+
+        ///////////////////////////////////////////////////////////////////////////
+        // create patient
+        //
+        PatientTransform patientTransform = new PatientTransform(mapper, targetResources);
+        Patient patient = patientTransform.transform(sourceMessage);
+        targetResources.addResource(patient, ResourceTag.PatientSubject);
+
+        ///////////////////////////////////////////////////////////////////////////
+        // create episode of care
+        //
+        // and any associated organisations (/services), practitioners, locations
+        //
+        EpisodeOfCareTransform episodeOfCareTransform = new EpisodeOfCareTransform(mapper, targetResources);
+        EpisodeOfCare episodeOfCare = episodeOfCareTransform.transform(sourceMessage);
+
+        if (episodeOfCare != null)
+            targetResources.addResource(episodeOfCare);
+
+        ///////////////////////////////////////////////////////////////////////////
+        // create encounter
+        //
+        EncounterTransform encounterTransform = new EncounterTransform(mapper, targetResources);
+        Encounter encounter = encounterTransform.transform(sourceMessage);
+
+        if (encounter != null)
+            targetResources.addResource(encounter);
+
+        ///////////////////////////////////////////////////////////////////////////
+        // create bundle
+        //
         return targetResources
                 .orderByResourceType()
                 .createBundle();
@@ -78,5 +131,34 @@ public class HomertonAdtTransform extends Transform {
 
         if (!supportsSendingFacility(sourceMessage.getMshSegment().getSendingFacility()))
             throw new TransformException("Sending facility of " + sourceMessage.getMshSegment().getSendingFacility() + " not recognised");
+    }
+
+    private void validateSegmentCounts(AdtMessage sourceMessage) throws TransformException {
+        validateExactlyOneSegment(sourceMessage, SegmentName.MSH);
+        validateExactlyOneSegment(sourceMessage, SegmentName.EVN);
+        validateExactlyOneSegment(sourceMessage, SegmentName.PID);
+        validateExactlyOneSegment(sourceMessage, SegmentName.PD1);
+
+        validateZeroOrOneSegments(sourceMessage, SegmentName.PV1);
+
+        long segmentCount = sourceMessage.getSegmentCount(SegmentName.PV1);
+
+        validateMinAndMaxSegmentCount(sourceMessage, SegmentName.PV2, segmentCount, segmentCount);
+    }
+
+    private void validateZeroOrOneSegments(AdtMessage sourceMessage, String segmentName) throws TransformException {
+        validateMinAndMaxSegmentCount(sourceMessage, segmentName, 0L, 1L);
+    }
+
+    private void validateExactlyOneSegment(AdtMessage sourceMessage, String segmentName) throws TransformException {
+        validateMinAndMaxSegmentCount(sourceMessage, segmentName, 1L, 1L);
+    }
+
+    private void validateMinAndMaxSegmentCount(AdtMessage sourceMessage, String segmentName, long min, long max) throws TransformException {
+        if (sourceMessage.getSegmentCount(segmentName) < min)
+            throw new TransformException(segmentName + " segment exists less than " + Long.toString(min) + " time(s)");
+
+        if (sourceMessage.getSegmentCount(segmentName) > max)
+            throw new TransformException(segmentName + " exists more than " + Long.toString(max) + " time(s)");
     }
 }
