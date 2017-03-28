@@ -31,6 +31,7 @@ create table mapping.code_origin
 	constraint mapping_codeorigin_codeoriginid_pk primary key (code_origin_id),
 	constraint mapping_codeorigin_codeoriginname_uq unique (code_origin_name),
 	constraint mapping_codeorigin_codeoriginname_ck check (char_length(trim(code_origin_name)) > 0),
+	constraint mapping_codeorigin_codeoriginname_ck2 check (upper(code_origin_name) = code_origin_name),
 	constraint mapping_codeorigin_hl7channelid_fk foreign key (hl7_channel_id) references configuration.channel (channel_id),
 	constraint mapping_codeorigin_hl7channelid_uq unique (hl7_channel_id)
 );
@@ -78,23 +79,23 @@ values
 create table mapping.code_context
 (
 	code_context_id integer not null,
-	code_context_short_name varchar(100) not null,
+	code_context_name varchar(100) not null,
 	code_action_id_unmapped_default char(1) not null,
 	message_type varchar(100) not null,
 	field_locator varchar(100) not null,
 	code_context_description varchar(1000) not null,
 	
 	constraint mapping_codecontext_contextid_pk primary key (code_context_id),
-	constraint mapping_codecontext_codecontextshortname_uq unique (code_context_short_name),
-	constraint mapping_codecontext_codecontextshortname_ck check (char_length(trim(code_context_short_name)) > 0),
-	constraint mapping_codecontext_codecontextshortname_ck2 check (upper(code_context_short_name) = code_context_short_name),
+	constraint mapping_codecontext_codecontextname_uq unique (code_context_name),
+	constraint mapping_codecontext_codecontextname_ck check (char_length(trim(code_context_name)) > 0),
+	constraint mapping_codecontext_codecontextname_ck2 check (upper(code_context_name) = code_context_name),
 	constraint mapping_codecontext_codeactionidunmappeddefault_fk foreign key (code_action_id_unmapped_default) references mapping.code_action (code_action_id)
 );
 
 insert into mapping.code_context
 (
 	code_context_id,
-	code_context_short_name,
+	code_context_name,
 	code_action_id_unmapped_default,
 	message_type,
 	field_locator,
@@ -102,8 +103,8 @@ insert into mapping.code_context
 )
 values
 (1, 'HL7_PRIMARY_LANGUAGE', 			'F',	'HL7 ADT', 'PID.15', 'Patient primary language (HL7 v2)'),
-(2, 'HL7_TELECOM_USE_CODE', 			'F',	'HL7 ADT', 'XTN.2', 'Telecom use code (HL7 v2)'),
-(3, 'HL7_TELECOM_EQUIPMENT_TYPE', 	'F', 	'HL7 ADT', 'XTN.3', 'Telecom equipment type (HL7 v2)');
+(2, 'HL7_TELECOM_USE_CODE', 			'F',	'HL7 ADT', 'XTN.2',  'Telecom use code (HL7 v2)'),
+(3, 'HL7_TELECOM_EQUIPMENT_TYPE', 	'F', 	'HL7 ADT', 'XTN.3',  'Telecom equipment type (HL7 v2)');
 
 /*
 	create and populate mapping.code_system table
@@ -111,49 +112,55 @@ values
 create table mapping.code_system
 (
 	code_system_id integer not null,
-	code_system_name varchar(100) not null,
 	code_system_identifier varchar(500) not null,
-	code_system_description varchar(100) not null,
+	code_system_friendly_name varchar(100) not null,
+	code_system_description varchar(500) not null,
 	code_system_examples varchar(100) not null,
 	
 	constraint mapping_codesystem_codesystemid_pk primary key (code_system_id),
-	constraint mapping_codesystem_codesystemname_uq unique (code_system_name),
-	constraint mapping_codesystem_codesystemname_ck check (char_length(trim(code_system_name)) > 0),
 	constraint mapping_codesystem_codesystemidentifier_uq unique (code_system_identifier),
-	constraint mapping_codesystem_codesystemidentifier_ck check (char_length(trim(code_system_identifier)) > 0)
+	constraint mapping_codesystem_codesystemidentifier_ck check (char_length(trim(code_system_identifier)) > 0),
+	constraint mapping_codesystem_codesystemfriendlyname_uq unique (code_system_friendly_name),
+	constraint mapping_codesystem_codesystemfriendlyname_ck check (char_length(trim(code_system_friendly_name)) > 0)
 );
 
 insert into mapping.code_system
 (
 	code_system_id,
-	code_system_name,
 	code_system_identifier,
+	code_system_friendly_name,
 	code_system_description,
 	code_system_examples
 )
 values
 (
+	-1,
+	'NO-CODE-SYSTEM',
+	'No code system',
+	'Used when the is no source code system to prevent null and problems with indexes in mapping.code table',
+	'(none)'
+),
+(
 	1,
-	'Human language (FHIR)',
 	'http://fhir.nhs.net/ValueSet/human-language-1',
+	'Human language (FHIR)',
 	'See http://www.datadictionary.nhs.uk/data_dictionary/attributes/l/language_code_de.asp',
 	'en, fr, de, q1'
 ),
 (
 	2,
-	'Contact point system (FHIR)',
 	'http://hl7.org/fhir/contact-point-system',
+	'Contact point system (FHIR)',
 	'See http://hl7.org/fhir/DSTU2/valueset-contact-point-system.html',
 	'phone, fax, email'
 ),
 (
 	3,
-	'Contact point use (FHIR)',
 	'http://hl7.org/fhir/contact-point-use',
+	'Contact point use (FHIR)',
 	'See http://hl7.org/fhir/DSTU2/valueset-contact-point-use.html',
 	'home, work, temp, mobile'
 );
-
 
 /*
 	create mapping.code table
@@ -164,13 +171,13 @@ create table mapping.code
 	source_code_origin_id char(1) not null,
 	source_code_context_id integer not null,
 	source_code varchar(100) not null,
-	source_code_system_id integer null,
+	source_code_system_id integer not null,
 	source_term varchar(500) not null,
 	is_mapped boolean not null,
+	target_code_action_id char(1) not null,
 	target_code varchar(100) null,
 	target_code_system_id integer null,
 	target_term varchar(500) null,
-	target_code_action_id char(1) not null,
 	
 	constraint mapping_code_codeid_pk primary key (code_id),
 	constraint mapping_code_sccodeoriginid_sccontextid_sc_sccodesystem_sterm_pk unique (source_code_origin_id, source_code_context_id, source_code, source_code_system_id, source_term),
