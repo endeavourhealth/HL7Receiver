@@ -3,11 +3,18 @@ package org.endeavourhealth.hl7transform.mapper.code;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Validate;
 import org.endeavourhealth.hl7transform.mapper.Mapper;
-import org.endeavourhealth.hl7transform.mapper.exceptions.CheckedFunction;
 import org.endeavourhealth.hl7transform.mapper.exceptions.MapperException;
 import org.endeavourhealth.hl7transform.mapper.exceptions.UncheckedMapperException;
 
 public class CodeMapperBase {
+
+    public interface CodeSystemAccessor<T, R extends String> {
+        R getCodeSystem(T enumValue);
+    }
+
+    public interface EnumFactory<T extends String, R> {
+        R fromString(T value) throws Exception;
+    }
 
     private Mapper mapper;
 
@@ -37,13 +44,19 @@ public class CodeMapperBase {
         }
     }
 
-    protected <T extends String, R> R mapCodeToEnum(CodeContext codeContext, String code, CheckedFunction<T, R> enumFromCode, GetCodeSystemFunction<R, T> enumCodeSystemFromCode) throws MapperException {
+    protected <T extends String, R> R mapCodeToEnum(CodeContext codeContext, String code, EnumFactory<T, R> enumFromCode, CodeSystemAccessor<R, T> enumCodeSystemFromCode) throws MapperException {
         MappedCode mappedCode = mapCode(codeContext, code);
 
         if (mappedCode == null)
             return null;
 
-        R enumValue = convertMappedExceptionToUnmapped(t -> (R)enumFromCode, mappedCode.getCode());
+        R enumValue;
+
+        try {
+            enumValue = enumFromCode.fromString((T)mappedCode.getCode());
+        } catch (Exception e) {
+            throw new MapperException(e.getMessage(), e);
+        }
 
         String enumCodeSystem = enumCodeSystemFromCode.getCodeSystem(enumValue);
 
@@ -51,13 +64,5 @@ public class CodeMapperBase {
             throw new MapperException("Conversion to enum failed.  Mapped code system '" + mappedCode.getSystem() + "' does not match enum code system '" + enumCodeSystem + "'");
 
         return enumValue;
-    }
-
-    protected static <T extends String, R> R convertMappedExceptionToUnmapped(CheckedFunction<T, R> function, T value) {
-        try {
-            return function.execute(value);
-        } catch (Exception e) {
-            throw new UncheckedMapperException(e.getMessage(), e);
-        }
     }
 }
