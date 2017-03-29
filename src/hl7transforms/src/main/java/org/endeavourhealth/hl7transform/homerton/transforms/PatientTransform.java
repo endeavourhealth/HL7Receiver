@@ -154,15 +154,15 @@ public class PatientTransform extends ResourceTransformBase {
 
     private void setPrimaryCareProvider(AdtMessage source, Patient target) throws MapperException, TransformException, ParseException {
 
-        Reference organisationReference = targetResources.getResourceReference(ResourceTag.MainPrimaryCareProviderOrganisation, Organization.class);
-
-        if (organisationReference != null)
+        if (targetResources.hasResource(ResourceTag.MainPrimaryCareProviderOrganisation)) {
+            Reference organisationReference = targetResources.getResourceReference(ResourceTag.MainPrimaryCareProviderOrganisation, Organization.class);
             target.addCareProvider(organisationReference);
+        }
 
-        Reference practitionerReference = targetResources.getResourceReference(ResourceTag.MainPrimaryCareProviderPractitioner, Practitioner.class);
-
-        if (practitionerReference != null)
+        if (targetResources.hasResource(ResourceTag.MainPrimaryCareProviderOrganisation)) {
+            Reference practitionerReference = targetResources.getResourceReference(ResourceTag.MainPrimaryCareProviderPractitioner, Practitioner.class);
             target.addCareProvider(practitionerReference);
+        }
     }
 
     private static void addReligion(PidSegment sourcePid, Patient target) {
