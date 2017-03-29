@@ -3,8 +3,9 @@ package org.endeavourhealth.hl7transform.homerton.transforms.converters;
 import org.apache.commons.lang3.StringUtils;
 import org.endeavourhealth.hl7parser.datatypes.Xtn;
 import org.endeavourhealth.hl7transform.common.TransformException;
-import org.endeavourhealth.hl7transform.homerton.transforms.valuesets.ContactPointSystemVs;
 import org.endeavourhealth.hl7transform.homerton.transforms.valuesets.ContactPointUseVs;
+import org.endeavourhealth.hl7transform.mapper.*;
+import org.endeavourhealth.hl7transform.mapper.exceptions.MapperException;
 import org.hl7.fhir.instance.model.ContactPoint;
 
 import java.util.ArrayList;
@@ -12,11 +13,11 @@ import java.util.List;
 
 public class TelecomConverter {
 
-    public static List<ContactPoint> convert(List<Xtn> contact) throws TransformException {
+    public static List<ContactPoint> convert(List<Xtn> contact, Mapper mapper) throws TransformException, MapperException {
         List<ContactPoint> result = new ArrayList<>();
 
         for (Xtn xtn : contact) {
-            ContactPoint contactPoint = convert(xtn);
+            ContactPoint contactPoint = convert(xtn, mapper);
 
             if (contactPoint != null)
                 result.add(contactPoint);
@@ -35,7 +36,7 @@ public class TelecomConverter {
                 .setValue(TelecomConverter.formatTelephoneNumber(phoneNumber));
     }
 
-    public static ContactPoint convert(Xtn source) throws TransformException {
+    public static ContactPoint convert(Xtn source, Mapper mapper) throws TransformException, MapperException {
 
         if (source == null)
             return null;
@@ -45,8 +46,10 @@ public class TelecomConverter {
 
         ContactPoint target = new ContactPoint();
 
-        if (StringUtils.isNotBlank(source.getEquipmentType()))
-            target.setSystem(ContactPointSystemVs.convert(source.getEquipmentType()));
+        ContactPoint.ContactPointSystem contactPointSystem = mapper.getCodeMapper().mapTelecomEquipmentType(source.getEquipmentType());
+
+        if (contactPointSystem != null)
+            target.setSystem(contactPointSystem);
 
         String phoneNumber = source.getTelephoneNumber().trim();
 
@@ -60,6 +63,7 @@ public class TelecomConverter {
 
         return target;
     }
+
 
     public static String formatTelephoneNumber(String phoneNumber) {
         if (phoneNumber == null)

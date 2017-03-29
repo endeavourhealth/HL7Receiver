@@ -1,9 +1,11 @@
-package org.endeavourhealth.hl7transform.mapper;
+package org.endeavourhealth.hl7transform.mapper.resource;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Validate;
 import org.endeavourhealth.hl7parser.Hl7DateTime;
 import org.endeavourhealth.hl7transform.common.TransformException;
+import org.endeavourhealth.hl7transform.mapper.Mapper;
+import org.endeavourhealth.hl7transform.mapper.exceptions.MapperException;
 import org.hl7.fhir.instance.model.ResourceType;
 
 import java.time.format.DateTimeFormatter;

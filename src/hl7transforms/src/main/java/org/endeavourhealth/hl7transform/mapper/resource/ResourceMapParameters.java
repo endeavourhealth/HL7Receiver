@@ -1,4 +1,4 @@
-package org.endeavourhealth.hl7transform.mapper;
+package org.endeavourhealth.hl7transform.mapper.resource;
 
 import org.apache.commons.lang3.StringUtils;
 

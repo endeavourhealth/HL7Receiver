@@ -110,7 +110,7 @@ public class HL7ChannelProcessor implements Runnable {
         try {
             HL7MessageProcessor messageProcessor = new HL7MessageProcessor(configuration, dbChannel,
                     (contentType, content) -> dataLayer.addMessageProcessingContent(message.getMessageId(), attemptId, contentType, content),
-                    new Mapper(this.dbChannel.getChannelId(), this.dbChannel.getSendingApplication(), this.dataLayer)
+                    new Mapper(this.dbChannel.getChannelId(), this.dbChannel.getSendingFacility(), this.dataLayer)
             );
 
             if (messageProcessor.processMessage(message))

@@ -1,20 +1,10 @@
 package org.endeavourhealth.hl7receiver.model.db;
 
 public class DbCode {
-    private boolean isMapped;
     private String targetAction;
     private String code;
     private String system;
     private String term;
-
-    public boolean isMapped() {
-        return isMapped;
-    }
-
-    public DbCode setMapped(boolean mapped) {
-        isMapped = mapped;
-        return this;
-    }
 
     public String getTargetAction() {
         return targetAction;

@@ -1,20 +1,10 @@
-package org.endeavourhealth.hl7transform.mapper;
+package org.endeavourhealth.hl7transform.mapper.code;
 
 public class CodeMapping {
-    private boolean isMapped;
     private CodeMappingAction action;
     private String code;
     private String system;
     private String term;
-
-    public boolean isMapped() {
-        return isMapped;
-    }
-
-    public CodeMapping setMapped(boolean mapped) {
-        isMapped = mapped;
-        return this;
-    }
 
     public CodeMappingAction getAction() {
         return action;

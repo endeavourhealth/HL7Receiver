@@ -1,4 +1,4 @@
-package org.endeavourhealth.hl7transform.mapper;
+package org.endeavourhealth.hl7transform.mapper.exceptions;
 
 public class MapperException extends Exception {
     final static long serialVersionUID = 1L;

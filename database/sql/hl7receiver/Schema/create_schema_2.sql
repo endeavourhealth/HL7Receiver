@@ -53,25 +53,28 @@ values
 create table mapping.code_action
 (
 	code_action_id char(1) not null,
+	is_mapped boolean not null,
 	code_action_name varchar(100) not null,
 	code_action_description varchar(1000) not null,
 	
 	constraint mapping_codeaction_codeactionid_pk primary key (code_action_id),
+	constraint mapping_codeaction_codeactionid_ismapped_uq unique (code_action_id, is_mapped),
 	constraint mapping_codeaction_codeactionname_uq unique (code_action_name),
 	constraint mapping_codeaction_codeactionname_ck check (char_length(trim(code_action_name)) > 0)
 );
 
 insert into mapping.code_action
 (
+	is_mapped,
 	code_action_id,
 	code_action_name,
 	code_action_description
 )
 values
-('F', 'Fail transformation', 'Fail transformation of message'),
-('X', 'Exclude', 'Exclude (source or target) code, system and term from transformed message'),
-('S', 'Include only source term', 'Include only the source term in the transformed message'),
-('T', 'Include', 'Include the target code, system and term in the transformed message');
+(false, 'F', 'Not mapped - fail transformation', 'The code is not mapped - fail transformation of message'),
+(false, 'X', 'Not mapped - exclude', 'The code is not mapped - exclude the source code, system and term from transformed message'),
+(false, 'S', 'Not mapped - include only source term', 'The code is not mapped - include only the source term in the transformed message'),
+(true, 'T', 'Mapped - include', 'The code is mapped - include the target code, system and term in the transformed message');
 
 /*
 	create and populate mapping.code_context table
@@ -80,6 +83,7 @@ create table mapping.code_context
 (
 	code_context_id integer not null,
 	code_context_name varchar(100) not null,
+	source_code_is_case_insensitive boolean not null,
 	code_action_id_unmapped_default char(1) not null,
 	message_type varchar(100) not null,
 	field_locator varchar(100) not null,
@@ -96,15 +100,16 @@ insert into mapping.code_context
 (
 	code_context_id,
 	code_context_name,
+	source_code_is_case_insensitive,
 	code_action_id_unmapped_default,
 	message_type,
 	field_locator,
 	code_context_description
 )
 values
-(1, 'HL7_PRIMARY_LANGUAGE', 			'F',	'HL7 ADT', 'PID.15', 'Patient primary language (HL7 v2)'),
-(2, 'HL7_TELECOM_USE_CODE', 			'F',	'HL7 ADT', 'XTN.2',  'Telecom use code (HL7 v2)'),
-(3, 'HL7_TELECOM_EQUIPMENT_TYPE', 	'F', 	'HL7 ADT', 'XTN.3',  'Telecom equipment type (HL7 v2)');
+(1, 'HL7_PRIMARY_LANGUAGE', true, 'F', 'HL7 ADT', 'PID.15', 'Patient primary language (HL7 v2)'),
+(2, 'HL7_TELECOM_USE_CODE', true, 'F', 'HL7 ADT', 'XTN.2', 'Telecom use code (HL7 v2)'),
+(3, 'HL7_TELECOM_EQUIPMENT_TYPE', true, 'F', 'HL7 ADT', 'XTN.3', 'Telecom equipment type (HL7 v2)');
 
 /*
 	create and populate mapping.code_system table
@@ -186,5 +191,5 @@ create table mapping.code
 	constraint mapping_code_sourcecodesystemid_fk foreign key (source_code_system_id) references mapping.code_system (code_system_id),
 	constraint mapping_code_ismapped_targetcode_targetcodesystemid_targetterm_ck check (((not is_mapped) and (target_code is null and target_code_system_id is null and target_term is null)) or (is_mapped)),
 	constraint mapping_code_targetcodesystemid_fk foreign key (target_code_system_id) references mapping.code_system (code_system_id),
-	constraint mapping_code_targetcodeactionid_fk foreign key (target_code_action_id) references mapping.code_action (code_action_id)
+	constraint mapping_code_targetcodeactionid_fk foreign key (is_mapped, target_code_action_id) references mapping.code_action (is_mapped, code_action_id)
 );

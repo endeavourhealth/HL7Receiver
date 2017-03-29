@@ -20,7 +20,7 @@ import org.endeavourhealth.hl7transform.homerton.transforms.converters.NameConve
 import org.endeavourhealth.hl7transform.homerton.transforms.converters.TelecomConverter;
 import org.endeavourhealth.hl7transform.homerton.transforms.valuesets.AdministrativeGenderVs;
 import org.endeavourhealth.hl7transform.mapper.Mapper;
-import org.endeavourhealth.hl7transform.mapper.MapperException;
+import org.endeavourhealth.hl7transform.mapper.exceptions.MapperException;
 import org.endeavourhealth.hl7transform.common.TransformException;
 import org.endeavourhealth.hl7transform.common.converters.*;
 import org.endeavourhealth.hl7parser.ParseException;
@@ -233,11 +233,11 @@ public class PatientTransform extends ResourceTransformBase {
             target.setGender(getSex(sourcePid.getSex()));
     }
 
-    private static void setContactPoint(PidSegment sourcePid, Patient target) throws TransformException {
-        for (ContactPoint cp : TelecomConverter.convert(sourcePid.getHomeTelephones()))
+    private void setContactPoint(PidSegment sourcePid, Patient target) throws TransformException, MapperException {
+        for (ContactPoint cp : TelecomConverter.convert(sourcePid.getHomeTelephones(), this.mapper))
             target.addTelecom(cp);
 
-        for (ContactPoint cp : TelecomConverter.convert(sourcePid.getBusinessTelephones()))
+        for (ContactPoint cp : TelecomConverter.convert(sourcePid.getBusinessTelephones(), this.mapper))
             target.addTelecom(cp);
     }
 
@@ -285,12 +285,12 @@ public class PatientTransform extends ResourceTransformBase {
         throw new TransformException(indicator + " not recognised as a death indicator");
     }
 
-    private static void addPatientContacts(AdtMessage source, Patient target) throws TransformException, ParseException {
+    private void addPatientContacts(AdtMessage source, Patient target) throws TransformException, ParseException, MapperException {
         for (Nk1Segment nk1 : source.getNk1Segments())
             addPatientContact(nk1, target);
     }
 
-    private static void addPatientContact(Nk1Segment sourceNk1, Patient target) throws TransformException, ParseException  {
+    private void addPatientContact(Nk1Segment sourceNk1, Patient target) throws TransformException, ParseException, MapperException {
         Patient.ContactComponent contactComponent = new Patient.ContactComponent();
 
         for (HumanName name : NameConverter.convert(sourceNk1.getNKName()))
@@ -299,10 +299,10 @@ public class PatientTransform extends ResourceTransformBase {
         if (sourceNk1.getRelationship() != null)
             contactComponent.addRelationship(new CodeableConcept().setText(sourceNk1.getRelationship().getAsString()));
 
-        for (ContactPoint cp : TelecomConverter.convert(sourceNk1.getPhoneNumber()))
+        for (ContactPoint cp : TelecomConverter.convert(sourceNk1.getPhoneNumber(), this.mapper))
             contactComponent.addTelecom(cp);
 
-        for (ContactPoint cp : TelecomConverter.convert(sourceNk1.getBusinessPhoneNumber()))
+        for (ContactPoint cp : TelecomConverter.convert(sourceNk1.getBusinessPhoneNumber(), this.mapper))
             contactComponent.addTelecom(cp);
 
         //FHIR only allows 1 address but HL7v2 allows multiple addresses, this will currently only populate the last address.

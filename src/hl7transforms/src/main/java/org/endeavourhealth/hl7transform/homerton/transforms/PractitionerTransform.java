@@ -15,7 +15,7 @@ import org.endeavourhealth.hl7transform.homerton.transforms.constants.HomertonCo
 import org.endeavourhealth.hl7transform.homerton.transforms.converters.AddressConverter;
 import org.endeavourhealth.hl7transform.homerton.transforms.converters.IdentifierConverter;
 import org.endeavourhealth.hl7transform.mapper.Mapper;
-import org.endeavourhealth.hl7transform.mapper.MapperException;
+import org.endeavourhealth.hl7transform.mapper.exceptions.MapperException;
 import org.endeavourhealth.hl7parser.datatypes.Xcn;
 import org.endeavourhealth.hl7transform.common.TransformException;
 import org.endeavourhealth.hl7transform.homerton.transforms.converters.NameConverter;
