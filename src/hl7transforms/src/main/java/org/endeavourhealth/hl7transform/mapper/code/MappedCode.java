@@ -1,16 +1,16 @@
 package org.endeavourhealth.hl7transform.mapper.code;
 
-public class CodeMapping {
-    private CodeMappingAction action;
+public class MappedCode {
+    private MappedCodeAction action;
     private String code;
     private String system;
     private String term;
 
-    public CodeMappingAction getAction() {
+    public MappedCodeAction getAction() {
         return action;
     }
 
-    public CodeMapping setTargetAction(CodeMappingAction action) {
+    public MappedCode setTargetAction(MappedCodeAction action) {
         this.action = action;
         return this;
     }
@@ -19,7 +19,7 @@ public class CodeMapping {
         return code;
     }
 
-    public CodeMapping setCode(String code) {
+    public MappedCode setCode(String code) {
         this.code = code;
         return this;
     }
@@ -28,7 +28,7 @@ public class CodeMapping {
         return system;
     }
 
-    public CodeMapping setSystem(String system) {
+    public MappedCode setSystem(String system) {
         this.system = system;
         return this;
     }
@@ -37,7 +37,7 @@ public class CodeMapping {
         return term;
     }
 
-    public CodeMapping setTerm(String term) {
+    public MappedCode setTerm(String term) {
         this.term = term;
         return this;
     }

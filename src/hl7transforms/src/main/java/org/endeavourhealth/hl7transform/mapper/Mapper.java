@@ -1,7 +1,7 @@
 package org.endeavourhealth.hl7transform.mapper;
 
 import org.endeavourhealth.hl7transform.mapper.code.CodeMapper;
-import org.endeavourhealth.hl7transform.mapper.code.CodeMapping;
+import org.endeavourhealth.hl7transform.mapper.code.MappedCode;
 import org.endeavourhealth.hl7transform.mapper.exceptions.MapperException;
 import org.endeavourhealth.hl7transform.mapper.resource.ResourceMapper;
 import org.hl7.fhir.instance.model.ResourceType;
@@ -18,7 +18,7 @@ public abstract class Mapper {
         this.codeMapper = new CodeMapper(this);
     }
 
-    public abstract CodeMapping mapCode(String codeContext, String code, String codeSystem, String term) throws MapperException;
+    public abstract MappedCode mapCode(String codeContext, String code, String codeSystem, String term) throws MapperException;
     public abstract UUID mapResourceUuid(ResourceType resourceType, String identifier) throws MapperException;
 
     public ResourceMapper getResourceMapper() {

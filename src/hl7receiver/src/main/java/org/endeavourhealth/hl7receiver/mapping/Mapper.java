@@ -2,8 +2,8 @@ package org.endeavourhealth.hl7receiver.mapping;
 
 import org.endeavourhealth.hl7receiver.DataLayer;
 import org.endeavourhealth.hl7receiver.model.db.DbCode;
-import org.endeavourhealth.hl7transform.mapper.code.CodeMapping;
-import org.endeavourhealth.hl7transform.mapper.code.CodeMappingAction;
+import org.endeavourhealth.hl7transform.mapper.code.MappedCode;
+import org.endeavourhealth.hl7transform.mapper.code.MappedCodeAction;
 import org.endeavourhealth.hl7transform.mapper.exceptions.MapperException;
 import org.hl7.fhir.instance.model.ResourceType;
 
@@ -22,12 +22,12 @@ public class Mapper extends org.endeavourhealth.hl7transform.mapper.Mapper {
     }
 
     @Override
-    public CodeMapping mapCode(String context, String code, String codeSystem, String term) throws MapperException {
+    public MappedCode mapCode(String context, String code, String codeSystem, String term) throws MapperException {
         try {
             DbCode dbCode = this.dataLayer.getCode(this.sendingFacility, context, code, codeSystem, term);
 
-            return new CodeMapping()
-                    .setTargetAction(CodeMappingAction.fromIdentifier(dbCode.getTargetAction()))
+            return new MappedCode()
+                    .setTargetAction(MappedCodeAction.fromIdentifier(dbCode.getTargetAction()))
                     .setCode(dbCode.getCode())
                     .setSystem(dbCode.getSystem())
                     .setTerm(dbCode.getTerm());
