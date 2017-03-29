@@ -1,4 +1,4 @@
-package org.endeavourhealth.hl7transform.homerton.transforms.valuesets.local;
+package org.endeavourhealth.hl7transform.homerton.transforms.valuesets;
 
 import org.endeavourhealth.hl7transform.common.TransformException;
 

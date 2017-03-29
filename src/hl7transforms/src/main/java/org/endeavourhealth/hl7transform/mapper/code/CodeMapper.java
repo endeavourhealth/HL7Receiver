@@ -1,8 +1,8 @@
 package org.endeavourhealth.hl7transform.mapper.code;
 
-import org.endeavourhealth.hl7transform.homerton.transforms.valuesets.local.HomertonAdmissionType;
-import org.endeavourhealth.hl7transform.homerton.transforms.valuesets.local.HomertonDischargeDisposition;
-import org.endeavourhealth.hl7transform.homerton.transforms.valuesets.local.HomertonEncounterType;
+import org.endeavourhealth.hl7transform.homerton.transforms.valuesets.HomertonAdmissionType;
+import org.endeavourhealth.hl7transform.homerton.transforms.valuesets.HomertonDischargeDisposition;
+import org.endeavourhealth.hl7transform.homerton.transforms.valuesets.HomertonEncounterType;
 import org.endeavourhealth.hl7transform.mapper.Mapper;
 import org.endeavourhealth.hl7transform.mapper.exceptions.MapperException;
 import org.hl7.fhir.instance.model.*;

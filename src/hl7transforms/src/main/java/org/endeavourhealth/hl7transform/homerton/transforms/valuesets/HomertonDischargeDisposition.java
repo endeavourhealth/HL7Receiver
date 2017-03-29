@@ -1,7 +1,6 @@
-package org.endeavourhealth.hl7transform.homerton.transforms.valuesets.local;
+package org.endeavourhealth.hl7transform.homerton.transforms.valuesets;
 
 import org.endeavourhealth.hl7transform.common.TransformException;
-import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
 public enum HomertonDischargeDisposition {
     ADMITTED_AS_INPATIENT("admitted-as-inpatient", "Admitted as inpatient"),
