@@ -1,5 +1,8 @@
 package org.endeavourhealth.hl7transform.mapper.code;
 
+import org.endeavourhealth.hl7transform.homerton.transforms.valuesets.local.HomertonAdmissionType;
+import org.endeavourhealth.hl7transform.homerton.transforms.valuesets.local.HomertonDischargeDisposition;
+import org.endeavourhealth.hl7transform.homerton.transforms.valuesets.local.HomertonEncounterType;
 import org.endeavourhealth.hl7transform.mapper.Mapper;
 import org.endeavourhealth.hl7transform.mapper.exceptions.MapperException;
 import org.hl7.fhir.instance.model.*;
@@ -63,4 +66,42 @@ public class CodeMapper extends CodeMapperBase {
                         (t) -> Encounter.EncounterState.fromCode(t),
                         (r) -> r.getSystem());
     }
+
+    public Encounter.EncounterClass mapPatientClass(String patientClass) throws MapperException {
+        return this
+                .mapCodeToEnum(
+                        CodeContext.HL7_PATIENT_CLASS,
+                        patientClass,
+                        (t) -> Encounter.EncounterClass.fromCode(t),
+                        (r) -> r.getSystem());
+    }
+
+    public HomertonEncounterType mapPatientType(String patientType) throws MapperException {
+        return this
+                .mapCodeToEnum(
+                        CodeContext.HL7_PATIENT_TYPE,
+                        patientType,
+                        (t) -> HomertonEncounterType.fromCode(t),
+                        (r) -> r.getSystem());
+    }
+
+    public HomertonAdmissionType mapAdmissionType(String admissionType) throws MapperException {
+        return this
+                .mapCodeToEnum(
+                        CodeContext.HL7_ADMISSION_TYPE,
+                        admissionType,
+                        (t) -> HomertonAdmissionType.fromCode(t),
+                        (r) -> r.getSystem());
+    }
+
+    public HomertonDischargeDisposition mapDischargeDisposition(String dischargeDisposition) throws MapperException {
+        return this
+                .mapCodeToEnum(
+                        CodeContext.HL7_DISCHARGE_DISPOSITION,
+                        dischargeDisposition,
+                        (t) -> HomertonDischargeDisposition.fromCode(t),
+                        (r) -> r.getSystem());
+    }
+
+
 }

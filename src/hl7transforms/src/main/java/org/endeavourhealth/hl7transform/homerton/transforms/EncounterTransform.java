@@ -156,27 +156,43 @@ public class EncounterTransform extends ResourceTransformBase {
         }
     }
 
-    private static void setClass(AdtMessage source, Encounter target) throws TransformException {
+    private void setClass(AdtMessage source, Encounter target) throws TransformException, MapperException {
 
-        target.setClass_(EncounterClassVs.convert(source.getPv1Segment().getPatientClass()));
+        Encounter.EncounterClass encounterClass = this.mapper.getCodeMapper().mapPatientClass(source.getPv1Segment().getPatientClass());
 
-        if (target.getClass_() == Encounter.EncounterClass.OTHER) {
+        if (encounterClass != null) {
+            target.setClass_(encounterClass);
 
-            Extension extension = new Extension()
-                    .setUrl(FhirExtensionUri.ENCOUNTER_PATIENT_CLASS_OTHER)
-                    .setValue(new CodeType(EncounterClassVs.convertOtherValues(source.getPv1Segment().getPatientClass())));
+            if (encounterClass == Encounter.EncounterClass.OTHER) {
 
-            target.getClass_Element().addExtension(extension);
+                Extension extension = new Extension()
+                        .setUrl(FhirExtensionUri.ENCOUNTER_PATIENT_CLASS_OTHER)
+                        .setValue(new CodeType(convertOtherValues(source.getPv1Segment().getPatientClass())));
+
+                target.getClass_Element().addExtension(extension);
+            }
         }
     }
 
-    private static void setAdmissionType(AdtMessage source, Encounter target) {
+    // migrate to mapper
+    private static String convertOtherValues(String otherPatientClass) throws TransformException {
+
+        otherPatientClass = StringUtils.defaultString(otherPatientClass).trim().toUpperCase();
+
+        switch (otherPatientClass) {
+            case "RECURRING": return "recurring";
+            case "WAIT LIST": return "waitinglist";
+
+            default: throw new TransformException(otherPatientClass + " other patient class not recognised");
+        }
+    }
+
+    private void setAdmissionType(AdtMessage source, Encounter target) throws MapperException {
         Pv1Segment pv1Segment = source.getPv1Segment();
 
-        if (StringUtils.isNotEmpty(pv1Segment.getAdmissionType())) {
+        HomertonAdmissionType admissionType = this.mapper.getCodeMapper().mapAdmissionType(pv1Segment.getAdmissionType());
 
-            HomertonAdmissionType admissionType = HomertonAdmissionTypeVs.convert(pv1Segment.getAdmissionType());
-
+        if (admissionType != null) {
             target.addExtension(new Extension()
                     .setUrl(FhirExtensionUri.ENCOUNTER_ADMISSION_TYPE)
                     .setValue(new CodeableConcept()
@@ -188,13 +204,13 @@ public class EncounterTransform extends ResourceTransformBase {
         }
     }
 
-    private static void setType(AdtMessage source, Encounter target) throws TransformException {
+    private void setType(AdtMessage source, Encounter target) throws TransformException, MapperException {
 
         Pv1Segment pv1Segment = source.getPv1Segment();
 
         if (StringUtils.isNotBlank(pv1Segment.getPatientType())) {
 
-            HomertonEncounterType encounterType = HomertonEncounterTypeVs.convert(pv1Segment.getPatientType());
+            HomertonEncounterType encounterType = this.mapper.getCodeMapper().mapPatientType(pv1Segment.getPatientType());
 
             CodeableConcept codeableConcept = new CodeableConcept()
                     .addCoding(new Coding()
@@ -284,22 +300,21 @@ public class EncounterTransform extends ResourceTransformBase {
             target.addReason(new CodeableConcept().setText(pv2Segment.getTransferReason().getAsString()));
     }
 
-    private static void setDischargeDisposition(AdtMessage source, Encounter target) throws TransformException {
+    private void setDischargeDisposition(AdtMessage source, Encounter target) throws TransformException, MapperException {
         Pv1Segment pv1Segment = source.getPv1Segment();
 
-        if (StringUtils.isEmpty(pv1Segment.getDischargeDisposition()))
-            return;
+        HomertonDischargeDisposition dischargeDisposition = this.mapper.getCodeMapper().mapDischargeDisposition(pv1Segment.getDischargeDisposition());
 
-        HomertonDischargeDisposition dischargeDisposition = HomertonDischargeDispositionVs.convert(pv1Segment.getDischargeDisposition());
+        if (dischargeDisposition != null) {
+            Encounter.EncounterHospitalizationComponent hospitalizationComponent = getHospitalisationComponent(target);
 
-        Encounter.EncounterHospitalizationComponent hospitalizationComponent = getHospitalisationComponent(target);
-
-        hospitalizationComponent.setDischargeDisposition(new CodeableConcept()
-                .addCoding(new Coding()
-                        .setSystem(dischargeDisposition.getSystem())
-                        .setCode(dischargeDisposition.getCode())
-                        .setDisplay(dischargeDisposition.getDescription()))
-                .setText(pv1Segment.getDischargeDisposition()));
+            hospitalizationComponent.setDischargeDisposition(new CodeableConcept()
+                    .addCoding(new Coding()
+                            .setSystem(dischargeDisposition.getSystem())
+                            .setCode(dischargeDisposition.getCode())
+                            .setDisplay(dischargeDisposition.getDescription()))
+                    .setText(pv1Segment.getDischargeDisposition()));
+        }
     }
 
     private void setDischargeDestination(AdtMessage source, Encounter target) throws MapperException {

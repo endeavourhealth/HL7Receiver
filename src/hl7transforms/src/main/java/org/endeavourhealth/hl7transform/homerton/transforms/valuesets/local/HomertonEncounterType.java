@@ -1,5 +1,7 @@
 package org.endeavourhealth.hl7transform.homerton.transforms.valuesets.local;
 
+import org.endeavourhealth.hl7transform.common.TransformException;
+
 public enum HomertonEncounterType {
 
     CLINICAL_MEASUREMENT("clinical-measurement", "Clinical measurement"),
@@ -33,5 +35,13 @@ public enum HomertonEncounterType {
     HomertonEncounterType(String code, String description) {
         this.code = code;
         this.description = description;
+    }
+
+    public static HomertonEncounterType fromCode(String code) throws TransformException {
+        for (HomertonEncounterType homertonEncounterType : HomertonEncounterType.values())
+            if (homertonEncounterType.getCode().equals(code))
+                return homertonEncounterType;
+
+        throw new TransformException(code + " HomertonEncounterType value not recognised");
     }
 }

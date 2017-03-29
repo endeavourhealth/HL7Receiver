@@ -137,14 +137,14 @@ values
 ),
 (
 	13,
-	'http://endeavourhealth.org/fhir/ValueSet/encounter-admission-type-homerton',
+	'http://endeavourhealth.org/fhir/ValueSet/admission-type-homerton',
 	'Admission type (Homerton)',
 	'',
 	'emergency-outpatients, maternity-ante-partum, planned'
 ),
 (
 	14,
-	'http://endeavourhealth.org/fhir/ValueSet/encounter-discharge-disposition-homerton',
+	'http://endeavourhealth.org/fhir/ValueSet/discharge-disposition-homerton',
 	'Discharge disposition (Homerton)',
 	'',
 	'admitted-as-inpatient, deceased, discharge-normal, referred-to-other-hcp'
@@ -187,6 +187,13 @@ select * from mapping.set_code_mapping('HOMERTON', 'HL7_TELECOM_EQUIPMENT_TYPE',
 -- v2 telecom use -> fhir contact point use
 select * from mapping.set_code_mapping('HOMERTON', 'HL7_TELECOM_USE', 'mobile number', '', '', 'mobile', 'http://hl7.org/fhir/contact-point-use', 'Mobile');
 
+-- v2 encounter class -> fhir encounter class
+select * from mapping.set_code_mapping('HOMERTON', 'HL7_PATIENT_CLASS', 'emergency', '', '', 'emergency', 'http://hl7.org/fhir/encounter-class', 'Emergency');
+select * from mapping.set_code_mapping('HOMERTON', 'HL7_PATIENT_CLASS', 'inpatient', '', '', 'inpatient', 'http://hl7.org/fhir/encounter-class', 'Inpatient');
+select * from mapping.set_code_mapping('HOMERTON', 'HL7_PATIENT_CLASS', 'outpatient', '', '', 'outpatient', 'http://hl7.org/fhir/encounter-class', 'Outpatient');
+select * from mapping.set_code_mapping('HOMERTON', 'HL7_PATIENT_CLASS', 'recurring', '', '', 'other', 'http://hl7.org/fhir/encounter-class', 'Other');
+select * from mapping.set_code_mapping('HOMERTON', 'HL7_PATIENT_CLASS', 'wait list', '', '', 'other', 'http://hl7.org/fhir/encounter-class', 'Other');
+
 -- v2 account status -> fhir encounter state
 select * from mapping.set_code_mapping('HOMERTON', 'HL7_ACCOUNT_STATUS', 'active', '', '', 'in-progress', 'http://hl7.org/fhir/encounter-state', 'In progress');
 select * from mapping.set_code_mapping('HOMERTON', 'HL7_ACCOUNT_STATUS', 'preadmit', '', '', 'planned', 'http://hl7.org/fhir/encounter-state', 'Planned');
@@ -208,3 +215,38 @@ select * from mapping.set_code_mapping('HOMERTON', 'HL7_PATIENT_TYPE', 'outpatie
 select * from mapping.set_code_mapping('HOMERTON', 'HL7_PATIENT_TYPE', 'radiology', '', '', 'radiology', 'http://endeavourhealth.org/fhir/ValueSet/encounter-type-homerton', 'Radiology');
 select * from mapping.set_code_mapping('HOMERTON', 'HL7_PATIENT_TYPE', 'radiology referral wait list', '', '', 'radiology-wait-list', 'http://endeavourhealth.org/fhir/ValueSet/encounter-type-homerton', 'Radiology wait list');
 select * from mapping.set_code_mapping('HOMERTON', 'HL7_PATIENT_TYPE', 'regular day admission', '', '', 'regular-day-admission', 'http://endeavourhealth.org/fhir/ValueSet/encounter-type-homerton', 'Regular day admission');
+
+-- v2 admission type -> fhir admission type (homerton)
+select * from mapping.set_code_mapping('HOMERTON', 'HL7_ADMISSION_TYPE', 'emergency-a&e/dental', '', '', 'emergency-ae-or-dental', 'http://endeavourhealth.org/fhir/ValueSet/admission-type-homerton', 'Emergency - A&E/Dental');
+select * from mapping.set_code_mapping('HOMERTON', 'HL7_ADMISSION_TYPE', 'emergency-a\t\e/dental', '', '', 'emergency-ae-or-dental', 'http://endeavourhealth.org/fhir/ValueSet/admission-type-homerton', 'Emergency - A&E/Dental');
+select * from mapping.set_code_mapping('HOMERTON', 'HL7_ADMISSION_TYPE', 'emergency-o/p clinic', '', '', 'emergency-outpatients', 'http://endeavourhealth.org/fhir/ValueSet/admission-type-homerton', 'Emergency - Outpatients clinic');
+select * from mapping.set_code_mapping('HOMERTON', 'HL7_ADMISSION_TYPE', 'emergency-other', '', '', 'emergency-other', 'http://endeavourhealth.org/fhir/ValueSet/admission-type-homerton', 'Emergency - Other');
+select * from mapping.set_code_mapping('HOMERTON', 'HL7_ADMISSION_TYPE', 'maternity-ante partum', '', '', 'maternity-ante-partum', 'http://endeavourhealth.org/fhir/ValueSet/admission-type-homerton', 'Maternity - Ante Partum');
+select * from mapping.set_code_mapping('HOMERTON', 'HL7_ADMISSION_TYPE', 'maternity-post partum', '', '', 'maternity-post-partum', 'http://endeavourhealth.org/fhir/ValueSet/admission-type-homerton', 'Maternity - Post Partum');
+select * from mapping.set_code_mapping('HOMERTON', 'HL7_ADMISSION_TYPE', 'baby born in hospital', '', '', 'baby-born', 'http://endeavourhealth.org/fhir/ValueSet/admission-type-homerton', 'Baby Born in Hospital');
+select * from mapping.set_code_mapping('HOMERTON', 'HL7_ADMISSION_TYPE', 'planned', '', '', 'planned', 'http://endeavourhealth.org/fhir/ValueSet/admission-type-homerton', 'Planned');
+select * from mapping.set_code_mapping('HOMERTON', 'HL7_ADMISSION_TYPE', 'waiting list', '', '', 'booked', 'http://endeavourhealth.org/fhir/ValueSet/admission-type-homerton', 'Booked');
+select * from mapping.set_code_mapping('HOMERTON', 'HL7_ADMISSION_TYPE', 'booked', '', '', 'wait-list', 'http://endeavourhealth.org/fhir/ValueSet/admission-type-homerton', 'Waiting List');
+
+-- v2 discharge disposition -> fhir discharge disposition (homerton)
+select * from mapping.set_code_mapping('HOMERTON', 'HL7_DISCHARGE_DISPOSITION', 'admitted as inpatient', '', '', 'admitted-as-inpatient', 'http://endeavourhealth.org/fhir/ValueSet/discharge-disposition-homerton', 'Admitted as inpatient');
+select * from mapping.set_code_mapping('HOMERTON', 'HL7_DISCHARGE_DISPOSITION', 'deceased', '', '', 'deceased', 'http://endeavourhealth.org/fhir/ValueSet/discharge-disposition-homerton', 'Deceased');
+select * from mapping.set_code_mapping('HOMERTON', 'HL7_DISCHARGE_DISPOSITION', 'discharge-mental tribunal', '', '', 'discharge-mental-tribunal', 'http://endeavourhealth.org/fhir/ValueSet/discharge-disposition-homerton', 'Discharge - mental tribunal');
+select * from mapping.set_code_mapping('HOMERTON', 'HL7_DISCHARGE_DISPOSITION', 'normal discharge', '', '', 'normal-discharge', 'http://endeavourhealth.org/fhir/ValueSet/discharge-disposition-homerton', 'Discharge - normal');
+select * from mapping.set_code_mapping('HOMERTON', 'HL7_DISCHARGE_DISPOSITION', 'normal discharge with follow up', '', '', 'normal-discharge-with-follow-up', 'http://endeavourhealth.org/fhir/ValueSet/discharge-disposition-homerton', 'Discharge - normal, with follow-up');
+select * from mapping.set_code_mapping('HOMERTON', 'HL7_DISCHARGE_DISPOSITION', 'regular discharge with follow-up', '', '', 'normal-discharge-with-follow-up', 'http://endeavourhealth.org/fhir/ValueSet/discharge-disposition-homerton', 'Discharge - normal, with follow-up');
+select * from mapping.set_code_mapping('HOMERTON', 'HL7_DISCHARGE_DISPOSITION', 'no follow up required', '', '', 'no-follow-up-required', 'http://endeavourhealth.org/fhir/ValueSet/discharge-disposition-homerton', 'Discharge - normal, no follow up required');
+select * from mapping.set_code_mapping('HOMERTON', 'HL7_DISCHARGE_DISPOSITION', 'discharge-self/relative', '', '', 'discharge-self-or-relative', 'http://endeavourhealth.org/fhir/ValueSet/discharge-disposition-homerton', 'Discharge - self/relative');
+select * from mapping.set_code_mapping('HOMERTON', 'HL7_DISCHARGE_DISPOSITION', 'left department before treatment', '', '', 'left-dept-before-treatment', 'http://endeavourhealth.org/fhir/ValueSet/discharge-disposition-homerton', 'Left department before treatment');
+select * from mapping.set_code_mapping('HOMERTON', 'HL7_DISCHARGE_DISPOSITION', 'other', '', '', 'other', 'http://endeavourhealth.org/fhir/ValueSet/discharge-disposition-homerton', 'Other');
+select * from mapping.set_code_mapping('HOMERTON', 'HL7_DISCHARGE_DISPOSITION', 'referral to general practitioner', '', '', 'referral-to-gp', 'http://endeavourhealth.org/fhir/ValueSet/discharge-disposition-homerton', 'Referred to general practitioner');
+select * from mapping.set_code_mapping('HOMERTON', 'HL7_DISCHARGE_DISPOSITION', 'referral to outpatient clinic', '', '', 'referred-to-outpatient-clinic', 'http://endeavourhealth.org/fhir/ValueSet/discharge-disposition-homerton', 'Referred to outpatient clinic');
+select * from mapping.set_code_mapping('HOMERTON', 'HL7_DISCHARGE_DISPOSITION', 'referred to a\t\e clinic', '', '', 'referred-to-ae-clinic', 'http://endeavourhealth.org/fhir/ValueSet/discharge-disposition-homerton', 'Referred to A&E clinic');
+select * from mapping.set_code_mapping('HOMERTON', 'HL7_DISCHARGE_DISPOSITION', 'referred to a&e clinic', '', '', 'referred-to-ae-clinic', 'http://endeavourhealth.org/fhir/ValueSet/discharge-disposition-homerton', 'Referred to A&E clinic');
+select * from mapping.set_code_mapping('HOMERTON', 'HL7_DISCHARGE_DISPOSITION', 'referred to fracture clinic', '', '', 'referred-to-fracture-clinic', 'http://endeavourhealth.org/fhir/ValueSet/discharge-disposition-homerton', 'Referred to fracture clinic');
+select * from mapping.set_code_mapping('HOMERTON', 'HL7_DISCHARGE_DISPOSITION', 'referred to other health care profession', '', '', 'referred-to-other-hcp', 'http://endeavourhealth.org/fhir/ValueSet/discharge-disposition-homerton', 'Referred to other health care profession');
+select * from mapping.set_code_mapping('HOMERTON', 'HL7_DISCHARGE_DISPOSITION', 'transferred to other health care provider', '', '', 'transfer-to-other-hcp', 'http://endeavourhealth.org/fhir/ValueSet/discharge-disposition-homerton', 'Transfer to other health care provider');
+
+
+
+

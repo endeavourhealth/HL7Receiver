@@ -1,5 +1,7 @@
 package org.endeavourhealth.hl7transform.homerton.transforms.valuesets.local;
 
+import org.endeavourhealth.hl7transform.common.TransformException;
+
 public enum HomertonAdmissionType {
     EMERGENCY_AE_OR_DENTAL("emergency-ae-or-dental", "Emergency - A&E/Dental"),
     EMERGENCY_OUTPAITENTS("emergency-outpatients", "Emergency - Outpatients clinic"),
@@ -20,10 +22,18 @@ public enum HomertonAdmissionType {
     public String getDescription() {
         return description;
     }
-    public String getSystem() { return "http://endeavourhealth.org/fhir/ValueSet/encounter-admission-type-homerton"; }
+    public String getSystem() { return "http://endeavourhealth.org/fhir/ValueSet/admission-type-homerton"; }
 
     HomertonAdmissionType(String code, String description) {
         this.code = code;
         this.description = description;
+    }
+
+    public static HomertonAdmissionType fromCode(String code) throws TransformException {
+        for (HomertonAdmissionType homertonAdmissionType : HomertonAdmissionType.values())
+            if (homertonAdmissionType.getCode().equals(code))
+                return homertonAdmissionType;
+
+        throw new TransformException(code + " HomertonAdmissionType value not recognised");
     }
 }
