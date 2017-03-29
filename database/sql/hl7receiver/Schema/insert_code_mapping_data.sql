@@ -191,7 +191,7 @@ begin
 	------------------------------------------------------------
 	-- v2 address type -> fhir address use
 	------------------------------------------------------------
-	_fhir_addressuse = 'http://hl7.org/fhir/name-use';
+	_fhir_addressuse = 'http://hl7.org/fhir/address-use';
 
 	perform mapping.set_code_mapping(_h, 'HL7_ADDRESS_TYPE', 'home',     '', '', 'home', _fhir_addressuse, 'Home');
 	perform mapping.set_code_mapping(_h, 'HL7_ADDRESS_TYPE', 'previous', '', '', 'old',  _fhir_addressuse, 'Old');
