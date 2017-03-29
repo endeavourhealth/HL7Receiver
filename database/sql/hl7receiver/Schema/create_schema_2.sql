@@ -102,7 +102,6 @@ create table mapping.code
 	constraint mapping_code_targetcodeactionid_fk foreign key (is_mapped, target_code_action_id) references mapping.code_action (is_mapped, code_action_id)
 );
 
-
 /*
 	insert data
 */
@@ -114,9 +113,7 @@ insert into mapping.code_origin
 	hl7_channel_id
 )
 values
-('G', 'GLOBAL', 'Global', null),
-('H', 'HOMERTON', 'Homerton ADT feed', 1);
-
+('G', 'GLOBAL', 'Global', null);
 
 insert into mapping.code_action
 (
@@ -130,68 +127,3 @@ values
 (false, 'X', 'Not mapped - exclude', 'The code is not mapped - exclude the source code, system and term from transformed message'),
 (false, 'S', 'Not mapped - include only source term', 'The code is not mapped - include only the source term in the transformed message'),
 (true, 'T', 'Mapped - include', 'The code is mapped - include the target code, system and term in the transformed message');
-
-
-insert into mapping.code_context
-(
-	code_context_id,
-	code_context_name,
-	source_code_is_case_insensitive,
-	code_action_id_unmapped_default,
-	message_type,
-	field_locator,
-	code_context_description
-)
-values
-(1, 'HL7_PRIMARY_LANGUAGE', true, 'F', 'HL7 ADT', 'PID.15', 'Patient primary language (HL7 v2)'),
-(2, 'HL7_TELECOM_USE', true, 'F', 'HL7 ADT', 'XTN.2', 'Telecommunication use code (HL7v2 table 0201)'),
-(3, 'HL7_TELECOM_EQUIPMENT_TYPE', true, 'F', 'HL7 ADT', 'XTN.3', 'Telecommunication equipment type (HL7 table 0202)'),
-(4, 'HL7_NAME_TYPE', true, 'F', 'HL7 ADT', 'XPN.7', 'Name type (HL7v2 table 0200)'),
-(5, 'HL7_SEX', true, 'F', 'HL7 ADT', 'PID.8', 'Sex (HL7v2 table 0001)');
-
-
-insert into mapping.code_system
-(
-	code_system_id,
-	code_system_identifier,
-	code_system_friendly_name,
-	code_system_description,
-	code_system_examples
-)
-values
-(
-	-1,
-	'NO-CODE-SYSTEM',
-	'No code system',
-	'Used when the is no source code system to prevent null and problems with indexes in mapping.code table',
-	'(none)'
-),
-(
-	1,
-	'http://fhir.nhs.net/ValueSet/human-language-1',
-	'Human language (FHIR)',
-	'See http://www.datadictionary.nhs.uk/data_dictionary/attributes/l/language_code_de.asp',
-	'en, fr, de, q1'
-),
-(
-	2,
-	'http://hl7.org/fhir/contact-point-system',
-	'Contact point system (FHIR)',
-	'See http://hl7.org/fhir/DSTU2/valueset-contact-point-system.html',
-	'phone, fax, email'
-),
-(
-	3,
-	'http://hl7.org/fhir/contact-point-use',
-	'Contact point use (FHIR)',
-	'See http://hl7.org/fhir/DSTU2/valueset-contact-point-use.html',
-	'home, work, temp, mobile'
-),
-(
-	4,
-	'http://hl7.org/fhir/name-use',
-	'Name use (FHIR)',
-	'See http://hl7.org/fhir/DSTU2/valueset-name-use.html',
-	'usual, official, nickname'
-);
-

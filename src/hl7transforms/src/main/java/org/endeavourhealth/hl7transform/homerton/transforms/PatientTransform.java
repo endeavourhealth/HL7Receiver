@@ -18,7 +18,6 @@ import org.endeavourhealth.hl7transform.homerton.transforms.converters.AddressCo
 import org.endeavourhealth.hl7transform.homerton.transforms.converters.IdentifierConverter;
 import org.endeavourhealth.hl7transform.homerton.transforms.converters.NameConverter;
 import org.endeavourhealth.hl7transform.homerton.transforms.converters.TelecomConverter;
-import org.endeavourhealth.hl7transform.homerton.transforms.valuesets.AdministrativeGenderVs;
 import org.endeavourhealth.hl7transform.mapper.Mapper;
 import org.endeavourhealth.hl7transform.mapper.exceptions.MapperException;
 import org.endeavourhealth.hl7transform.common.TransformException;
@@ -33,6 +32,7 @@ import org.hl7.fhir.instance.model.*;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
+import java.util.function.Consumer;
 
 public class PatientTransform extends ResourceTransformBase {
 
@@ -211,11 +211,11 @@ public class PatientTransform extends ResourceTransformBase {
                 .setText(sourcePid.getMaritalStatus().getAsString()));
     }
 
-    private static void setAddress(AdtMessage source, Patient target) throws TransformException {
+    private void setAddress(AdtMessage source, Patient target) throws TransformException, MapperException {
 
         PidSegment pidSegment = source.getPidSegment();
 
-        for (Address address : AddressConverter.convert(pidSegment.getAddresses()))
+        for (Address address : AddressConverter.convert(pidSegment.getAddresses(), mapper))
             if (address != null)
                 target.addAddress(address);
 
@@ -223,14 +223,16 @@ public class PatientTransform extends ResourceTransformBase {
 
         if (zpiSegment != null)
             if (zpiSegment.getPatientTemporaryAddress() != null)
-                for (Address address : AddressConverter.convert(zpiSegment.getPatientTemporaryAddress()))
+                for (Address address : AddressConverter.convert(zpiSegment.getPatientTemporaryAddress(), mapper))
                     if (address != null)
                         target.addAddress(address);
     }
 
-    private static void setSex(PidSegment sourcePid, Patient target) throws TransformException {
-        if (!StringUtils.isEmpty(sourcePid.getSex()))
-            target.setGender(getSex(sourcePid.getSex()));
+    private void setSex(PidSegment sourcePid, Patient target) throws TransformException, MapperException {
+        Enumerations.AdministrativeGender gender = mapper.getCodeMapper().mapSex(sourcePid.getSex());
+
+        if (gender != null)
+            target.setGender(gender);
     }
 
     private void setContactPoint(PidSegment sourcePid, Patient target) throws TransformException, MapperException {
@@ -239,10 +241,6 @@ public class PatientTransform extends ResourceTransformBase {
 
         for (ContactPoint cp : TelecomConverter.convert(sourcePid.getBusinessTelephones(), this.mapper))
             target.addTelecom(cp);
-    }
-
-    private static Enumerations.AdministrativeGender getSex(String gender) throws TransformException {
-        return AdministrativeGenderVs.convert(gender);
     }
 
     private static void setDateOfBirth(PidSegment sourcePid, Patient target) throws ParseException, TransformException {
@@ -306,11 +304,13 @@ public class PatientTransform extends ResourceTransformBase {
             contactComponent.addTelecom(cp);
 
         //FHIR only allows 1 address but HL7v2 allows multiple addresses, this will currently only populate the last address.
-        for (Address address : AddressConverter.convert(sourceNk1.getAddresses()))
+        for (Address address : AddressConverter.convert(sourceNk1.getAddresses(), mapper))
             contactComponent.setAddress(address);
 
-        if (!StringUtils.isEmpty(sourceNk1.getSex()))
-            contactComponent.setGender(getSex(sourceNk1.getSex()));
+        Enumerations.AdministrativeGender gender = mapper.getCodeMapper().mapSex(sourceNk1.getSex());
+
+        if (gender != null)
+            contactComponent.setGender(gender);
 
         if (sourceNk1.getContactRole() != null)
             contactComponent.addRelationship(new CodeableConcept().setText((sourceNk1.getContactRole().getAsString())));
@@ -323,6 +323,11 @@ public class PatientTransform extends ResourceTransformBase {
             contactComponent.addExtension(ExtensionHelper.createStringExtension(FhirExtensionUri.PATIENT_CONTACT_MAIN_LANGUAGE, sourceNk1.getPrimaryLanguage().getAsString()));
 
         target.addContact(contactComponent);
+    }
+
+    public <T> void setIfNotNull(Consumer<T> setter, T item) {
+        if (item != null)
+            setter.accept(item);
     }
 
     private void setManagingOrganization(AdtMessage source, Patient target) throws MapperException, TransformException {

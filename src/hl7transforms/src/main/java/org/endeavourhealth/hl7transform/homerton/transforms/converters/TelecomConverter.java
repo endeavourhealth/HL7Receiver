@@ -50,7 +50,7 @@ public class TelecomConverter {
         if (contactPointSystem != null)
             target.setSystem(contactPointSystem);
 
-        ContactPoint.ContactPointUse contactPointUse = mapper.getCodeMapper().mapTelecomUseCode(source.getUseCode());
+        ContactPoint.ContactPointUse contactPointUse = mapper.getCodeMapper().mapTelecomUse(source.getUseCode());
 
         if (contactPointUse != null)
             target.setUse(contactPointUse);

@@ -4,21 +4,21 @@ import org.apache.commons.lang3.StringUtils;
 import org.endeavourhealth.hl7parser.datatypes.Xad;
 import org.endeavourhealth.hl7transform.common.TransformException;
 import org.endeavourhealth.hl7transform.common.converters.StringHelper;
-import org.endeavourhealth.hl7transform.homerton.transforms.valuesets.AddressUseVs;
+import org.endeavourhealth.hl7transform.mapper.Mapper;
+import org.endeavourhealth.hl7transform.mapper.exceptions.MapperException;
 import org.hl7.fhir.instance.model.Address;
-import org.hl7.fhir.instance.model.Organization;
 
 import java.util.ArrayList;
 import java.util.List;
 
 public class AddressConverter {
 
-    public static List<Address> convert(List<Xad> addresses) throws TransformException {
+    public static List<Address> convert(List<Xad> addresses, Mapper mapper) throws TransformException, MapperException {
         List<Address> result = new ArrayList<>();
 
         for (Xad xad : addresses)
             if (xad != null)
-                result.add(AddressConverter.convert(xad));
+                result.add(AddressConverter.convert(xad, mapper));
 
         return result;
     }
@@ -49,7 +49,7 @@ public class AddressConverter {
         return address;
     }
 
-    public static Address convert(Xad source) throws TransformException {
+    public static Address convert(Xad source, Mapper mapper) throws TransformException, MapperException {
 
         Address target = new Address();
 
@@ -78,8 +78,10 @@ public class AddressConverter {
         if (StringUtils.isNotBlank(source.getPostCode()))
             target.setPostalCode(formatPostcode(source.getPostCode()));
 
-        if (StringUtils.isNotBlank(source.getAddressType()))
-            target.setUse(AddressUseVs.convert(source.getAddressType()));
+        Address.AddressUse addressUse = mapper.getCodeMapper().mapAddressType(source.getAddressType());
+
+        if (addressUse != null)
+            target.setUse(addressUse);
 
         return target;
     }

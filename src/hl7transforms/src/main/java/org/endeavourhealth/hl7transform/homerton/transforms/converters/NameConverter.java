@@ -58,7 +58,9 @@ public class NameConverter {
         if (StringUtils.isNotBlank(source.getSuffix()))
             humanName.addSuffix(formatTitle(source.getSuffix()));
 
-        HumanName.NameUse nameUse = mapper.getCodeMapper().mapNameTypeCode(source.getNameTypeCode());
+        HumanName.NameUse nameUse = mapper
+                .getCodeMapper()
+                .mapNameType(source.getNameTypeCode());
 
         if (nameUse != null)
             humanName.setUse(nameUse);

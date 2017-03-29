@@ -312,7 +312,7 @@ public class DataLayer implements IDBDigestLogger {
     public DbCode getCode(String sourceCodeOriginName, String sourceCodeContextName, String sourceCode, String sourceCodeSystemIdentifier, String sourceTerm) throws PgStoredProcException {
 
         PgStoredProc pgStoredProc = new PgStoredProc(dataSource)
-                .setName("mapping.get_code")
+                .setName("mapping.get_code_mapping")
                 .addParameter("_source_code_origin_name", sourceCodeOriginName)
                 .addParameter("_source_code_context_name", sourceCodeContextName)
                 .addParameter("_source_code", sourceCode)
