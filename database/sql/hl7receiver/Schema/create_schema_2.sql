@@ -144,9 +144,11 @@ insert into mapping.code_context
 )
 values
 (1, 'HL7_PRIMARY_LANGUAGE', true, 'F', 'HL7 ADT', 'PID.15', 'Patient primary language (HL7 v2)'),
-(2, 'HL7_TELECOM_USE_CODE', true, 'F', 'HL7 ADT', 'XTN.2', 'Telecom use code (HL7 v2)'),
-(3, 'HL7_TELECOM_EQUIPMENT_TYPE', true, 'F', 'HL7 ADT', 'XTN.3', 'Telecom equipment type (HL7 v2)'),
-(4, 'HL7_PERSON_NAME_TYPE_CODE', true, 'F', 'HL7 ADT', 'XPN.7', 'Person name type code (HL7 v2)');
+(2, 'HL7_TELECOM_USE', true, 'F', 'HL7 ADT', 'XTN.2', 'Telecommunication use code (HL7v2 table 0201)'),
+(3, 'HL7_TELECOM_EQUIPMENT_TYPE', true, 'F', 'HL7 ADT', 'XTN.3', 'Telecommunication equipment type (HL7 table 0202)'),
+(4, 'HL7_NAME_TYPE', true, 'F', 'HL7 ADT', 'XPN.7', 'Name type (HL7v2 table 0200)'),
+(5, 'HL7_SEX', true, 'F', 'HL7 ADT', 'PID.8', 'Sex (HL7v2 table 0001)');
+
 
 insert into mapping.code_system
 (
