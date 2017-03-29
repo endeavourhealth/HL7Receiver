@@ -3,7 +3,6 @@ package org.endeavourhealth.hl7transform.homerton.transforms.converters;
 import org.apache.commons.lang3.StringUtils;
 import org.endeavourhealth.hl7parser.datatypes.Xtn;
 import org.endeavourhealth.hl7transform.common.TransformException;
-import org.endeavourhealth.hl7transform.homerton.transforms.valuesets.ContactPointUseVs;
 import org.endeavourhealth.hl7transform.mapper.*;
 import org.endeavourhealth.hl7transform.mapper.exceptions.MapperException;
 import org.hl7.fhir.instance.model.ContactPoint;
@@ -51,19 +50,20 @@ public class TelecomConverter {
         if (contactPointSystem != null)
             target.setSystem(contactPointSystem);
 
+        ContactPoint.ContactPointUse contactPointUse = mapper.getCodeMapper().mapTelecomUseCode(source.getUseCode());
+
+        if (contactPointUse != null)
+            target.setUse(contactPointUse);
+
         String phoneNumber = source.getTelephoneNumber().trim();
 
         if ((target.getSystem() == ContactPoint.ContactPointSystem.PHONE) || (target.getSystem() == ContactPoint.ContactPointSystem.FAX))
-               phoneNumber = formatTelephoneNumber(source.getTelephoneNumber());
+            phoneNumber = formatTelephoneNumber(source.getTelephoneNumber());
 
         target.setValue(phoneNumber);
 
-        if (StringUtils.isNotBlank(source.getUseCode()))
-            target.setUse(ContactPointUseVs.convert(source.getUseCode()));
-
         return target;
     }
-
 
     public static String formatTelephoneNumber(String phoneNumber) {
         if (phoneNumber == null)

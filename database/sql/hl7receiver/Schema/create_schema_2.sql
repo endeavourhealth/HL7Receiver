@@ -109,7 +109,8 @@ insert into mapping.code_context
 values
 (1, 'HL7_PRIMARY_LANGUAGE', true, 'F', 'HL7 ADT', 'PID.15', 'Patient primary language (HL7 v2)'),
 (2, 'HL7_TELECOM_USE_CODE', true, 'F', 'HL7 ADT', 'XTN.2', 'Telecom use code (HL7 v2)'),
-(3, 'HL7_TELECOM_EQUIPMENT_TYPE', true, 'F', 'HL7 ADT', 'XTN.3', 'Telecom equipment type (HL7 v2)');
+(3, 'HL7_TELECOM_EQUIPMENT_TYPE', true, 'F', 'HL7 ADT', 'XTN.3', 'Telecom equipment type (HL7 v2)'),
+(4, 'HL7_PERSON_NAME_TYPE_CODE', true, 'F', 'HL7 ADT', 'XPN.7', 'Person name type code (HL7 v2)');
 
 /*
 	create and populate mapping.code_system table
@@ -165,6 +166,13 @@ values
 	'Contact point use (FHIR)',
 	'See http://hl7.org/fhir/DSTU2/valueset-contact-point-use.html',
 	'home, work, temp, mobile'
+),
+(
+	4,
+	'http://hl7.org/fhir/name-use',
+	'Name use (FHIR)',
+	'See http://hl7.org/fhir/DSTU2/valueset-name-use.html',
+	'usual, official, nickname'
 );
 
 /*
@@ -189,7 +197,7 @@ create table mapping.code
 	constraint mapping_code_sourcecodeoriginid_fk foreign key (source_code_origin_id) references mapping.code_origin (code_origin_id),
 	constraint mapping_code_sourcecodecontextid_fk foreign key (source_code_context_id) references mapping.code_context (code_context_id),
 	constraint mapping_code_sourcecodesystemid_fk foreign key (source_code_system_id) references mapping.code_system (code_system_id),
-	constraint mapping_code_ismapped_targetcode_targetcodesystemid_targetterm_ck check (((not is_mapped) and (target_code is null and target_code_system_id is null and target_term is null)) or (is_mapped)),
+	constraint mapping_code_ismapped_targetcode_targetcodesystemid_targetterm_ck check (((not is_mapped) and (target_code is null and target_code_system_id is null and target_term is null)) or ((is_mapped) and (target_code is not null and target_code_system_id is not null and target_term is not null))),
 	constraint mapping_code_targetcodesystemid_fk foreign key (target_code_system_id) references mapping.code_system (code_system_id),
 	constraint mapping_code_targetcodeactionid_fk foreign key (is_mapped, target_code_action_id) references mapping.code_action (is_mapped, code_action_id)
 );

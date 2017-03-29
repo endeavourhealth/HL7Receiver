@@ -99,7 +99,7 @@ public class PractitionerTransform extends ResourceTransformBase {
         if (StringUtils.isBlank(sources.get(0).getFamilyName()))
             throw new TransformException("Family name is blank");
 
-        practitioner.setName(NameConverter.convert(sources.get(0)));
+        practitioner.setName(NameConverter.convert(sources.get(0), mapper));
 
 
         // identifiers

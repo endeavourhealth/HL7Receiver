@@ -55,7 +55,7 @@ public class PatientTransform extends ResourceTransformBase {
 
         setId(source, target);
 
-        addNames(source, target);
+        addNames(source, target, mapper);
         setDateOfBirth(source.getPidSegment(), target);
         setDateOfDeath(source.getPidSegment(), target);
         setSex(source.getPidSegment(), target);
@@ -101,9 +101,9 @@ public class PatientTransform extends ResourceTransformBase {
         return names;
     }
 
-    private static void addNames(AdtMessage source, Patient target) throws TransformException {
+    private static void addNames(AdtMessage source, Patient target, Mapper mapper) throws TransformException, MapperException {
 
-        List<HumanName> names = NameConverter.convert(getPatientNames(source.getPidSegment()));
+        List<HumanName> names = NameConverter.convert(getPatientNames(source.getPidSegment()), mapper);
 
         for (HumanName name : names)
             if (name != null)
@@ -293,7 +293,7 @@ public class PatientTransform extends ResourceTransformBase {
     private void addPatientContact(Nk1Segment sourceNk1, Patient target) throws TransformException, ParseException, MapperException {
         Patient.ContactComponent contactComponent = new Patient.ContactComponent();
 
-        for (HumanName name : NameConverter.convert(sourceNk1.getNKName()))
+        for (HumanName name : NameConverter.convert(sourceNk1.getNKName(), mapper))
             contactComponent.setName(name);
 
         if (sourceNk1.getRelationship() != null)

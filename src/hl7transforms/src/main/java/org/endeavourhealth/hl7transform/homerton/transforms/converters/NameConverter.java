@@ -4,7 +4,8 @@ import org.apache.commons.lang3.StringUtils;
 import org.endeavourhealth.hl7parser.datatypes.XpnInterface;
 import org.endeavourhealth.hl7transform.common.TransformException;
 import org.endeavourhealth.hl7transform.common.converters.StringHelper;
-import org.endeavourhealth.hl7transform.homerton.transforms.valuesets.NameUseVs;
+import org.endeavourhealth.hl7transform.mapper.Mapper;
+import org.endeavourhealth.hl7transform.mapper.exceptions.MapperException;
 import org.hl7.fhir.instance.model.HumanName;
 
 import java.util.ArrayList;
@@ -12,12 +13,12 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 public class NameConverter {
-    public static List<HumanName> convert(List<? extends XpnInterface> name) throws TransformException {
+    public static List<HumanName> convert(List<? extends XpnInterface> name, Mapper mapper) throws TransformException, MapperException {
         List<HumanName> result = new ArrayList<>();
 
         for (XpnInterface xpn : name)
             if (xpn != null)
-                result.add(NameConverter.convert(xpn));
+                result.add(NameConverter.convert(xpn, mapper));
 
         return removeSuperfluousNameDuplicates(result);
     }
@@ -39,7 +40,7 @@ public class NameConverter {
         return humanName;
     }
 
-    public static HumanName convert(XpnInterface source) throws TransformException {
+    public static HumanName convert(XpnInterface source, Mapper mapper) throws TransformException, MapperException {
         HumanName humanName = new HumanName();
 
         if (StringUtils.isNotBlank(source.getFamilyName()))
@@ -57,8 +58,10 @@ public class NameConverter {
         if (StringUtils.isNotBlank(source.getSuffix()))
             humanName.addSuffix(formatTitle(source.getSuffix()));
 
-        if (StringUtils.isNotBlank(source.getNameTypeCode()))
-            humanName.setUse(NameUseVs.convert(source.getNameTypeCode()));
+        HumanName.NameUse nameUse = mapper.getCodeMapper().mapNameTypeCode(source.getNameTypeCode());
+
+        if (nameUse != null)
+            humanName.setUse(nameUse);
 
         return humanName;
     }
