@@ -78,11 +78,14 @@ public class HomertonAdtTransform extends Transform {
         ///////////////////////////////////////////////////////////////////////////
         // create usual gp practitioner
         //
-        PractitionerTransform practitionerTransform = new PractitionerTransform(mapper, targetResources);
-        Practitioner mainGPPractitioner = practitionerTransform.createMainPrimaryCareProviderPractitioner(sourceMessage);
+        if (mainGPOrganisation != null) {
 
-        if (mainGPPractitioner != null)
-            targetResources.addResource(mainGPPractitioner, ResourceTag.MainPrimaryCareProviderPractitioner);
+            PractitionerTransform practitionerTransform = new PractitionerTransform(mapper, targetResources);
+            Practitioner mainGPPractitioner = practitionerTransform.createMainPrimaryCareProviderPractitioner(sourceMessage);
+
+            if (mainGPPractitioner != null)
+                targetResources.addResource(mainGPPractitioner, ResourceTag.MainPrimaryCareProviderPractitioner);
+        }
 
         ///////////////////////////////////////////////////////////////////////////
         // create message header

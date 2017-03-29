@@ -154,13 +154,6 @@ public class PatientTransform extends ResourceTransformBase {
 
     private void setPrimaryCareProvider(AdtMessage source, Patient target) throws MapperException, TransformException, ParseException {
 
-        Pd1Segment pd1Segment = source.getPd1Segment();
-
-        if (pd1Segment == null)
-            return;
-
-        Zpd zpd = pd1Segment.getFieldAsDatatype(HomertonConstants.homertonXpdPrimaryCarePd1FieldNumber, Zpd.class);
-
         Reference organisationReference = targetResources.getResourceReference(ResourceTag.MainPrimaryCareProviderOrganisation, Organization.class);
 
         if (organisationReference != null)

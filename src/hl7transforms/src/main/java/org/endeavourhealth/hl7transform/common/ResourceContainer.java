@@ -45,6 +45,12 @@ public class ResourceContainer {
         return ReferenceHelper.createReference(resource.getResourceType(), resource.getId());
     }
 
+    public boolean hasResource(ResourceTag resourceTag) {
+        Validate.notNull(resourceTag);
+
+        return (containsTag(resourceTag));
+    }
+
     public <T extends Resource> T getResource(ResourceTag resourceTag, Class<T> resourceClass) throws TransformException {
         Validate.notNull(resourceTag);
         Validate.notNull(resourceClass);

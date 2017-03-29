@@ -131,6 +131,10 @@ public class PractitionerTransform extends ResourceTransformBase {
 
         if (StringUtils.isNotEmpty(gmcCode)) {
 
+            if ((!targetResources.hasResource(ResourceTag.MainPrimaryCareProviderPractitioner)) ||
+                    (!targetResources.hasResource(ResourceTag.MainPrimaryCareProviderOrganisation)))
+                throw new TransformException("Could not determine GP organisation the practitioner has a role with (no usual gp to match against)");
+
             Organization primaryCareProviderOrganisation = targetResources.getResource(ResourceTag.MainPrimaryCareProviderOrganisation, Organization.class);
             Practitioner primaryCareProviderPractitioner = targetResources.getResource(ResourceTag.MainPrimaryCareProviderPractitioner, Practitioner.class);
 
