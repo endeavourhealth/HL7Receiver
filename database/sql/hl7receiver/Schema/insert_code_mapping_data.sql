@@ -170,6 +170,8 @@ select * from mapping.set_code_mapping('HOMERTON', 'HL7_NAME_TYPE', 'personnel',
 select * from mapping.set_code_mapping('HOMERTON', 'HL7_NAME_TYPE', 'current', '', '', 'usual', 'http://hl7.org/fhir/name-use', 'Usual');
 select * from mapping.set_code_mapping('HOMERTON', 'HL7_NAME_TYPE', 'alternate', '', '', 'nickname', 'http://hl7.org/fhir/name-use', 'Nickname');
 select * from mapping.set_code_mapping('HOMERTON', 'HL7_NAME_TYPE', 'preferred', '', '', 'nickname', 'http://hl7.org/fhir/name-use', 'Nickname');
+select * from mapping.set_code_mapping('HOMERTON', 'HL7_NAME_TYPE', 'birth', '', '', 'old', 'http://hl7.org/fhir/name-use', 'Old');
+select * from mapping.set_code_mapping('HOMERTON', 'HL7_NAME_TYPE', 'adopted', '', '', 'old', 'http://hl7.org/fhir/name-use', 'Old');
 select * from mapping.set_code_mapping('HOMERTON', 'HL7_NAME_TYPE', 'previous', '', '', 'old', 'http://hl7.org/fhir/name-use', 'Old');
 
 -- v2 address type -> fhir address use
@@ -178,6 +180,9 @@ select * from mapping.set_code_mapping('HOMERTON', 'HL7_ADDRESS_TYPE', 'previous
 
 -- v2 telecom equipment type -> fhir contact point system
 select * from mapping.set_code_mapping('HOMERTON', 'HL7_TELECOM_EQUIPMENT_TYPE', 'tel', '', '', 'phone', 'http://hl7.org/fhir/contact-point-system', 'Phone');
+select * from mapping.set_code_mapping('HOMERTON', 'HL7_TELECOM_EQUIPMENT_TYPE', 'email', '', '', 'email', 'http://hl7.org/fhir/contact-point-system', 'Email');
+select * from mapping.set_code_mapping('HOMERTON', 'HL7_TELECOM_EQUIPMENT_TYPE', 'text phone', '', '', 'other', 'http://hl7.org/fhir/contact-point-system', 'Other');
+select * from mapping.set_code_mapping('HOMERTON', 'HL7_TELECOM_EQUIPMENT_TYPE', 'fax', '', '', 'Fax', 'http://hl7.org/fhir/contact-point-system', 'Fax');
 
 -- v2 telecom use -> fhir contact point use
 select * from mapping.set_code_mapping('HOMERTON', 'HL7_TELECOM_USE', 'mobile number', '', '', 'mobile', 'http://hl7.org/fhir/contact-point-use', 'Mobile');
@@ -188,3 +193,18 @@ select * from mapping.set_code_mapping('HOMERTON', 'HL7_ACCOUNT_STATUS', 'preadm
 select * from mapping.set_code_mapping('HOMERTON', 'HL7_ACCOUNT_STATUS', 'discharged', '', '', 'finished', 'http://hl7.org/fhir/encounter-state', 'Finished');
 select * from mapping.set_code_mapping('HOMERTON', 'HL7_ACCOUNT_STATUS', 'cancelled', '', '', 'cancelled', 'http://hl7.org/fhir/encounter-state', 'Cancelled');
 
+-- v2 patient type -> fhir encounter type (homerton)
+select * from mapping.set_code_mapping('HOMERTON', 'HL7_PATIENT_TYPE', 'clinical measurement', '', '', 'clinical-measurement', 'http://endeavourhealth.org/fhir/ValueSet/encounter-type-homerton', 'Clinical measurement');
+select * from mapping.set_code_mapping('HOMERTON', 'HL7_PATIENT_TYPE', 'clinical measurement wait list', '', '', 'clinical-measurement-wait-list', 'http://endeavourhealth.org/fhir/ValueSet/encounter-type-homerton', 'Clinical measurement waiting list');
+select * from mapping.set_code_mapping('HOMERTON', 'HL7_PATIENT_TYPE', 'day case', '', '', 'day-case', 'http://endeavourhealth.org/fhir/ValueSet/encounter-type-homerton', 'Day case');
+select * from mapping.set_code_mapping('HOMERTON', 'HL7_PATIENT_TYPE', 'day case waiting list', '', '', 'day-case-wait-list', 'http://endeavourhealth.org/fhir/ValueSet/encounter-type-homerton', 'Day case waiting list');
+select * from mapping.set_code_mapping('HOMERTON', 'HL7_PATIENT_TYPE', 'emergency department', '', '', 'emergency', 'http://endeavourhealth.org/fhir/ValueSet/encounter-type-homerton', 'Emergency');
+select * from mapping.set_code_mapping('HOMERTON', 'HL7_PATIENT_TYPE', 'inpatient', '', '', 'inpatient', 'http://endeavourhealth.org/fhir/ValueSet/encounter-type-homerton', 'Inpatient');
+select * from mapping.set_code_mapping('HOMERTON', 'HL7_PATIENT_TYPE', 'inpatient waiting list', '', '', 'inpatient-wait-list', 'http://endeavourhealth.org/fhir/ValueSet/encounter-type-homerton', 'Inpatient waiting list');
+select * from mapping.set_code_mapping('HOMERTON', 'HL7_PATIENT_TYPE', 'maternity', '', '', 'maternity', 'http://endeavourhealth.org/fhir/ValueSet/encounter-type-homerton', 'Maternity waiting list');
+select * from mapping.set_code_mapping('HOMERTON', 'HL7_PATIENT_TYPE', 'newborn', '', '', 'newborn', 'http://endeavourhealth.org/fhir/ValueSet/encounter-type-homerton', 'Newborn');
+select * from mapping.set_code_mapping('HOMERTON', 'HL7_PATIENT_TYPE', 'outpatient', '', '', 'outpatient', 'http://endeavourhealth.org/fhir/ValueSet/encounter-type-homerton', 'Outpatient');
+select * from mapping.set_code_mapping('HOMERTON', 'HL7_PATIENT_TYPE', 'outpatient referral', '', '', 'outpatient-referral', 'http://endeavourhealth.org/fhir/ValueSet/encounter-type-homerton', 'Outpatient referral');
+select * from mapping.set_code_mapping('HOMERTON', 'HL7_PATIENT_TYPE', 'radiology', '', '', 'radiology', 'http://endeavourhealth.org/fhir/ValueSet/encounter-type-homerton', 'Radiology');
+select * from mapping.set_code_mapping('HOMERTON', 'HL7_PATIENT_TYPE', 'radiology referral wait list', '', '', 'radiology-wait-list', 'http://endeavourhealth.org/fhir/ValueSet/encounter-type-homerton', 'Radiology wait list');
+select * from mapping.set_code_mapping('HOMERTON', 'HL7_PATIENT_TYPE', 'regular day admission', '', '', 'regular-day-admission', 'http://endeavourhealth.org/fhir/ValueSet/encounter-type-homerton', 'Regular day admission');

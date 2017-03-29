@@ -2,7 +2,7 @@ package org.endeavourhealth.hl7transform.homerton.transforms.valuesets;
 
 import org.apache.commons.lang3.NotImplementedException;
 import org.apache.commons.lang3.StringUtils;
-import org.endeavourhealth.common.fhir.schema.HomertonDischargeDisposition;
+import org.endeavourhealth.hl7transform.homerton.transforms.valuesets.local.HomertonDischargeDisposition;
 
 public abstract class HomertonDischargeDispositionVs {
 
