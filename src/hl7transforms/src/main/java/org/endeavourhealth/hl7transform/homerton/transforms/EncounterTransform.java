@@ -93,13 +93,15 @@ public class EncounterTransform extends ResourceTransformBase {
         target.setId(encounterUuid.toString());
     }
 
-    private static void setCurrentStatus(AdtMessage source, Encounter target) throws TransformException, ParseException {
+    private void setCurrentStatus(AdtMessage source, Encounter target) throws TransformException, ParseException, MapperException {
 
         EvnSegment evnSegment = source.getEvnSegment();
         Pv1Segment pv1Segment = source.getPv1Segment();
 
-        if (StringUtils.isNotBlank(pv1Segment.getAccountStatus()))
-            target.setStatus(EncounterStateVs.convert(pv1Segment.getAccountStatus()));
+        Encounter.EncounterState encounterState = this.mapper.getCodeMapper().mapAccountStatus(pv1Segment.getAccountStatus());
+
+        if (encounterState != null)
+            target.setStatus(encounterState);
 
         if (evnSegment.getRecordedDateTime() == null)
             throw new TransformException("Recorded date/time empty");

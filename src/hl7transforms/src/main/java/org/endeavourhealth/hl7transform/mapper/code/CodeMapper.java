@@ -2,10 +2,7 @@ package org.endeavourhealth.hl7transform.mapper.code;
 
 import org.endeavourhealth.hl7transform.mapper.Mapper;
 import org.endeavourhealth.hl7transform.mapper.exceptions.MapperException;
-import org.hl7.fhir.instance.model.Address;
-import org.hl7.fhir.instance.model.ContactPoint;
-import org.hl7.fhir.instance.model.Enumerations;
-import org.hl7.fhir.instance.model.HumanName;
+import org.hl7.fhir.instance.model.*;
 
 public class CodeMapper extends CodeMapperBase {
 
@@ -55,6 +52,15 @@ public class CodeMapper extends CodeMapperBase {
                         CodeContext.HL7_TELECOM_USE,
                         telecomUse,
                         (t) -> ContactPoint.ContactPointUse.fromCode(t),
+                        (r) -> r.getSystem());
+    }
+
+    public Encounter.EncounterState mapAccountStatus(String accountStatus) throws MapperException {
+        return this
+                .mapCodeToEnum(
+                        CodeContext.HL7_ACCOUNT_STATUS,
+                        accountStatus,
+                        (t) -> Encounter.EncounterState.fromCode(t),
                         (r) -> r.getSystem());
     }
 }

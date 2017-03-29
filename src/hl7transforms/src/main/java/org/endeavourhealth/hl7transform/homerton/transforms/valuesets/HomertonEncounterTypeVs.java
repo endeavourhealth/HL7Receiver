@@ -2,6 +2,8 @@ package org.endeavourhealth.hl7transform.homerton.transforms.valuesets;
 
 import org.apache.commons.lang3.NotImplementedException;
 import org.apache.commons.lang3.StringUtils;
+import org.endeavourhealth.common.fhir.FhirValueSetUri;
+import org.endeavourhealth.common.fhir.schema.HomertonAdmissionType;
 import org.endeavourhealth.common.fhir.schema.HomertonEncounterType;
 
 public abstract class HomertonEncounterTypeVs {
