@@ -90,7 +90,8 @@ public class LocationTransform extends ResourceTransformBase {
             Location fhirLocation = createLocationFromPl(locationName, locationPhysicalType, locationParentNames, directParentLocation, topParentBuildingLocation, managingOrganisationReference);
 
             if (fhirLocation != null)
-                targetResources.addResource(fhirLocation, null);
+                if (!targetResources.hasResource(fhirLocation.getId()))
+                    targetResources.addResource(fhirLocation, null);
 
             directParentLocation = fhirLocation;
             locationParentNames.add(0, locationName);

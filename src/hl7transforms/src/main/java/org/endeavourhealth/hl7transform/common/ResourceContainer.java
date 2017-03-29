@@ -68,7 +68,7 @@ public class ResourceContainer {
                 .collect(StreamExtension.singleCollector());
     }
 
-    protected boolean hasResource(String id) {
+    public boolean hasResource(String id) {
         return this.resources
                 .stream()
                 .anyMatch(t -> t.getResource().getId().equalsIgnoreCase(id));
@@ -135,5 +135,4 @@ public class ResourceContainer {
 
         return this;
     }
-
 }
