@@ -231,6 +231,9 @@ public class PractitionerTransform extends ResourceTransformBase {
             && StringUtils.isBlank(consultantCode)
                 && StringUtils.isBlank(gmcCode)) {
 
+            if (StringUtils.isBlank(odsCode))
+                return mapper.getResourceMapper().mapPractitionerUuid(surname, forename);
+
             return mapper.getResourceMapper().mapPractitionerUuid(surname, forename, odsCode);
         }
 

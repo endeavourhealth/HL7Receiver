@@ -141,6 +141,19 @@ public class ResourceMapper {
     }
 
     public UUID mapPractitionerUuid(String surname,
+                                    String forename) throws MapperException {
+        Validate.notBlank(surname);
+        Validate.notBlank(forename);
+
+        String identifier = ResourceMapParameters.create()
+                .put("Surname", surname)
+                .put("Forename", forename)
+                .createIdentifyingString();
+
+        return this.mapper.mapResourceUuid(ResourceType.Practitioner, identifier);
+    }
+
+    public UUID mapPractitionerUuid(String surname,
                                     String forename,
                                     String odsCode) throws MapperException {
         Validate.notBlank(surname);
