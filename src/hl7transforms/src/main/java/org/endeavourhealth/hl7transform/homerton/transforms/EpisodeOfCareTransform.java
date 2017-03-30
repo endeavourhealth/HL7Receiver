@@ -89,7 +89,7 @@ public class EpisodeOfCareTransform extends ResourceTransformBase {
         if (!servicingFacilityName.equals(HomertonConstants.servicingFacility))
             throw new TransformException("Hospital servicing facility of " + servicingFacilityName + " not recognised");
 
-        target.setManagingOrganization(targetResources.getResourceReference(ResourceTag.MainPrimaryCareProviderOrganisation, Organization.class));
+        target.setManagingOrganization(targetResources.getResourceReference(ResourceTag.MainHospitalOrganisation, Organization.class));
     }
 
     private static void setPeriod(AdtMessage source, EpisodeOfCare target) throws ParseException {
