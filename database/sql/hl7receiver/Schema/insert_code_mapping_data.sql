@@ -216,13 +216,14 @@ begin
 	------------------------------------------------------------
 	_fhir_contactpointuse = 'http://hl7.org/fhir/contact-point-use';
 	
-	perform from mapping.set_code_mapping(_h, 'HL7_TELECOM_USE', 'home',           '', '', 'home',   _fhir_contactpointuse, 'Home');
-	perform from mapping.set_code_mapping(_h, 'HL7_TELECOM_USE', 'home phone',     '', '', 'home',   _fhir_contactpointuse, 'Home');
-	perform from mapping.set_code_mapping(_h, 'HL7_TELECOM_USE', 'mobile number',  '', '', 'mobile', _fhir_contactpointuse, 'Mobile');
-	perform from mapping.set_code_mapping(_h, 'HL7_TELECOM_USE', 'pager personal', '', '', 'mobile', _fhir_contactpointuse, 'Mobile');
-	perform from mapping.set_code_mapping(_h, 'HL7_TELECOM_USE', 'business',       '', '', 'work',   _fhir_contactpointuse, 'Work');
-	perform from mapping.set_code_mapping(_h, 'HL7_TELECOM_USE', 'temporary',      '', '', 'temp',   _fhir_contactpointuse, 'Temp');
-	perform from mapping.set_code_mapping(_h, 'HL7_TELECOM_USE', 'temp phone',     '', '', 'temp',   _fhir_contactpointuse, 'Temp');
+	perform from mapping.set_code_mapping(_h, 'HL7_TELECOM_USE', 'home',             '', '', 'home',   _fhir_contactpointuse, 'Home');
+	perform from mapping.set_code_mapping(_h, 'HL7_TELECOM_USE', 'home phone',       '', '', 'home',   _fhir_contactpointuse, 'Home');
+	perform from mapping.set_code_mapping(_h, 'HL7_TELECOM_USE', 'mobile number',    '', '', 'mobile', _fhir_contactpointuse, 'Mobile');
+	perform from mapping.set_code_mapping(_h, 'HL7_TELECOM_USE', 'pager personal',   '', '', 'mobile', _fhir_contactpointuse, 'Mobile');
+	perform from mapping.set_code_mapping(_h, 'HL7_TELECOM_USE', 'business',         '', '', 'work',   _fhir_contactpointuse, 'Work');
+	perform from mapping.set_code_mapping(_h, 'HL7_TELECOM_USE', 'temporary',        '', '', 'temp',   _fhir_contactpointuse, 'Temp');
+	perform from mapping.set_code_mapping(_h, 'HL7_TELECOM_USE', 'temp phone',       '', '', 'temp',   _fhir_contactpointuse, 'Temp');
+	perform from mapping.set_code_mapping(_h, 'HL7_TELECOM_USE', 'emergency number', '', '', 'temp',   _fhir_contactpointuse, 'Temp');
 	
 	------------------------------------------------------------
 	-- v2 encounter class -> fhir encounter class
