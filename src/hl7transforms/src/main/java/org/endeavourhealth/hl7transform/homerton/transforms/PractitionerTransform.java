@@ -54,7 +54,7 @@ public class PractitionerTransform extends ResourceTransformBase {
                         .setValue(gmcCode));
         }
 
-        practitioner.setName(NameConverter.createUsualName(zpd.getSurname(), zpd.getForenames(), null));
+        practitioner.setName(NameConverter.createOfficialName(zpd.getSurname(), zpd.getForenames(), null));
 
         Organization primaryCareOrganization = targetResources.getResourceSingleOrNull(ResourceTag.MainPrimaryCareProviderOrganisation, Organization.class);
 

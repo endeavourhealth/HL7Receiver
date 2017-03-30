@@ -23,7 +23,7 @@ public class NameConverter {
         return removeSuperfluousNameDuplicates(result);
     }
 
-    public static HumanName createUsualName(String surname, String forenames, String title) {
+    public static HumanName createOfficialName(String surname, String forenames, String title) {
         HumanName humanName = new HumanName();
 
         if (StringUtils.isNotBlank(surname))
@@ -35,7 +35,7 @@ public class NameConverter {
         if (StringUtils.isNotBlank(title))
             humanName.addPrefix(formatTitle(title));
 
-        humanName.setUse(HumanName.NameUse.USUAL);
+        humanName.setUse(HumanName.NameUse.OFFICIAL);
 
         return humanName;
     }
@@ -139,37 +139,37 @@ public class NameConverter {
     private static List<HumanName> removeSuperfluousNameDuplicates(List<HumanName> names) throws TransformException {
         names = removeDuplicateNames(names);
 
-        List<HumanName> usualNames = getNamesByUse(names, HumanName.NameUse.USUAL);
+        List<HumanName> officialNames = getNamesByUse(names, HumanName.NameUse.OFFICIAL);
 
-        if (usualNames.size() == 0)
-            throw new TransformException("Patient does not have a usual name");
+        if (officialNames.size() == 0)
+            throw new TransformException("Patient does not have a official name");
 
-        if (usualNames.size() > 1)
-            throw new TransformException("Patient has more than one usual name");
+        if (officialNames.size() > 1)
+            throw new TransformException("Patient has more than one official name");
 
-        HumanName usualName = usualNames.get(0);
+        HumanName officialName = officialNames.get(0);
 
-        return removeNamesMatchingUsualNameExcludingNameUseField(names, usualName);
+        return removeNamesMatchingOfficialNameExcludingNameUseField(names, officialName);
     }
 
-    private static List<HumanName> removeNamesMatchingUsualNameExcludingNameUseField(List<HumanName> names, HumanName usualName) {
+    private static List<HumanName> removeNamesMatchingOfficialNameExcludingNameUseField(List<HumanName> names, HumanName officialName) {
         List<HumanName> result = new ArrayList<>();
 
         for (HumanName name : names) {
-            if (name.equals(usualName)) {
+            if (name.equals(officialName)) {
                 result.add(name);
             } else {
-                boolean nameIsEqualToUsualName = false;
+                boolean nameIsEqualToOfficialName = false;
                 HumanName.NameUse nameUse = name.getUse();
                 try {
-                    name.setUse(HumanName.NameUse.USUAL);   // temporarily set to usual
+                    name.setUse(HumanName.NameUse.OFFICIAL);   // temporarily set to official
 
-                    nameIsEqualToUsualName = name.equalsDeep(usualName);
+                    nameIsEqualToOfficialName = name.equalsDeep(officialName);
                 } finally {
                     name.setUse(nameUse);                   // set back to previous value
                 }
 
-                if (!nameIsEqualToUsualName)
+                if (!nameIsEqualToOfficialName)
                     result.add(name);
             }
         }

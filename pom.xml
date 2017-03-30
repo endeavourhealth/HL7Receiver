@@ -11,7 +11,7 @@
         <java.version>1.8</java.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 
-        <eds-common.version>2.50</eds-common.version>
+        <eds-common.version>2.52</eds-common.version>
         <commons-lang3.version>3.5</commons-lang3.version>
 
         <fhir-dstu2.version>1.0.1.7108</fhir-dstu2.version>

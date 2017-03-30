@@ -180,13 +180,13 @@ begin
 	------------------------------------------------------------
 	_fhir_nameuse = 'http://hl7.org/fhir/name-use';
 	
-	perform from mapping.set_code_mapping(_h, 'HL7_NAME_TYPE', 'personnel', '', '', 'usual',    _fhir_nameuse, 'Usual');
-	perform from mapping.set_code_mapping(_h, 'HL7_NAME_TYPE', 'current',   '', '', 'usual',    _fhir_nameuse, 'Usual');
-	perform from mapping.set_code_mapping(_h, 'HL7_NAME_TYPE', 'alternate', '', '', 'nickname', _fhir_nameuse, 'Nickname');
-	perform from mapping.set_code_mapping(_h, 'HL7_NAME_TYPE', 'preferred', '', '', 'nickname', _fhir_nameuse, 'Nickname');
-	perform from mapping.set_code_mapping(_h, 'HL7_NAME_TYPE', 'birth',     '', '', 'old',      _fhir_nameuse, 'Old');
-	perform from mapping.set_code_mapping(_h, 'HL7_NAME_TYPE', 'adopted',   '', '', 'old',      _fhir_nameuse, 'Old');
-	perform from mapping.set_code_mapping(_h, 'HL7_NAME_TYPE', 'previous',  '', '', 'old',      _fhir_nameuse, 'Old');
+	perform from mapping.set_code_mapping(_h, 'HL7_NAME_TYPE', 'personnel', '', '', 'official',    _fhir_nameuse, 'Official');
+	perform from mapping.set_code_mapping(_h, 'HL7_NAME_TYPE', 'current',   '', '', 'official',    _fhir_nameuse, 'Official');
+	perform from mapping.set_code_mapping(_h, 'HL7_NAME_TYPE', 'alternate', '', '', 'nickname',    _fhir_nameuse, 'Nickname');
+	perform from mapping.set_code_mapping(_h, 'HL7_NAME_TYPE', 'preferred', '', '', 'usual',       _fhir_nameuse, 'Usual');
+	perform from mapping.set_code_mapping(_h, 'HL7_NAME_TYPE', 'birth',     '', '', 'old',         _fhir_nameuse, 'Old');
+	perform from mapping.set_code_mapping(_h, 'HL7_NAME_TYPE', 'adopted',   '', '', 'old',         _fhir_nameuse, 'Old');
+	perform from mapping.set_code_mapping(_h, 'HL7_NAME_TYPE', 'previous',  '', '', 'old',         _fhir_nameuse, 'Old');
 
 	------------------------------------------------------------
 	-- v2 address type -> fhir address use
