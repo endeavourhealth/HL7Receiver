@@ -55,11 +55,21 @@ public class LocationTransform extends ResourceTransformBase {
 
     public Reference createHomertonConstituentLocation(Pl source) throws MapperException, TransformException, ParseException {
 
-        if (source.allComponentsAreBlank())
+        if (StringUtils.isBlank(source.getFacility())
+                && StringUtils.isBlank(source.getBuilding())
+                && StringUtils.isBlank(source.getPointOfCare())
+                && StringUtils.isBlank(source.getRoom())
+                && StringUtils.isBlank(source.getBed()))
             return null;
 
         if (!HomertonConstants.locationFacility.equalsIgnoreCase(StringUtils.trim(source.getFacility())))
             throw new TransformException("Location facility of " + source.getFacility() + " not recognised");
+
+        if (StringUtils.isBlank(source.getBuilding())
+                && StringUtils.isBlank(source.getPointOfCare())
+                && StringUtils.isBlank(source.getRoom())
+                && StringUtils.isBlank(source.getBed()))
+            return null;
 
         if (!HomertonConstants.locationBuilding.equalsIgnoreCase(StringUtils.trim(source.getBuilding())))
             throw new TransformException("Building of " + source.getBuilding() + " not recognised");
