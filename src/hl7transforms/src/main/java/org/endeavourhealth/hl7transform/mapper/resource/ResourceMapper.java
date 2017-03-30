@@ -142,6 +142,22 @@ public class ResourceMapper {
 
     public UUID mapPractitionerUuid(String surname,
                                     String forename,
+                                    String odsCode) throws MapperException {
+        Validate.notBlank(surname);
+        Validate.notBlank(forename);
+        Validate.notBlank(odsCode);
+
+        String identifier = ResourceMapParameters.create()
+                .put("Surname", surname)
+                .put("Forename", forename)
+                .put("OdsCode", odsCode)
+                .createIdentifyingString();
+
+        return this.mapper.mapResourceUuid(ResourceType.Practitioner, identifier);
+    }
+
+    public UUID mapPractitionerUuid(String surname,
+                                    String forename,
                                     String localPrimaryIdentifierType,
                                     String localPrimaryIdentifierValue,
                                     String consultantCode,

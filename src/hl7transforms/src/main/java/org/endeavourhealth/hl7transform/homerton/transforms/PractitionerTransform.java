@@ -49,23 +49,22 @@ public class PractitionerTransform extends ResourceTransformBase {
         if (StringUtils.isNotBlank(zpd.getGmcCode())) {
             String gmcCode = StringUtils.deleteWhitespace(zpd.getGmcCode()).toUpperCase();
 
-            if (IdentifierConverter.looksLikeGmcCode(gmcCode)) {
                 practitioner.addIdentifier(new Identifier()
                         .setSystem(FhirUri.IDENTIFIER_SYSTEM_GMC_NUMBER)
                         .setValue(gmcCode));
-            }
         }
 
         practitioner.setName(NameConverter.createUsualName(zpd.getSurname(), zpd.getForenames(), null));
 
-        UUID id = getId(practitioner);
-        practitioner.setId(id.toString());
+        Organization primaryCareOrganization = targetResources.getResourceSingleOrNull(ResourceTag.MainPrimaryCareProviderOrganisation, Organization.class);
 
-        if (targetResources.hasResource(ResourceTag.MainPrimaryCareProviderOrganisation)) {
-
-            Reference primaryCareOrganizationReference = targetResources.getResourceReference(ResourceTag.MainPrimaryCareProviderOrganisation, Organization.class);
-            practitioner.addPractitionerRole(new Practitioner.PractitionerPractitionerRoleComponent().setManagingOrganization(primaryCareOrganizationReference));
+        if (primaryCareOrganization != null) {
+            practitioner.addPractitionerRole(new Practitioner.PractitionerPractitionerRoleComponent()
+                    .setManagingOrganization(ReferenceHelper.createReferenceExternal(primaryCareOrganization)));
         }
+
+        UUID id = getId(practitioner, primaryCareOrganization);
+        practitioner.setId(id.toString());
 
         return practitioner;
     }
@@ -126,7 +125,7 @@ public class PractitionerTransform extends ResourceTransformBase {
 
         // id
 
-        UUID id = getId(practitioner);
+        UUID id = getId(practitioner, roleOrganisation);
         practitioner.setId(id.toString());
 
         // add to resources collection
@@ -216,13 +215,24 @@ public class PractitionerTransform extends ResourceTransformBase {
                 .collect(StreamExtension.firstOrNullCollector());
     }
 
-    private UUID getId(Practitioner source) throws MapperException, TransformException {
+    private UUID getId(Practitioner source, Organization sourceRoleOrganisation) throws MapperException, TransformException {
 
         String forename = source.getName().getGiven().get(0).getValue();
         String surname = source.getName().getFamily().get(0).getValue();
         String primaryIdentifier = getIdentifierValue(source.getIdentifier(), FhirUri.IDENTIFIER_SYSTEM_HOMERTON_PRIMARY_PRACTITIONER_ID);
         String consultantCode = getIdentifierValue(source.getIdentifier(), FhirUri.IDENTIFIER_SYSTEM_CONSULTANT_CODE);
         String gmcCode = getIdentifierValue(source.getIdentifier(), FhirUri.IDENTIFIER_SYSTEM_GMC_NUMBER);
+        String odsCode = "";
+
+        if (sourceRoleOrganisation != null)
+            odsCode = getIdentifierValue(sourceRoleOrganisation.getIdentifier(), FhirUri.IDENTIFIER_SYSTEM_ODS_CODE);
+
+        if (StringUtils.isBlank(primaryIdentifier)
+            && StringUtils.isBlank(consultantCode)
+                && StringUtils.isBlank(gmcCode)) {
+
+            return mapper.getResourceMapper().mapPractitionerUuid(surname, forename, odsCode);
+        }
 
         return mapper.getResourceMapper().mapPractitionerUuid(surname, forename, HomertonConstants.primaryPatientIdentifierTypeCode, primaryIdentifier, consultantCode, gmcCode);
     }
