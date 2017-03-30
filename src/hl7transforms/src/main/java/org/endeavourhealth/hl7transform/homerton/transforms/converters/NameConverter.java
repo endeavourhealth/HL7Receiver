@@ -211,12 +211,12 @@ public class NameConverter {
         if (name == null)
             return null;
 
-        if (name.getGiven() == null)
+        if (name.getFamily() == null)
             return null;
 
-        if (name.getGiven().size() == 0)
+        if (name.getFamily().size() == 0)
             return null;
 
-        return name.getGiven().get(0).getValue();
+        return name.getFamily().get(0).getValue();
     }
 }
