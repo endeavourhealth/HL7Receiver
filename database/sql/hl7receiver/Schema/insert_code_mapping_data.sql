@@ -195,6 +195,7 @@ begin
 
 	perform mapping.set_code_mapping(_h, 'HL7_ADDRESS_TYPE', 'home',      '', '', 'home', _fhir_addressuse, 'Home');
 	perform mapping.set_code_mapping(_h, 'HL7_ADDRESS_TYPE', 'temporary', '', '', 'temp', _fhir_addressuse, 'Temporary');
+	perform mapping.set_code_mapping(_h, 'HL7_ADDRESS_TYPE', 'alternate', '', '', 'temp', _fhir_addressuse, 'Temporary');
 	perform mapping.set_code_mapping(_h, 'HL7_ADDRESS_TYPE', 'previous',  '', '', 'old',  _fhir_addressuse, 'Old');
 
 	perform mapping.set_code_mapping_action_not_mapped(_h, 'HL7_ADDRESS_TYPE', 'mailing', '', '', 'X');
@@ -219,6 +220,8 @@ begin
 	perform from mapping.set_code_mapping(_h, 'HL7_TELECOM_USE', 'mobile number',  '', '', 'mobile', _fhir_contactpointuse, 'Mobile');
 	perform from mapping.set_code_mapping(_h, 'HL7_TELECOM_USE', 'pager personal', '', '', 'mobile', _fhir_contactpointuse, 'Mobile');
 	perform from mapping.set_code_mapping(_h, 'HL7_TELECOM_USE', 'business',       '', '', 'work',   _fhir_contactpointuse, 'Work');
+	perform from mapping.set_code_mapping(_h, 'HL7_TELECOM_USE', 'temporary',      '', '', 'temp',   _fhir_contactpointuse, 'Temp');
+	perform from mapping.set_code_mapping(_h, 'HL7_TELECOM_USE', 'temp phone',     '', '', 'temp',   _fhir_contactpointuse, 'Temp');
 	
 	------------------------------------------------------------
 	-- v2 encounter class -> fhir encounter class
