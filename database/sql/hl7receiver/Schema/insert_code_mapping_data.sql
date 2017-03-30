@@ -196,8 +196,9 @@ begin
 	perform mapping.set_code_mapping(_h, 'HL7_ADDRESS_TYPE', 'home',      '', '', 'home', _fhir_addressuse, 'Home');
 	perform mapping.set_code_mapping(_h, 'HL7_ADDRESS_TYPE', 'temporary', '', '', 'temp', _fhir_addressuse, 'Temporary');
 	perform mapping.set_code_mapping(_h, 'HL7_ADDRESS_TYPE', 'alternate', '', '', 'temp', _fhir_addressuse, 'Temporary');
-	perform mapping.set_code_mapping(_h, 'HL7_ADDRESS_TYPE', 'previous',  '', '', 'old',  _fhir_addressuse, 'Old');
-
+	perform mapping.set_code_mapping(_h, 'HL7_ADDRESS_TYPE', 'previous',  '', '', 'old',  _fhir_addressuse, 'Old / Incorrect');
+	perform mapping.set_code_mapping(_h, 'HL7_ADDRESS_TYPE', 'birth',     '', '', 'old',  _fhir_addressuse, 'Old / Incorrect');
+	
 	perform mapping.set_code_mapping_action_not_mapped(_h, 'HL7_ADDRESS_TYPE', 'mailing', '', '', 'X');
 
 	------------------------------------------------------------
