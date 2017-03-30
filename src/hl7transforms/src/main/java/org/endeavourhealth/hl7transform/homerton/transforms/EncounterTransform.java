@@ -3,6 +3,7 @@ package org.endeavourhealth.hl7transform.homerton.transforms;
 import org.apache.commons.lang3.NotImplementedException;
 import org.apache.commons.lang3.StringUtils;
 import org.endeavourhealth.common.fhir.FhirExtensionUri;
+import org.endeavourhealth.common.fhir.PeriodHelper;
 import org.endeavourhealth.common.fhir.ReferenceHelper;
 import org.endeavourhealth.common.fhir.schema.EncounterParticipantType;
 import org.endeavourhealth.hl7parser.Hl7DateTime;
@@ -12,6 +13,7 @@ import org.endeavourhealth.hl7transform.common.ResourceTag;
 import org.endeavourhealth.hl7transform.common.ResourceTransformBase;
 import org.endeavourhealth.hl7transform.common.converters.DateConverter;
 import org.endeavourhealth.hl7transform.homerton.transforms.constants.HomertonConstants;
+import org.endeavourhealth.hl7transform.homerton.transforms.converters.DateTimeHelper;
 import org.endeavourhealth.hl7transform.homerton.transforms.valuesets.HomertonAdmissionType;
 import org.endeavourhealth.hl7transform.homerton.transforms.valuesets.HomertonDischargeDisposition;
 import org.endeavourhealth.hl7transform.homerton.transforms.valuesets.HomertonEncounterType;
@@ -105,22 +107,7 @@ public class EncounterTransform extends ResourceTransformBase {
         if (evnSegment.getRecordedDateTime() == null)
             throw new TransformException("Recorded date/time empty");
 
-        target.setPeriod(createPeriod(evnSegment.getRecordedDateTime(), null));
-    }
-
-    private static Period createPeriod(Hl7DateTime start, Hl7DateTime end) throws ParseException {
-        if ((start == null) && (end == null))
-            return null;
-
-        Period period = new Period();
-
-        if (start != null)
-            period.setStartElement((DateTimeType)DateConverter.getDateType(start));
-
-        if (end != null)
-            period.setEndElement((DateTimeType)DateConverter.getDateType(end));
-
-        return period;
+        target.setPeriod(DateTimeHelper.createPeriod(evnSegment.getRecordedDateTime(), null));
     }
 
     private static Encounter.EncounterStatusHistoryComponent createStatusHistoryComponent(Period period, Encounter.EncounterState encounterState) {
@@ -139,18 +126,18 @@ public class EncounterTransform extends ResourceTransformBase {
         Pv1Segment pv1Segment = source.getPv1Segment();
         Pv2Segment pv2Segment = source.getPv2Segment();
 
-        Period admissionDate = createPeriod(pv1Segment.getAdmitDateTime(), null);
+        Period admissionDate = DateTimeHelper.createPeriod(pv1Segment.getAdmitDateTime(), null);
         addStatusHistoryComponent(admissionDate, Encounter.EncounterState.ARRIVED, target);
 
-        Period dischargeDate = createPeriod(null, pv1Segment.getDischargeDateTime());
+        Period dischargeDate = DateTimeHelper.createPeriod(null, pv1Segment.getDischargeDateTime());
         addStatusHistoryComponent(dischargeDate, Encounter.EncounterState.FINISHED, target);
 
         if (pv2Segment != null) {
 
-            Period expectedAdmitDate = createPeriod(pv2Segment.getExpectedAdmitDateTime(), null);
+            Period expectedAdmitDate = DateTimeHelper.createPeriod(pv2Segment.getExpectedAdmitDateTime(), null);
             addStatusHistoryComponent(expectedAdmitDate, Encounter.EncounterState.PLANNED, target);
 
-            Period expectedDischargeDate = createPeriod(null, pv2Segment.getExpectedDischargeDateTime());
+            Period expectedDischargeDate = DateTimeHelper.createPeriod(null, pv2Segment.getExpectedDischargeDateTime());
             addStatusHistoryComponent(expectedDischargeDate, Encounter.EncounterState.PLANNED, target);
         }
     }

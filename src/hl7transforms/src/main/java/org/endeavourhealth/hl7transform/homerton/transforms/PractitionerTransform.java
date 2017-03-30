@@ -217,8 +217,8 @@ public class PractitionerTransform extends ResourceTransformBase {
 
     private UUID getId(Practitioner source, Organization sourceRoleOrganisation) throws MapperException, TransformException {
 
-        String forename = source.getName().getGiven().get(0).getValue();
-        String surname = source.getName().getFamily().get(0).getValue();
+        String forename = NameConverter.getFirstGivenName(source.getName());
+        String surname = NameConverter.getFirstSurname(source.getName());
         String primaryIdentifier = getIdentifierValue(source.getIdentifier(), FhirUri.IDENTIFIER_SYSTEM_HOMERTON_PRIMARY_PRACTITIONER_ID);
         String consultantCode = getIdentifierValue(source.getIdentifier(), FhirUri.IDENTIFIER_SYSTEM_CONSULTANT_CODE);
         String gmcCode = getIdentifierValue(source.getIdentifier(), FhirUri.IDENTIFIER_SYSTEM_GMC_NUMBER);

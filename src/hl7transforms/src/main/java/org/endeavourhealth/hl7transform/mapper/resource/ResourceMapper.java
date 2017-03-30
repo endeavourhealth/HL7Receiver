@@ -143,7 +143,6 @@ public class ResourceMapper {
                                     String forename,
                                     String odsCode) throws MapperException {
         Validate.notBlank(surname);
-        Validate.notBlank(forename);
 
         String identifier = ResourceMapParameters.create()
                 .put("Surname", surname)

@@ -193,4 +193,30 @@ public class NameConverter {
                 .filter(t -> nameUse == t.getUse())
                 .collect(Collectors.toList());
     }
+
+    public static String getFirstGivenName(HumanName name) {
+        if (name == null)
+            return null;
+
+        if (name.getGiven() == null)
+            return null;
+
+        if (name.getGiven().size() == 0)
+            return null;
+
+        return name.getGiven().get(0).getValue();
+    }
+
+    public static String getFirstSurname(HumanName name) {
+        if (name == null)
+            return null;
+
+        if (name.getGiven() == null)
+            return null;
+
+        if (name.getGiven().size() == 0)
+            return null;
+
+        return name.getGiven().get(0).getValue();
+    }
 }
