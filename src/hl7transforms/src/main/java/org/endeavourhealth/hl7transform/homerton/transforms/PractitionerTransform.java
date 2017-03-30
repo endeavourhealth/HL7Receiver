@@ -61,10 +61,11 @@ public class PractitionerTransform extends ResourceTransformBase {
         UUID id = getId(practitioner);
         practitioner.setId(id.toString());
 
-        Reference primaryCareOrganizationReference = targetResources.getResourceReference(ResourceTag.MainPrimaryCareProviderOrganisation, Organization.class);
+        if (targetResources.hasResource(ResourceTag.MainPrimaryCareProviderOrganisation)) {
 
-        if (primaryCareOrganizationReference != null)
+            Reference primaryCareOrganizationReference = targetResources.getResourceReference(ResourceTag.MainPrimaryCareProviderOrganisation, Organization.class);
             practitioner.addPractitionerRole(new Practitioner.PractitionerPractitionerRoleComponent().setManagingOrganization(primaryCareOrganizationReference));
+        }
 
         return practitioner;
     }
@@ -113,76 +114,14 @@ public class PractitionerTransform extends ResourceTransformBase {
                     practitioner.addIdentifier(identifier);
         }
 
-        // role - collect identifiers to help determine role
-
-        String gmcCode = getIdentifierValue(practitioner.getIdentifier(), FhirUri.IDENTIFIER_SYSTEM_GMC_NUMBER);
-        String primaryPersonnelId = getIdentifierValue(practitioner.getIdentifier(), FhirUri.IDENTIFIER_SYSTEM_HOMERTON_PRIMARY_PRACTITIONER_ID);
-        String postcode = sources  // practitioner's organisation postcode is stored as a identifier
-                .stream()
-                .filter(t -> StringUtils.isNotEmpty(t.getId()))
-                .filter(t -> StringUtils.deleteWhitespace(StringUtils.defaultString(t.getIdentifierTypeCode())).equalsIgnoreCase("postcode"))
-                .map(t -> t.getId())
-                .collect(StreamExtension.firstOrNullCollector());
-
-
         // role - determine and set role
 
-        boolean practitionerAlreadyExists = false;
+        Organization roleOrganisation = calculcatePractitionerRoleOrganisationFromDuplicates(practitioner, sources);
 
-        if (StringUtils.isNotEmpty(gmcCode)) {
-
-            if ((!targetResources.hasResource(ResourceTag.MainPrimaryCareProviderPractitioner)) ||
-                    (!targetResources.hasResource(ResourceTag.MainPrimaryCareProviderOrganisation)))
-                throw new TransformException("Could not determine GP organisation the practitioner has a role with (no usual gp to match against)");
-
-            Organization primaryCareProviderOrganisation = targetResources.getResource(ResourceTag.MainPrimaryCareProviderOrganisation, Organization.class);
-            Practitioner primaryCareProviderPractitioner = targetResources.getResource(ResourceTag.MainPrimaryCareProviderPractitioner, Practitioner.class);
-
-            String existingPrimaryCarePractitionerGmcCode = getIdentifierValue(primaryCareProviderPractitioner.getIdentifier(), FhirUri.IDENTIFIER_SYSTEM_GMC_NUMBER);
-
-
-            if (gmcCode.equalsIgnoreCase(existingPrimaryCarePractitionerGmcCode)) {
-
-                // attempt match on primary care provider practitioner GMC code
-
-                practitioner.addPractitionerRole(new Practitioner.PractitionerPractitionerRoleComponent()
-                    .setManagingOrganization(ReferenceHelper.createReferenceExternal(primaryCareProviderOrganisation)));
-
-                practitionerAlreadyExists = true;
-
-            } else {
-
-                // attempt match on primary care provider organisation postcode
-                if (StringUtils.isNotEmpty(postcode)) {
-
-                    String existingPrimaryCareOrganisationPostcode = AddressConverter.getPostcode(primaryCareProviderOrganisation.getAddress());
-
-                    if ((StringUtils.deleteWhitespace(postcode)
-                            .equalsIgnoreCase(StringUtils.deleteWhitespace(StringUtils.defaultString(existingPrimaryCareOrganisationPostcode))))) {
-
-                        // post code matches existing primary care provider organisation - add role
-
-                        practitioner.addPractitionerRole(new Practitioner.PractitionerPractitionerRoleComponent()
-                                .setManagingOrganization(ReferenceHelper.createReferenceExternal(primaryCareProviderOrganisation)));
-
-                    } else {
-                        throw new TransformException("Could not determine GP organisation the practitioner has a role with (no match on postcode)");
-                    }
-
-                } else {
-                    throw new TransformException("Could not determine GP organisation the practitioner has a role with (no postcode)");
-                }
-            }
-
-        } else if (StringUtils.isNotEmpty(primaryPersonnelId)) {
-
-            Reference hospitalOrganisationReference = this.targetResources.getResourceReference(ResourceTag.MainHospitalOrganisation, Organization.class);
-
-            practitioner.addPractitionerRole(new Practitioner.PractitionerPractitionerRoleComponent()
-                    .setManagingOrganization(hospitalOrganisationReference));
-
-        } else {
-            throw new TransformException("Could not determine which organisation the practitioner has a role with");
+        if (roleOrganisation != null) {
+            practitioner
+                    .addPractitionerRole(new Practitioner.PractitionerPractitionerRoleComponent()
+                            .setManagingOrganization(ReferenceHelper.createReferenceExternal(roleOrganisation)));
         }
 
         // id
@@ -190,13 +129,64 @@ public class PractitionerTransform extends ResourceTransformBase {
         UUID id = getId(practitioner);
         practitioner.setId(id.toString());
 
-
         // add to resources collection
 
-        if (!practitionerAlreadyExists)
+        if (!targetResources.hasResource(practitioner.getId()))
             targetResources.addResource(practitioner);
 
         return practitioner;
+    }
+
+    private Organization calculcatePractitionerRoleOrganisationFromDuplicates(Practitioner practitioner, List<Xcn> sources) throws TransformException {
+
+        // role - collect identifiers to help determine role
+        String gmcCode = getIdentifierValue(practitioner.getIdentifier(), FhirUri.IDENTIFIER_SYSTEM_GMC_NUMBER);
+        String primaryPersonnelId = getIdentifierValue(practitioner.getIdentifier(), FhirUri.IDENTIFIER_SYSTEM_HOMERTON_PRIMARY_PRACTITIONER_ID);
+        String postcode = sources  // practitioner's organisation postcode is stored as a identifier
+                .stream()
+                .filter(t -> StringUtils.isNotEmpty(t.getId()))
+                .filter(t -> StringUtils.deleteWhitespace(StringUtils.defaultString(t.getIdentifierTypeCode())).equalsIgnoreCase("postcode"))
+                .map(t -> StringUtils.trim(StringUtils.defaultString(t.getId())).toUpperCase())
+                .collect(StreamExtension.firstOrNullCollector());
+
+        if (StringUtils.isNotEmpty(gmcCode)) {
+            // looks like a gp practitioner
+
+            Organization primaryCareProviderOrganisation = targetResources.getResourceSingleOrNull(ResourceTag.MainPrimaryCareProviderOrganisation, Organization.class);
+            Practitioner primaryCareProviderPractitioner = targetResources.getResourceSingleOrNull(ResourceTag.MainPrimaryCareProviderPractitioner, Practitioner.class);
+
+            // attempt match on primary care provider practitioner GMC code
+            if (primaryCareProviderPractitioner != null) {
+                String primaryCarePractitionerGmcCode = getIdentifierValue(primaryCareProviderPractitioner.getIdentifier(), FhirUri.IDENTIFIER_SYSTEM_GMC_NUMBER);
+
+                if (StringUtils.isNotEmpty(primaryCarePractitionerGmcCode))
+                    if (gmcCode.equalsIgnoreCase(primaryCarePractitionerGmcCode))
+                        return primaryCareProviderOrganisation;
+            }
+
+            // attempt match on primary care provider organisation postcode
+            if (primaryCareProviderOrganisation != null) {
+                String existingPrimaryCareOrganisationPostcode = StringUtils.defaultString(AddressConverter.getPostcode(primaryCareProviderOrganisation.getAddress()));
+
+                if (StringUtils.isNotEmpty(postcode)) {
+
+                    if ((StringUtils.deleteWhitespace(postcode)
+                            .equalsIgnoreCase(StringUtils.deleteWhitespace(existingPrimaryCareOrganisationPostcode)))) {
+
+                        return primaryCareProviderOrganisation;
+
+                    }
+                }
+            }
+
+        } else if (StringUtils.isNotEmpty(primaryPersonnelId)) {
+
+            return this.targetResources.getResourceSingle(ResourceTag.MainHospitalOrganisation, Organization.class);
+        }
+
+        // else could not match
+
+        return null;
     }
 
     private boolean hasIdentifierWithSystem(List<Identifier> identifiers, String system) {
@@ -217,6 +207,9 @@ public class PractitionerTransform extends ResourceTransformBase {
     }
 
     private Identifier getIdentifierWithSystem(List<Identifier> identifiers, String system) {
+        if (identifiers == null)
+            return null;
+
         return identifiers
                 .stream()
                 .filter(t -> t.getSystem().equalsIgnoreCase(system))

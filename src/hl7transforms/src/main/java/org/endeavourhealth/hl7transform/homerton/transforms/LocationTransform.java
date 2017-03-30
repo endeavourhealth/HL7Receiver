@@ -65,7 +65,7 @@ public class LocationTransform extends ResourceTransformBase {
             throw new TransformException("Building of " + source.getBuilding() + " not recognised");
 
         Reference managingOrganisationReference = targetResources.getResourceReference(ResourceTag.MainHospitalOrganisation, Organization.class);
-        Location topParentBuildingLocation = targetResources.getResource(ResourceTag.MainHospitalLocation, Location.class);
+        Location topParentBuildingLocation = targetResources.getResourceSingle(ResourceTag.MainHospitalLocation, Location.class);
 
         List<Pair<LocationPhysicalType, String>> locations = new ArrayList<>();
 

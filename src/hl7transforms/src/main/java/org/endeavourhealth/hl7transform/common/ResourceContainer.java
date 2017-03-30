@@ -40,7 +40,7 @@ public class ResourceContainer {
     }
 
     public <T extends Resource> Reference getResourceReference(ResourceTag resourceTag, Class<T> resourceClass) throws TransformException {
-        Resource resource = getResource(resourceTag, resourceClass);
+        Resource resource = getResourceSingle(resourceTag, resourceClass);
 
         return ReferenceHelper.createReference(resource.getResourceType(), resource.getId());
     }
@@ -51,12 +51,12 @@ public class ResourceContainer {
         return (containsTag(resourceTag));
     }
 
-    public <T extends Resource> T getResource(ResourceTag resourceTag, Class<T> resourceClass) throws TransformException {
+    public <T extends Resource> T getResourceSingleOrNull(ResourceTag resourceTag, Class<T> resourceClass) throws TransformException {
         Validate.notNull(resourceTag);
         Validate.notNull(resourceClass);
 
         if (!containsTag(resourceTag))
-            throw new TransformException("ResourceContain does not contain resource with tag " + resourceTag.name());
+            return null;
 
         if (!resourceTag.getResourceClass().equals(resourceClass))
             throw new TransformException("ResourceTag class does not match resource class");
@@ -65,7 +65,16 @@ public class ResourceContainer {
                 .stream()
                 .filter(t -> resourceTag.equals(t.getResourceTag()))
                 .map(t -> (T)t.getResource())
-                .collect(StreamExtension.singleCollector());
+                .collect(StreamExtension.singleOrNullCollector());
+    }
+
+    public <T extends Resource> T getResourceSingle(ResourceTag resourceTag, Class<T> resourceClass) throws TransformException {
+        T resource = getResourceSingleOrNull(resourceTag, resourceClass);
+
+        if (resource == null)
+            throw new TransformException("ResourceContain does not contain resource with tag " + resourceTag.name());
+
+        return resource;
     }
 
     public boolean hasResource(String id) {
