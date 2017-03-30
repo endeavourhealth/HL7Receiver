@@ -187,6 +187,7 @@ begin
 	perform from mapping.set_code_mapping(_h, 'HL7_NAME_TYPE', 'birth',     '', '', 'old',         _fhir_nameuse, 'Old');
 	perform from mapping.set_code_mapping(_h, 'HL7_NAME_TYPE', 'adopted',   '', '', 'old',         _fhir_nameuse, 'Old');
 	perform from mapping.set_code_mapping(_h, 'HL7_NAME_TYPE', 'previous',  '', '', 'old',         _fhir_nameuse, 'Old');
+	perform from mapping.set_code_mapping(_h, 'HL7_NAME_TYPE', 'maiden',    '', '', 'maiden',      _fhir_nameuse, 'Maiden');
 
 	------------------------------------------------------------
 	-- v2 address type -> fhir address use
