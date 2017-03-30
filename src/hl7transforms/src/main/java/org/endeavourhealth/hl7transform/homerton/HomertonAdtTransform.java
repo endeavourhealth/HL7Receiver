@@ -139,9 +139,9 @@ public class HomertonAdtTransform extends Transform {
         validateExactlyOneSegment(sourceMessage, SegmentName.EVN);
         validateExactlyOneSegment(sourceMessage, SegmentName.PID);
 
-        String mergeMessageType = "ADT^A34";
+        List<String> mergeMessageTypes = Arrays.asList("ADT^A34", "ADT^A44");
 
-        if (!mergeMessageType.equalsIgnoreCase(StringUtils.trim(sourceMessage.getMshSegment().getMessageType())))
+        if (!mergeMessageTypes.contains(StringUtils.trim(sourceMessage.getMshSegment().getMessageType())))
             validateExactlyOneSegment(sourceMessage, SegmentName.PD1);
 
         validateZeroOrOneSegments(sourceMessage, SegmentName.PV1);
