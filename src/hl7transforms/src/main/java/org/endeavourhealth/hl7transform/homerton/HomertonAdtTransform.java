@@ -1,5 +1,6 @@
 package org.endeavourhealth.hl7transform.homerton;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Validate;
 import org.endeavourhealth.hl7parser.ParseException;
 import org.endeavourhealth.hl7parser.Segment;
@@ -137,7 +138,11 @@ public class HomertonAdtTransform extends Transform {
         validateExactlyOneSegment(sourceMessage, SegmentName.MSH);
         validateExactlyOneSegment(sourceMessage, SegmentName.EVN);
         validateExactlyOneSegment(sourceMessage, SegmentName.PID);
-        validateExactlyOneSegment(sourceMessage, SegmentName.PD1);
+
+        String mergeMessageType = "ADT^A34";
+
+        if (!mergeMessageType.equalsIgnoreCase(StringUtils.trim(sourceMessage.getMshSegment().getMessageType())))
+            validateExactlyOneSegment(sourceMessage, SegmentName.PD1);
 
         validateZeroOrOneSegments(sourceMessage, SegmentName.PV1);
 
