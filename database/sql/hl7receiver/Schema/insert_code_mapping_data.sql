@@ -193,8 +193,9 @@ begin
 	------------------------------------------------------------
 	_fhir_addressuse = 'http://hl7.org/fhir/address-use';
 
-	perform mapping.set_code_mapping(_h, 'HL7_ADDRESS_TYPE', 'home',     '', '', 'home', _fhir_addressuse, 'Home');
-	perform mapping.set_code_mapping(_h, 'HL7_ADDRESS_TYPE', 'previous', '', '', 'old',  _fhir_addressuse, 'Old');
+	perform mapping.set_code_mapping(_h, 'HL7_ADDRESS_TYPE', 'home',      '', '', 'home', _fhir_addressuse, 'Home');
+	perform mapping.set_code_mapping(_h, 'HL7_ADDRESS_TYPE', 'temporary', '', '', 'temp', _fhir_addressuse, 'Temporary');
+	perform mapping.set_code_mapping(_h, 'HL7_ADDRESS_TYPE', 'previous',  '', '', 'old',  _fhir_addressuse, 'Old');
 
 	------------------------------------------------------------
 	-- v2 telecom equipment type -> fhir contact point system
@@ -211,7 +212,11 @@ begin
 	------------------------------------------------------------
 	_fhir_contactpointuse = 'http://hl7.org/fhir/contact-point-use';
 	
-	perform from mapping.set_code_mapping(_h, 'HL7_TELECOM_USE', 'mobile number', '', '', 'mobile', _fhir_contactpointuse, 'Mobile');
+	perform from mapping.set_code_mapping(_h, 'HL7_TELECOM_USE', 'home',           '', '', 'home',   _fhir_contactpointuse, 'Home');
+	perform from mapping.set_code_mapping(_h, 'HL7_TELECOM_USE', 'home phone',     '', '', 'home',   _fhir_contactpointuse, 'Home');
+	perform from mapping.set_code_mapping(_h, 'HL7_TELECOM_USE', 'mobile number',  '', '', 'mobile', _fhir_contactpointuse, 'Mobile');
+	perform from mapping.set_code_mapping(_h, 'HL7_TELECOM_USE', 'pager personal', '', '', 'mobile', _fhir_contactpointuse, 'Mobile');
+	perform from mapping.set_code_mapping(_h, 'HL7_TELECOM_USE', 'business',       '', '', 'work',   _fhir_contactpointuse, 'Work');
 	
 	------------------------------------------------------------
 	-- v2 encounter class -> fhir encounter class
