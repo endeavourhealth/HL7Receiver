@@ -73,6 +73,7 @@ public class PractitionerTransform extends ResourceTransformBase {
     public List<Reference> createPractitioners(List<Xcn> source) throws TransformException, MapperException, ParseException {
         Collection<List<Xcn>> practitionerGroups = source
                 .stream()
+                .filter(t -> StringUtils.isNotBlank(t.getFamilyName()))
                 .collect(Collectors.groupingBy(t -> t.getPrefix() + t.getFamilyName() + t.getGivenName()))
                 .values();
 
