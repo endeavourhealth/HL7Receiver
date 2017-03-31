@@ -137,15 +137,18 @@ public class NameConverter {
     }
 
     private static List<HumanName> removeSuperfluousNameDuplicates(List<HumanName> names) throws TransformException {
+        if (names.size() == 0)
+            return names;
+
         names = removeDuplicateNames(names);
 
         List<HumanName> officialNames = getNamesByUse(names, HumanName.NameUse.OFFICIAL);
 
         if (officialNames.size() == 0)
-            throw new TransformException("Patient does not have a official name");
+            throw new TransformException("Person does not have a official name");
 
         if (officialNames.size() > 1)
-            throw new TransformException("Patient has more than one official name");
+            throw new TransformException("Person has more than one official name");
 
         HumanName officialName = officialNames.get(0);
 

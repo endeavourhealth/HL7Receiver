@@ -282,9 +282,18 @@ public class PatientTransform extends ResourceTransformBase {
     }
 
     private void addPatientContact(Nk1Segment sourceNk1, Patient target) throws TransformException, ParseException, MapperException {
+
+        if ((sourceNk1.getNKName().size() == 0)
+            && sourceNk1.getPhoneNumber().size() == 0
+            && sourceNk1.getBusinessPhoneNumber().size() == 0
+            && sourceNk1.getAddresses().size() == 0)
+            return;
+
         Patient.ContactComponent contactComponent = new Patient.ContactComponent();
 
-        for (HumanName name : NameConverter.convert(sourceNk1.getNKName(), mapper))
+        List<HumanName> names = NameConverter.convert(sourceNk1.getNKName(), mapper);
+
+        for (HumanName name : names)
             contactComponent.setName(name);
 
         if (sourceNk1.getRelationship() != null)
