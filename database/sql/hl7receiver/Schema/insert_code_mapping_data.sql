@@ -173,8 +173,9 @@ begin
 	------------------------------------------------------------
 	_fhir_gender = 'http://hl7.org/fhir/administrative-gender';
 	
-	perform mapping.set_code_mapping(_h, 'HL7_SEX', 'male',   '', '', 'male',   _fhir_gender, 'Male');
-	perform mapping.set_code_mapping(_h, 'HL7_SEX', 'female', '', '', 'female', _fhir_gender, 'Female');
+	perform mapping.set_code_mapping(_h, 'HL7_SEX', 'male',        '', '', 'male',    _fhir_gender, 'Male');
+	perform mapping.set_code_mapping(_h, 'HL7_SEX', 'female',      '', '', 'female',  _fhir_gender, 'Female');
+	perform mapping.set_code_mapping(_h, 'HL7_SEX', 'unspecified', '', '', 'unknown', _fhir_gender, 'Unknown');
 
 	------------------------------------------------------------
 	-- v2 name type -> fhir name use
@@ -222,6 +223,7 @@ begin
 	perform from mapping.set_code_mapping(_h, 'HL7_TELECOM_USE', 'home phone',       '', '', 'home',   _fhir_contactpointuse, 'Home');
 	perform from mapping.set_code_mapping(_h, 'HL7_TELECOM_USE', 'mobile number',    '', '', 'mobile', _fhir_contactpointuse, 'Mobile');
 	perform from mapping.set_code_mapping(_h, 'HL7_TELECOM_USE', 'pager personal',   '', '', 'mobile', _fhir_contactpointuse, 'Mobile');
+	perform from mapping.set_code_mapping(_h, 'HL7_TELECOM_USE', 'pager number',     '', '', 'mobile', _fhir_contactpointuse, 'Mobile');
 	perform from mapping.set_code_mapping(_h, 'HL7_TELECOM_USE', 'business',         '', '', 'work',   _fhir_contactpointuse, 'Work');
 	perform from mapping.set_code_mapping(_h, 'HL7_TELECOM_USE', 'temporary',        '', '', 'temp',   _fhir_contactpointuse, 'Temp');
 	perform from mapping.set_code_mapping(_h, 'HL7_TELECOM_USE', 'temp phone',       '', '', 'temp',   _fhir_contactpointuse, 'Temp');
@@ -243,10 +245,10 @@ begin
 	------------------------------------------------------------
 	_fhir_encounterstate = 'http://hl7.org/fhir/encounter-state';
 	
-	perform from mapping.set_code_mapping(_h, 'HL7_ACCOUNT_STATUS', 'active',     '', '', 'in-progress', _fhir_encounterstate, 'In progress');
-	perform from mapping.set_code_mapping(_h, 'HL7_ACCOUNT_STATUS', 'preadmit',   '', '', 'planned',     _fhir_encounterstate, 'Planned');
-	perform from mapping.set_code_mapping(_h, 'HL7_ACCOUNT_STATUS', 'discharged', '', '', 'finished',    _fhir_encounterstate, 'Finished');
-	perform from mapping.set_code_mapping(_h, 'HL7_ACCOUNT_STATUS', 'cancelled',  '', '', 'cancelled',   _fhir_encounterstate, 'Cancelled');
+	perform from mapping.set_code_mapping(_h, 'HL7_ACCOUNT_STATUS', 'active',          '', '', 'in-progress', _fhir_encounterstate, 'In progress');
+	perform from mapping.set_code_mapping(_h, 'HL7_ACCOUNT_STATUS', 'pending arrival', '', '', 'planned',     _fhir_encounterstate, 'Planned');
+	perform from mapping.set_code_mapping(_h, 'HL7_ACCOUNT_STATUS', 'preadmit',        '', '', 'planned',     _fhir_encounterstate, 'Planned');
+	perform from mapping.set_code_mapping(_h, 'HL7_ACCOUNT_STATUS', 'discharged',      '', '', 'finished',    _fhir_encounterstate, 'Finished');
 	
 	------------------------------------------------------------
 	-- v2 patient type -> fhir encounter type (homerton)
