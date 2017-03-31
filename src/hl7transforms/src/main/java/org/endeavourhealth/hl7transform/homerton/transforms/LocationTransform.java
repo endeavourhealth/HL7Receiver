@@ -71,8 +71,9 @@ public class LocationTransform extends ResourceTransformBase {
                 && StringUtils.isBlank(source.getBed()))
             return null;
 
-        if (!HomertonConstants.locationBuilding.equalsIgnoreCase(StringUtils.trim(source.getBuilding())))
-            throw new TransformException("Building of " + source.getBuilding() + " not recognised");
+        if (StringUtils.isNotBlank(source.getBuilding()))
+            if (!HomertonConstants.locationBuilding.equalsIgnoreCase(StringUtils.trim(source.getBuilding())))
+                throw new TransformException("Building of " + source.getBuilding() + " not recognised");
 
         Reference managingOrganisationReference = targetResources.getResourceReference(ResourceTag.MainHospitalOrganisation, Organization.class);
         Location topParentBuildingLocation = targetResources.getResourceSingle(ResourceTag.MainHospitalLocation, Location.class);
