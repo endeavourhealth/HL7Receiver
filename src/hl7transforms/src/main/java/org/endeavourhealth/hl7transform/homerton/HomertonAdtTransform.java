@@ -135,6 +135,8 @@ public class HomertonAdtTransform extends Transform {
     }
 
     private void validateSegmentCounts(AdtMessage sourceMessage) throws TransformException {
+        // improve segment count definitions
+
         String messageType = StringUtils.trim(sourceMessage.getMshSegment().getMessageType());
         List<String> swapMessageTypes = Arrays.asList("ADT^A17");
         List<String> mergeMessageTypes = Arrays.asList("ADT^A17", "ADT^A34", "ADT^A44");
@@ -152,11 +154,13 @@ public class HomertonAdtTransform extends Transform {
         else
             validateNoSegments(sourceMessage, SegmentName.PD1);
 
-        validateZeroOrOneSegments(sourceMessage, SegmentName.PV1);
+        if (!swapMessageTypes.contains(messageType)) {
+            validateZeroOrOneSegments(sourceMessage, SegmentName.PV1);
 
-        long segmentCount = sourceMessage.getSegmentCount(SegmentName.PV1);
+            long segmentCount = sourceMessage.getSegmentCount(SegmentName.PV1);
 
-        validateMinAndMaxSegmentCount(sourceMessage, SegmentName.PV2, segmentCount, segmentCount);
+            validateMinAndMaxSegmentCount(sourceMessage, SegmentName.PV2, segmentCount, segmentCount);
+        }
     }
 
     private void validateNoSegments(AdtMessage sourceMessage, String segmentName) throws TransformException {
