@@ -135,20 +135,32 @@ public class HomertonAdtTransform extends Transform {
     }
 
     private void validateSegmentCounts(AdtMessage sourceMessage) throws TransformException {
+        String messageType = StringUtils.trim(sourceMessage.getMshSegment().getMessageType());
+        List<String> swapMessageTypes = Arrays.asList("ADT^A17");
+        List<String> mergeMessageTypes = Arrays.asList("ADT^A17", "ADT^A34", "ADT^A44");
+
         validateExactlyOneSegment(sourceMessage, SegmentName.MSH);
         validateExactlyOneSegment(sourceMessage, SegmentName.EVN);
-        validateExactlyOneSegment(sourceMessage, SegmentName.PID);
 
-        List<String> irregularMessageTypes = Arrays.asList("ADT^A17", "ADT^A34", "ADT^A44");
+        if (!swapMessageTypes.contains(messageType))
+            validateExactlyOneSegment(sourceMessage, SegmentName.PID);
+        else
+            validateMinAndMaxSegmentCount(sourceMessage, SegmentName.PID, 2, 2);
 
-        if (!irregularMessageTypes.contains(StringUtils.trim(sourceMessage.getMshSegment().getMessageType())))
+        if (!mergeMessageTypes.contains(messageType))
             validateExactlyOneSegment(sourceMessage, SegmentName.PD1);
+        else
+            validateNoSegments(sourceMessage, SegmentName.PD1);
 
         validateZeroOrOneSegments(sourceMessage, SegmentName.PV1);
 
         long segmentCount = sourceMessage.getSegmentCount(SegmentName.PV1);
 
         validateMinAndMaxSegmentCount(sourceMessage, SegmentName.PV2, segmentCount, segmentCount);
+    }
+
+    private void validateNoSegments(AdtMessage sourceMessage, String segmentName) throws TransformException {
+        validateMinAndMaxSegmentCount(sourceMessage, segmentName, 0L, 0L);
     }
 
     private void validateZeroOrOneSegments(AdtMessage sourceMessage, String segmentName) throws TransformException {
