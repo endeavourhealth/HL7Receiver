@@ -3,18 +3,14 @@ package org.endeavourhealth.hl7transform.homerton.transforms;
 import org.apache.commons.lang3.NotImplementedException;
 import org.apache.commons.lang3.StringUtils;
 import org.endeavourhealth.common.fhir.FhirExtensionUri;
-import org.endeavourhealth.common.fhir.PeriodHelper;
 import org.endeavourhealth.common.fhir.ReferenceHelper;
 import org.endeavourhealth.common.fhir.schema.EncounterParticipantType;
-import org.endeavourhealth.hl7parser.Hl7DateTime;
 import org.endeavourhealth.hl7parser.segments.EvnSegment;
 import org.endeavourhealth.hl7transform.common.ResourceContainer;
 import org.endeavourhealth.hl7transform.common.ResourceTag;
 import org.endeavourhealth.hl7transform.common.ResourceTransformBase;
-import org.endeavourhealth.hl7transform.common.converters.DateConverter;
 import org.endeavourhealth.hl7transform.homerton.transforms.constants.HomertonConstants;
 import org.endeavourhealth.hl7transform.homerton.transforms.converters.DateTimeHelper;
-import org.endeavourhealth.hl7transform.homerton.transforms.valuesets.HomertonAdmissionType;
 import org.endeavourhealth.hl7transform.homerton.transforms.valuesets.HomertonDischargeDisposition;
 import org.endeavourhealth.hl7transform.homerton.transforms.valuesets.HomertonEncounterType;
 import org.endeavourhealth.hl7transform.mapper.exceptions.MapperException;
@@ -176,17 +172,12 @@ public class EncounterTransform extends ResourceTransformBase {
     private void setAdmissionType(AdtMessage source, Encounter target) throws MapperException {
         Pv1Segment pv1Segment = source.getPv1Segment();
 
-        HomertonAdmissionType admissionType = this.mapper.getCodeMapper().mapAdmissionType(pv1Segment.getAdmissionType());
+        CodeableConcept admissionType = this.mapper.getCodeMapper().mapAdmissionType(pv1Segment.getAdmissionType());
 
         if (admissionType != null) {
             target.addExtension(new Extension()
                     .setUrl(FhirExtensionUri.ENCOUNTER_ADMISSION_TYPE)
-                    .setValue(new CodeableConcept()
-                            .addCoding(new Coding()
-                                    .setDisplay(admissionType.getDescription())
-                                    .setCode(admissionType.getCode())
-                                    .setSystem(admissionType.getSystem()))
-                            .setText(pv1Segment.getAdmissionType())));
+                    .setValue(admissionType));
         }
     }
 

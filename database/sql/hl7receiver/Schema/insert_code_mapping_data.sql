@@ -272,40 +272,41 @@ begin
 	------------------------------------------------------------
 	_fhir_admissiontypehomerton = 'http://endeavourhealth.org/fhir/ValueSet/admission-type-homerton';
 	
-	perform from mapping.set_code_mapping(_h, 'HL7_ADMISSION_TYPE', 'emergency-a&e/dental',   '', '', 'emergency-ae-or-dental', _fhir_admissiontypehomerton, 'Emergency - A&E/Dental');
-	perform from mapping.set_code_mapping(_h, 'HL7_ADMISSION_TYPE', 'emergency-a\t\e/dental', '', '', 'emergency-ae-or-dental', _fhir_admissiontypehomerton, 'Emergency - A&E/Dental');
-	perform from mapping.set_code_mapping(_h, 'HL7_ADMISSION_TYPE', 'emergency-o/p clinic',   '', '', 'emergency-outpatients',  _fhir_admissiontypehomerton, 'Emergency - Outpatients clinic');
-	perform from mapping.set_code_mapping(_h, 'HL7_ADMISSION_TYPE', 'emergency-other',        '', '', 'emergency-other',        _fhir_admissiontypehomerton, 'Emergency - Other');
-	perform from mapping.set_code_mapping(_h, 'HL7_ADMISSION_TYPE', 'maternity-ante partum',  '', '', 'maternity-ante-partum',  _fhir_admissiontypehomerton, 'Maternity - Ante Partum');
-	perform from mapping.set_code_mapping(_h, 'HL7_ADMISSION_TYPE', 'maternity-post partum',  '', '', 'maternity-post-partum',  _fhir_admissiontypehomerton, 'Maternity - Post Partum');
-	perform from mapping.set_code_mapping(_h, 'HL7_ADMISSION_TYPE', 'baby born in hospital',  '', '', 'baby-born',              _fhir_admissiontypehomerton, 'Baby Born in Hospital');
-	perform from mapping.set_code_mapping(_h, 'HL7_ADMISSION_TYPE', 'planned',                '', '', 'planned',                _fhir_admissiontypehomerton, 'Planned');
-	perform from mapping.set_code_mapping(_h, 'HL7_ADMISSION_TYPE', 'waiting list',           '', '', 'booked',                 _fhir_admissiontypehomerton, 'Booked');
-	perform from mapping.set_code_mapping(_h, 'HL7_ADMISSION_TYPE', 'booked',                 '', '', 'wait-list',              _fhir_admissiontypehomerton, 'Waiting List');
+	perform from mapping.set_code_mapping(_h, 'HL7_ADMISSION_TYPE', 'emergency-a&e/dental',       '', '', 'emergency-ae-or-dental',     _fhir_admissiontypehomerton, 'Emergency - A&E/Dental');
+	perform from mapping.set_code_mapping(_h, 'HL7_ADMISSION_TYPE', 'emergency-a\t\e/dental',     '', '', 'emergency-ae-or-dental',     _fhir_admissiontypehomerton, 'Emergency - A&E/Dental');
+	perform from mapping.set_code_mapping(_h, 'HL7_ADMISSION_TYPE', 'emergency-o/p clinic',       '', '', 'emergency-outpatients',      _fhir_admissiontypehomerton, 'Emergency - Outpatients clinic');
+	perform from mapping.set_code_mapping(_h, 'HL7_ADMISSION_TYPE', 'emergency-other',            '', '', 'emergency-other',            _fhir_admissiontypehomerton, 'Emergency - Other');
+	perform from mapping.set_code_mapping(_h, 'HL7_ADMISSION_TYPE', 'maternity-ante partum',      '', '', 'maternity-ante-partum',      _fhir_admissiontypehomerton, 'Maternity - Ante partum');
+	perform from mapping.set_code_mapping(_h, 'HL7_ADMISSION_TYPE', 'maternity-post partum',      '', '', 'maternity-post-partum',      _fhir_admissiontypehomerton, 'Maternity - Post partum');
+	perform from mapping.set_code_mapping(_h, 'HL7_ADMISSION_TYPE', 'baby born in hospital',      '', '', 'baby-born-in-hospital',      _fhir_admissiontypehomerton, 'Baby born in hospital');
+	perform from mapping.set_code_mapping(_h, 'HL7_ADMISSION_TYPE', 'baby born outside hospital', '', '', 'baby-born-outside-hospital', _fhir_admissiontypehomerton, 'Baby born outside hospital');
+	perform from mapping.set_code_mapping(_h, 'HL7_ADMISSION_TYPE', 'planned',                    '', '', 'planned',                    _fhir_admissiontypehomerton, 'Planned');
+	perform from mapping.set_code_mapping(_h, 'HL7_ADMISSION_TYPE', 'waiting list',               '', '', 'booked',                     _fhir_admissiontypehomerton, 'Booked');
+	perform from mapping.set_code_mapping(_h, 'HL7_ADMISSION_TYPE', 'booked',                     '', '', 'wait-list',                  _fhir_admissiontypehomerton, 'Waiting list');
 	
 	------------------------------------------------------------
 	-- v2 discharge disposition -> fhir discharge disposition (homerton)
 	------------------------------------------------------------
 	_fhir_dischargedispositionhomerton = 'http://endeavourhealth.org/fhir/ValueSet/discharge-disposition-homerton';
 	
-	perform from mapping.set_code_mapping(_h, 'HL7_DISCHARGE_DISPOSITION', 'admitted as inpatient',                     '', '', 'admitted-as-inpatient',           _fhir_dischargedispositionhomerton, 'Admitted as inpatient');
-	perform from mapping.set_code_mapping(_h, 'HL7_DISCHARGE_DISPOSITION', 'deceased',                                  '', '', 'deceased',                        _fhir_dischargedispositionhomerton, 'Deceased');
-	perform from mapping.set_code_mapping(_h, 'HL7_DISCHARGE_DISPOSITION', 'discharge-mental tribunal',                 '', '', 'discharge-mental-tribunal',       _fhir_dischargedispositionhomerton, 'Discharge - mental tribunal');
-	perform from mapping.set_code_mapping(_h, 'HL7_DISCHARGE_DISPOSITION', 'normal discharge',                          '', '', 'normal-discharge',                _fhir_dischargedispositionhomerton, 'Discharge - normal');
-	perform from mapping.set_code_mapping(_h, 'HL7_DISCHARGE_DISPOSITION', 'normal discharge with follow up',           '', '', 'normal-discharge-with-follow-up', _fhir_dischargedispositionhomerton, 'Discharge - normal, with follow-up');
-	perform from mapping.set_code_mapping(_h, 'HL7_DISCHARGE_DISPOSITION', 'regular discharge with follow-up',          '', '', 'normal-discharge-with-follow-up', _fhir_dischargedispositionhomerton, 'Discharge - normal, with follow-up');
-	perform from mapping.set_code_mapping(_h, 'HL7_DISCHARGE_DISPOSITION', 'no follow up required',                     '', '', 'no-follow-up-required',           _fhir_dischargedispositionhomerton, 'Discharge - normal, no follow up required');
-	perform from mapping.set_code_mapping(_h, 'HL7_DISCHARGE_DISPOSITION', 'discharge-self/relative',                   '', '', 'discharge-self-or-relative',      _fhir_dischargedispositionhomerton, 'Discharge - self/relative');
-	perform from mapping.set_code_mapping(_h, 'HL7_DISCHARGE_DISPOSITION', 'left department before treatment',          '', '', 'left-dept-before-treatment',      _fhir_dischargedispositionhomerton, 'Left department before treatment');
-	perform from mapping.set_code_mapping(_h, 'HL7_DISCHARGE_DISPOSITION', 'other',                                     '', '', 'other',                           _fhir_dischargedispositionhomerton, 'Other');
-	perform from mapping.set_code_mapping(_h, 'HL7_DISCHARGE_DISPOSITION', 'referral to general practitioner',          '', '', 'referral-to-gp',                  _fhir_dischargedispositionhomerton, 'Referred to general practitioner');
-	perform from mapping.set_code_mapping(_h, 'HL7_DISCHARGE_DISPOSITION', 'referral to outpatient clinic',             '', '', 'referred-to-outpatient-clinic',   _fhir_dischargedispositionhomerton, 'Referred to outpatient clinic');
-	perform from mapping.set_code_mapping(_h, 'HL7_DISCHARGE_DISPOSITION', 'referred to a\t\e clinic',                  '', '', 'referred-to-ae-clinic',           _fhir_dischargedispositionhomerton, 'Referred to A&E clinic');
-	perform from mapping.set_code_mapping(_h, 'HL7_DISCHARGE_DISPOSITION', 'referred to a&e clinic',                    '', '', 'referred-to-ae-clinic',           _fhir_dischargedispositionhomerton, 'Referred to A&E clinic');
-	perform from mapping.set_code_mapping(_h, 'HL7_DISCHARGE_DISPOSITION', 'referred to fracture clinic',               '', '', 'referred-to-fracture-clinic',     _fhir_dischargedispositionhomerton, 'Referred to fracture clinic');
-	perform from mapping.set_code_mapping(_h, 'HL7_DISCHARGE_DISPOSITION', 'referred to other health care profession',  '', '', 'referred-to-other-hcp',           _fhir_dischargedispositionhomerton, 'Referred to other health care profession');
-	perform from mapping.set_code_mapping(_h, 'HL7_DISCHARGE_DISPOSITION', 'transferred to other health care provider', '', '', 'transfer-to-other-hcp',           _fhir_dischargedispositionhomerton, 'Transfer to other health care provider');
-	perform from mapping.set_code_mapping(_h, 'HL7_DISCHARGE_DISPOSITION', 'transferred to other health care provide',  '', '', 'transfer-to-other-hcp',           _fhir_dischargedispositionhomerton, 'Transfer to other health care provider');
+	perform from mapping.set_code_mapping(_h, 'HL7_DISCHARGE_DISPOSITION', '', '', 'admitted as inpatient',                     'admitted-as-inpatient',           _fhir_dischargedispositionhomerton, 'Admitted as inpatient');
+	perform from mapping.set_code_mapping(_h, 'HL7_DISCHARGE_DISPOSITION', '', '', 'deceased',                                  'deceased',                        _fhir_dischargedispositionhomerton, 'Deceased');
+	perform from mapping.set_code_mapping(_h, 'HL7_DISCHARGE_DISPOSITION', '', '', 'discharge-mental tribunal',                 'discharge-mental-tribunal',       _fhir_dischargedispositionhomerton, 'Discharge - mental tribunal');
+	perform from mapping.set_code_mapping(_h, 'HL7_DISCHARGE_DISPOSITION', '', '', 'normal discharge',                          'normal-discharge',                _fhir_dischargedispositionhomerton, 'Discharge - normal');
+	perform from mapping.set_code_mapping(_h, 'HL7_DISCHARGE_DISPOSITION', '', '', 'normal discharge with follow up',           'normal-discharge-with-follow-up', _fhir_dischargedispositionhomerton, 'Discharge - normal, with follow-up');
+	perform from mapping.set_code_mapping(_h, 'HL7_DISCHARGE_DISPOSITION', '', '', 'regular discharge with follow-up',          'normal-discharge-with-follow-up', _fhir_dischargedispositionhomerton, 'Discharge - normal, with follow-up');
+	perform from mapping.set_code_mapping(_h, 'HL7_DISCHARGE_DISPOSITION', '', '', 'no follow up required',                     'no-follow-up-required',           _fhir_dischargedispositionhomerton, 'Discharge - normal, no follow up required');
+	perform from mapping.set_code_mapping(_h, 'HL7_DISCHARGE_DISPOSITION', '', '', 'discharge-self/relative',                   'discharge-self-or-relative',      _fhir_dischargedispositionhomerton, 'Discharge - self/relative');
+	perform from mapping.set_code_mapping(_h, 'HL7_DISCHARGE_DISPOSITION', '', '', 'left department before treatment',          'left-dept-before-treatment',      _fhir_dischargedispositionhomerton, 'Left department before treatment');
+	perform from mapping.set_code_mapping(_h, 'HL7_DISCHARGE_DISPOSITION', '', '', 'other',                                     'other',                           _fhir_dischargedispositionhomerton, 'Other');
+	perform from mapping.set_code_mapping(_h, 'HL7_DISCHARGE_DISPOSITION', '', '', 'referral to general practitioner',          'referral-to-gp',                  _fhir_dischargedispositionhomerton, 'Referred to general practitioner');
+	perform from mapping.set_code_mapping(_h, 'HL7_DISCHARGE_DISPOSITION', '', '', 'referral to outpatient clinic',             'referred-to-outpatient-clinic',   _fhir_dischargedispositionhomerton, 'Referred to outpatient clinic');
+	perform from mapping.set_code_mapping(_h, 'HL7_DISCHARGE_DISPOSITION', '', '', 'referred to a\t\e clinic',                  'referred-to-ae-clinic',           _fhir_dischargedispositionhomerton, 'Referred to A&E clinic');
+	perform from mapping.set_code_mapping(_h, 'HL7_DISCHARGE_DISPOSITION', '', '', 'referred to a&e clinic',                    'referred-to-ae-clinic',           _fhir_dischargedispositionhomerton, 'Referred to A&E clinic');
+	perform from mapping.set_code_mapping(_h, 'HL7_DISCHARGE_DISPOSITION', '', '', 'referred to fracture clinic',               'referred-to-fracture-clinic',     _fhir_dischargedispositionhomerton, 'Referred to fracture clinic');
+	perform from mapping.set_code_mapping(_h, 'HL7_DISCHARGE_DISPOSITION', '', '', 'referred to other health care profession',  'referred-to-other-hcp',           _fhir_dischargedispositionhomerton, 'Referred to other health care profession');
+	perform from mapping.set_code_mapping(_h, 'HL7_DISCHARGE_DISPOSITION', '', '', 'transferred to other health care provider', 'transfer-to-other-hcp',           _fhir_dischargedispositionhomerton, 'Transfer to other health care provider');
+	perform from mapping.set_code_mapping(_h, 'HL7_DISCHARGE_DISPOSITION', '', '', 'transferred to other health care provide',  'transfer-to-other-hcp',           _fhir_dischargedispositionhomerton, 'Transfer to other health care provider');
 
 end
 $$
