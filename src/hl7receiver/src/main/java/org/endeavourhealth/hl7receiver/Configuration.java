@@ -47,8 +47,8 @@ public final class Configuration
     private Configuration() throws ConfigurationException
     {
         initialiseMachineName();
-        initialiseDBConnectionPool();
         initialiseConfigManager();
+        initialiseDBConnectionPool();
         addHL7LogAppender();
         loadDbConfiguration();
     }
