@@ -51,6 +51,7 @@ create table mapping.code_context
 	code_context_id integer not null,
 	code_context_name varchar(100) not null,
 	source_code_is_case_insensitive boolean not null,
+	source_term_is_case_insensitive boolean not null,
 	code_action_id_unmapped_default char(1) not null,
 	message_type varchar(100) not null,
 	field_locator varchar(100) not null,

@@ -20,6 +20,7 @@ declare
 	_source_code_origin_id char(1);
 	_source_code_context_id integer;
 	_source_code_is_case_insensitive boolean;
+	_source_term_is_case_insensitive boolean;
 	_code_action_id_unmapped_default char(1);
 	_source_code_system_id integer;
 	_code_id integer;
@@ -69,9 +70,11 @@ begin
 	--
 	select
 		source_code_is_case_insensitive,
+		source_term_is_case_insensitive,
 		code_action_id_unmapped_default
 	into
 		_source_code_is_case_insensitive,
+		_source_term_is_case_insensitive,
 		_code_action_id_unmapped_default
 	from mapping.code_context
 	where code_context_id = _source_code_context_id;
@@ -80,11 +83,17 @@ begin
 	-- clean code and term
 	--
 	_source_code = trim(coalesce(_source_code, ''));
-	_source_term = trim(coalesce(_source_term, ''));
 
 	if (_source_code_is_case_insensitive)
 	then
 		_source_code = lower(_source_code);
+	end if;
+
+	_source_term = trim(coalesce(_source_term, ''));
+	
+	if (_source_term_is_case_insensitive)
+	then
+		_source_term = lower(_source_term);
 	end if;
 		
 	--------------------------------------------
