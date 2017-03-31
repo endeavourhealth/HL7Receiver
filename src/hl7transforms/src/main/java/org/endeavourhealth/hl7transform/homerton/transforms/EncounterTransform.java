@@ -11,8 +11,6 @@ import org.endeavourhealth.hl7transform.common.ResourceTag;
 import org.endeavourhealth.hl7transform.common.ResourceTransformBase;
 import org.endeavourhealth.hl7transform.homerton.transforms.constants.HomertonConstants;
 import org.endeavourhealth.hl7transform.homerton.transforms.converters.DateTimeHelper;
-import org.endeavourhealth.hl7transform.homerton.transforms.valuesets.HomertonDischargeDisposition;
-import org.endeavourhealth.hl7transform.homerton.transforms.valuesets.HomertonEncounterType;
 import org.endeavourhealth.hl7transform.mapper.exceptions.MapperException;
 import org.endeavourhealth.hl7transform.mapper.Mapper;
 import org.endeavourhealth.hl7parser.ParseException;
@@ -185,19 +183,10 @@ public class EncounterTransform extends ResourceTransformBase {
 
         Pv1Segment pv1Segment = source.getPv1Segment();
 
-        if (StringUtils.isNotBlank(pv1Segment.getPatientType())) {
+        CodeableConcept patientType = this.mapper.getCodeMapper().mapPatientType(pv1Segment.getPatientType());
 
-            HomertonEncounterType encounterType = this.mapper.getCodeMapper().mapPatientType(pv1Segment.getPatientType());
-
-            CodeableConcept codeableConcept = new CodeableConcept()
-                    .addCoding(new Coding()
-                            .setSystem(encounterType.getSystem())
-                            .setCode(encounterType.getCode())
-                            .setDisplay(encounterType.getDescription()))
-                    .setText(pv1Segment.getPatientType());
-
-            target.addType(codeableConcept);
-        }
+        if (patientType != null)
+            target.addType(patientType);
     }
 
     private void setPatient(Encounter target) throws TransformException {
@@ -280,17 +269,12 @@ public class EncounterTransform extends ResourceTransformBase {
     private void setDischargeDisposition(AdtMessage source, Encounter target) throws TransformException, MapperException {
         Pv1Segment pv1Segment = source.getPv1Segment();
 
-        HomertonDischargeDisposition dischargeDisposition = this.mapper.getCodeMapper().mapDischargeDisposition(pv1Segment.getDischargeDisposition());
+        CodeableConcept dischargeDisposition = this.mapper.getCodeMapper().mapDischargeDisposition(pv1Segment.getDischargeDisposition());
 
         if (dischargeDisposition != null) {
             Encounter.EncounterHospitalizationComponent hospitalizationComponent = getHospitalisationComponent(target);
 
-            hospitalizationComponent.setDischargeDisposition(new CodeableConcept()
-                    .addCoding(new Coding()
-                            .setSystem(dischargeDisposition.getSystem())
-                            .setCode(dischargeDisposition.getCode())
-                            .setDisplay(dischargeDisposition.getDescription()))
-                    .setText(pv1Segment.getDischargeDisposition()));
+            hospitalizationComponent.setDischargeDisposition(dischargeDisposition);
         }
     }
 

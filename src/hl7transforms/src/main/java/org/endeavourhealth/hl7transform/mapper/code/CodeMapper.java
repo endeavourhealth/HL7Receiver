@@ -1,7 +1,5 @@
 package org.endeavourhealth.hl7transform.mapper.code;
 
-import org.endeavourhealth.hl7transform.homerton.transforms.valuesets.HomertonDischargeDisposition;
-import org.endeavourhealth.hl7transform.homerton.transforms.valuesets.HomertonEncounterType;
 import org.endeavourhealth.hl7transform.mapper.Mapper;
 import org.endeavourhealth.hl7transform.mapper.exceptions.MapperException;
 import org.hl7.fhir.instance.model.*;
@@ -75,13 +73,11 @@ public class CodeMapper extends CodeMapperBase {
                         (r) -> r.getSystem());
     }
 
-    public HomertonEncounterType mapPatientType(String patientType) throws MapperException {
+    public CodeableConcept mapPatientType(String patientType) throws MapperException {
         return this
-                .mapCodeToEnum(
+                .mapTerm(
                         CodeContext.HL7_PATIENT_TYPE,
-                        patientType,
-                        (t) -> HomertonEncounterType.fromCode(t),
-                        (r) -> r.getSystem());
+                        patientType);
     }
 
     public CodeableConcept mapAdmissionType(String admissionType) throws MapperException {
@@ -91,12 +87,10 @@ public class CodeMapper extends CodeMapperBase {
                         admissionType);
     }
 
-    public HomertonDischargeDisposition mapDischargeDisposition(String dischargeDisposition) throws MapperException {
+    public CodeableConcept mapDischargeDisposition(String dischargeDisposition) throws MapperException {
         return this
-                .mapCodeToEnum(
+                .mapTerm(
                         CodeContext.HL7_DISCHARGE_DISPOSITION,
-                        dischargeDisposition,
-                        (t) -> HomertonDischargeDisposition.fromCode(t),
-                        (r) -> r.getSystem());
+                        dischargeDisposition);
     }
 }
