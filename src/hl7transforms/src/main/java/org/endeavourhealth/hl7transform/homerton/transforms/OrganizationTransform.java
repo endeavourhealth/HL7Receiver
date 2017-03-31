@@ -58,8 +58,9 @@ public class OrganizationTransform extends ResourceTransformBase {
         if (StringUtils.isBlank(hospitalServiceName))
             return null;
 
-        if (!servicingFacilityName.equals(HomertonConstants.servicingFacility))
-            throw new TransformException("Hospital servicing facility of " + servicingFacilityName + " not recognised");
+        if (StringUtils.isNotBlank(servicingFacilityName))
+            if (!servicingFacilityName.equals(HomertonConstants.servicingFacility))
+                throw new TransformException("Hospital servicing facility of " + servicingFacilityName + " not recognised");
 
         Reference managingOrganisationReference = this.targetResources.getResourceReference(ResourceTag.MainHospitalOrganisation, Organization.class);
 

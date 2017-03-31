@@ -86,8 +86,9 @@ public class EpisodeOfCareTransform extends ResourceTransformBase {
 
         String servicingFacilityName = StringUtils.trim(pv1Segment.getServicingFacility()).toUpperCase();
 
-        if (!servicingFacilityName.equals(HomertonConstants.servicingFacility))
-            throw new TransformException("Hospital servicing facility of " + servicingFacilityName + " not recognised");
+        if (StringUtils.isNotBlank(servicingFacilityName))
+            if (!servicingFacilityName.equals(HomertonConstants.servicingFacility))
+                throw new TransformException("Hospital servicing facility of " + servicingFacilityName + " not recognised");
 
         target.setManagingOrganization(targetResources.getResourceReference(ResourceTag.MainHospitalOrganisation, Organization.class));
     }
