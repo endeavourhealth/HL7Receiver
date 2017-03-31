@@ -17,6 +17,7 @@
         <fhir-dstu2.version>1.0.1.7108</fhir-dstu2.version>
         <guava-version>21.0</guava-version>
         <hapi.version>2.2</hapi.version>
+        <hikari.version>2.5.1</hikari.version>
         <httpcore.version>4.4.6</httpcore.version>
         <keycloak.version>2.0.0.Final</keycloak.version>
         <slf4j.version>1.7.21</slf4j.version>

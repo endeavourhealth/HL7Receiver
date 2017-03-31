@@ -1,8 +1,8 @@
 package org.endeavourhealth.hl7receiver;
 
+import com.zaxxer.hikari.HikariDataSource;
 import org.endeavourhealth.common.config.ConfigManager;
 import org.endeavourhealth.common.config.ConfigManagerException;
-import org.endeavourhealth.common.postgres.PgDataSource;
 import org.endeavourhealth.common.postgres.logdigest.LogDigestAppender;
 import org.endeavourhealth.hl7receiver.model.db.DbChannelOption;
 import org.endeavourhealth.hl7receiver.model.db.DbChannelOptionType;
@@ -42,10 +42,12 @@ public final class Configuration
     private String postgresUrl;
     private String postgresUsername;
     private String postgresPassword;
+    private DataSource dataSource;
 
     private Configuration() throws ConfigurationException
     {
         initialiseMachineName();
+        initialiseDBConnectionPool();
         initialiseConfigManager();
         addHL7LogAppender();
         loadDbConfiguration();
@@ -89,9 +91,8 @@ public final class Configuration
         }
     }
 
-    public DataSource getDatabaseConnection() throws SQLException
-    {
-        return PgDataSource.get(postgresUrl, postgresUsername, postgresPassword);
+    public DataSource getDatabaseConnection() throws SQLException {
+        return this.dataSource;
     }
 
     public String getMachineName()
@@ -124,5 +125,25 @@ public final class Configuration
             return null;
 
         return dbChannelOptions.get(0);
+    }
+
+    private synchronized void initialiseDBConnectionPool() throws ConfigurationException {
+        try {
+            if (this.dataSource == null) {
+
+                HikariDataSource hikariDataSource = new HikariDataSource();
+                hikariDataSource.setJdbcUrl(postgresUrl);
+                hikariDataSource.setUsername(postgresUsername);
+                hikariDataSource.setPassword(postgresPassword);
+                hikariDataSource.setMaximumPoolSize(15);
+                hikariDataSource.setMinimumIdle(2);
+                hikariDataSource.setIdleTimeout(60000);
+                hikariDataSource.setPoolName("HL7ReceiverDBConnectionPool");
+
+                this.dataSource = hikariDataSource;
+            }
+        } catch (Exception e) {
+            throw new ConfigurationException("Error creating Hikari connection pool", e);
+        }
     }
 }
