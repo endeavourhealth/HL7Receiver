@@ -159,7 +159,7 @@ public class HomertonAdtTransform extends Transform {
 
             long segmentCount = sourceMessage.getSegmentCount(SegmentName.PV1);
 
-            validateMinAndMaxSegmentCount(sourceMessage, SegmentName.PV2, segmentCount, segmentCount);
+            validateMinAndMaxSegmentCount(sourceMessage, SegmentName.PV2, 0, segmentCount);
         }
     }
 

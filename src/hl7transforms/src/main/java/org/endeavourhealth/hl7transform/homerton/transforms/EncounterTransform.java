@@ -305,6 +305,7 @@ public class EncounterTransform extends ResourceTransformBase {
             case "nhs provider-mental health": return locationTransform.createClassOfLocation("NHS health care provider - mental health", null);
             case "nhs nursing home": return locationTransform.createClassOfLocation("NHS nursing home", null);
             case "non-nhs residential care": return locationTransform.createClassOfLocation("Non-NHS residential care provider", null);
+            case "non-nhs hospice": return locationTransform.createClassOfLocation("Non-NHS hospice", null);
             case "usual place of residence": return locationTransform.createClassOfLocation("Usual place of residence", LocationPhysicalType.HO);
             case "temporary home": return locationTransform.createClassOfLocation("Temporary place of residence", LocationPhysicalType.HO);
             case "not applicable-died or stillbirth": return null;
