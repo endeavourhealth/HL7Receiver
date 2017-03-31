@@ -305,6 +305,7 @@ begin
 	perform from mapping.set_code_mapping(_h, 'HL7_DISCHARGE_DISPOSITION', 'referred to fracture clinic',               '', '', 'referred-to-fracture-clinic',     _fhir_dischargedispositionhomerton, 'Referred to fracture clinic');
 	perform from mapping.set_code_mapping(_h, 'HL7_DISCHARGE_DISPOSITION', 'referred to other health care profession',  '', '', 'referred-to-other-hcp',           _fhir_dischargedispositionhomerton, 'Referred to other health care profession');
 	perform from mapping.set_code_mapping(_h, 'HL7_DISCHARGE_DISPOSITION', 'transferred to other health care provider', '', '', 'transfer-to-other-hcp',           _fhir_dischargedispositionhomerton, 'Transfer to other health care provider');
-	
+	perform from mapping.set_code_mapping(_h, 'HL7_DISCHARGE_DISPOSITION', 'transferred to other health care provide',  '', '', 'transfer-to-other-hcp',           _fhir_dischargedispositionhomerton, 'Transfer to other health care provider');
+
 end
 $$
