@@ -28,6 +28,8 @@ import org.endeavourhealth.hl7parser.messages.AdtMessage;
 import org.endeavourhealth.hl7parser.segments.Nk1Segment;
 import org.endeavourhealth.hl7parser.segments.PidSegment;
 import org.hl7.fhir.instance.model.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -35,6 +37,8 @@ import java.util.UUID;
 import java.util.function.Consumer;
 
 public class PatientTransform extends ResourceTransformBase {
+
+    private static final Logger LOG = LoggerFactory.getLogger(PatientTransform.class);
 
     public PatientTransform(Mapper mapper, ResourceContainer targetResources) {
         super(mapper, targetResources);
@@ -125,6 +129,8 @@ public class PatientTransform extends ResourceTransformBase {
     private void addIdentifiers(AdtMessage source, Patient target) throws TransformException {
         List<Cx> identifiers = getAllPatientIdentifiers(source);
 
+        List<Identifier> targetIdentifiers = new ArrayList<>();
+
         for (Cx cx : identifiers) {
             Identifier identifier = IdentifierConverter.createIdentifier(cx, getResourceType());
 
@@ -134,9 +140,16 @@ public class PatientTransform extends ResourceTransformBase {
                     if (identifier.getSystem().equals(FhirUri.IDENTIFIER_SYSTEM_NHSNUMBER))
                         addTraceStatus(source.getPidSegment(), identifier);
 
-                target.addIdentifier(identifier);
             }
+
+            if (!targetIdentifiers.stream().anyMatch(t -> StringUtils.equals(identifier.getSystem(), t.getSystem())))
+                targetIdentifiers.add(identifier);
+            else
+                LOG.warn("More than one patient identifier exists with identifier system " + identifier.getSystem());
         }
+
+        for (Identifier targetIdentifier : targetIdentifiers)
+            target.addIdentifier(targetIdentifier);
     }
 
     private static void addTraceStatus(PidSegment sourcePid, Identifier target) {
