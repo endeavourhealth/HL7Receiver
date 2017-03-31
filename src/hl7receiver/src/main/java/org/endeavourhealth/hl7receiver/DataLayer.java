@@ -324,6 +324,6 @@ public class DataLayer implements IDBDigestLogger {
                         .setTargetAction(resultSet.getString("target_code_action_id"))
                         .setCode(resultSet.getString("target_code"))
                         .setSystem(resultSet.getString("target_code_system_identifier"))
-                        .setTerm("target_term"));
+                        .setTerm(resultSet.getString("target_term")));
     }
 }
