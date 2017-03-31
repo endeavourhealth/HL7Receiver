@@ -176,6 +176,7 @@ begin
 	perform mapping.set_code_mapping(_h, 'HL7_SEX', 'male',        '', '', 'male',    _fhir_gender, 'Male');
 	perform mapping.set_code_mapping(_h, 'HL7_SEX', 'female',      '', '', 'female',  _fhir_gender, 'Female');
 	perform mapping.set_code_mapping(_h, 'HL7_SEX', 'unspecified', '', '', 'unknown', _fhir_gender, 'Unknown');
+	perform mapping.set_code_mapping(_h, 'HL7_SEX', 'not known',   '', '', 'other',   _fhir_gender, 'Other');
 
 	------------------------------------------------------------
 	-- v2 name type -> fhir name use
