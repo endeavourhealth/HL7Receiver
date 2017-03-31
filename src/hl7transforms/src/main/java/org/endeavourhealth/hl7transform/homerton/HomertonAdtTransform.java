@@ -139,7 +139,7 @@ public class HomertonAdtTransform extends Transform {
 
         String messageType = StringUtils.trim(sourceMessage.getMshSegment().getMessageType());
         List<String> swapMessageTypes = Arrays.asList("ADT^A17");
-        List<String> mergeMessageTypes = Arrays.asList("ADT^A17", "ADT^A34", "ADT^A44");
+        List<String> mergeMessageTypes = Arrays.asList("ADT^A17", "ADT^A34", "ADT^A35", "ADT^A44");
 
         validateExactlyOneSegment(sourceMessage, SegmentName.MSH);
         validateExactlyOneSegment(sourceMessage, SegmentName.EVN);
