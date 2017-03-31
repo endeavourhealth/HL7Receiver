@@ -42,7 +42,7 @@ sudo rm -f $DEPLOY_LOCATION/$JAR_FILE
 
 echo "> Deploying new JAR to $DEPLOY_LOCATION"
 echo
-sudo mv $DOWNLOAD_LOCATION/$JAR_FILE /opt/hl7receiver/
+sudo mv $DOWNLOAD_LOCATION/$JAR_FILE $DEPLOY_LOCATION/
 
 echo "> Starting service $SERVICE_NAME"
 echo
