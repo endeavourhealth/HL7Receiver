@@ -6,7 +6,7 @@ create or replace function log.reset_next_attempt_date_on_failed_messages
 )
 returns table
 (
-	message_count integer
+	message_count bigint
 )
 as $$
 begin

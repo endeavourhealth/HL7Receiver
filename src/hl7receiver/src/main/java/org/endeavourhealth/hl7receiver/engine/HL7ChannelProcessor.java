@@ -253,7 +253,7 @@ public class HL7ChannelProcessor implements Runnable {
 
     private void resetNextAttemptDateOnFailedMessages() {
         try {
-            int messagesResetCount = dataLayer.resetNextAttemptDateOnFailedMessages(dbChannel.getChannelId(), configuration.getInstanceId());
+            long messagesResetCount = dataLayer.resetNextAttemptDateOnFailedMessages(dbChannel.getChannelId(), configuration.getInstanceId());
 
             if (messagesResetCount > 0)
                 LOG.info("Reset next attempt date of {0} message(s) in error", messagesResetCount);
