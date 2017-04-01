@@ -199,6 +199,7 @@ begin
 	_fhir_addressuse = 'http://hl7.org/fhir/address-use';
 
 	perform mapping.set_code_mapping(_h, 'HL7_ADDRESS_TYPE', 'home',      '', '', 'home', _fhir_addressuse, 'Home');
+	perform mapping.set_code_mapping(_h, 'HL7_ADDRESS_TYPE', 'business',  '', '', 'work', _fhir_addressuse, 'Work');
 	perform mapping.set_code_mapping(_h, 'HL7_ADDRESS_TYPE', 'temporary', '', '', 'temp', _fhir_addressuse, 'Temporary');
 	perform mapping.set_code_mapping(_h, 'HL7_ADDRESS_TYPE', 'alternate', '', '', 'temp', _fhir_addressuse, 'Temporary');
 	perform mapping.set_code_mapping(_h, 'HL7_ADDRESS_TYPE', 'previous',  '', '', 'old',  _fhir_addressuse, 'Old / Incorrect');
@@ -278,18 +279,19 @@ begin
 	------------------------------------------------------------
 	_fhir_admissiontypehomerton = 'http://endeavourhealth.org/fhir/ValueSet/admission-type-homerton';
 	
-	perform from mapping.set_code_mapping(_h, 'HL7_ADMISSION_TYPE', '', '', 'emergency-a&e/dental',       'emergency-ae-or-dental',     _fhir_admissiontypehomerton, 'Emergency - A&E/Dental');
-	perform from mapping.set_code_mapping(_h, 'HL7_ADMISSION_TYPE', '', '', 'emergency-a\t\e/dental',     'emergency-ae-or-dental',     _fhir_admissiontypehomerton, 'Emergency - A&E/Dental');
-	perform from mapping.set_code_mapping(_h, 'HL7_ADMISSION_TYPE', '', '', 'emergency-o/p clinic',       'emergency-outpatients',      _fhir_admissiontypehomerton, 'Emergency - Outpatients clinic');
-	perform from mapping.set_code_mapping(_h, 'HL7_ADMISSION_TYPE', '', '', 'emergency-gp',               'emergency-gp',               _fhir_admissiontypehomerton, 'Emergency - GP');
-	perform from mapping.set_code_mapping(_h, 'HL7_ADMISSION_TYPE', '', '', 'emergency-other',            'emergency-other',            _fhir_admissiontypehomerton, 'Emergency - Other');
-	perform from mapping.set_code_mapping(_h, 'HL7_ADMISSION_TYPE', '', '', 'maternity-ante partum',      'maternity-ante-partum',      _fhir_admissiontypehomerton, 'Maternity - Ante partum');
-	perform from mapping.set_code_mapping(_h, 'HL7_ADMISSION_TYPE', '', '', 'maternity-post partum',      'maternity-post-partum',      _fhir_admissiontypehomerton, 'Maternity - Post partum');
-	perform from mapping.set_code_mapping(_h, 'HL7_ADMISSION_TYPE', '', '', 'baby born in hospital',      'baby-born-in-hospital',      _fhir_admissiontypehomerton, 'Baby born in hospital');
-	perform from mapping.set_code_mapping(_h, 'HL7_ADMISSION_TYPE', '', '', 'baby born outside hospital', 'baby-born-outside-hospital', _fhir_admissiontypehomerton, 'Baby born outside hospital');
-	perform from mapping.set_code_mapping(_h, 'HL7_ADMISSION_TYPE', '', '', 'planned',                    'planned',                    _fhir_admissiontypehomerton, 'Planned');
-	perform from mapping.set_code_mapping(_h, 'HL7_ADMISSION_TYPE', '', '', 'waiting list',               'booked',                     _fhir_admissiontypehomerton, 'Booked');
-	perform from mapping.set_code_mapping(_h, 'HL7_ADMISSION_TYPE', '', '', 'booked',                     'wait-list',                  _fhir_admissiontypehomerton, 'Waiting list');
+	perform from mapping.set_code_mapping(_h, 'HL7_ADMISSION_TYPE', '', '', 'emergency-a&e/dental',          'emergency-ae-or-dental',        _fhir_admissiontypehomerton, 'Emergency - A&E/Dental');
+	perform from mapping.set_code_mapping(_h, 'HL7_ADMISSION_TYPE', '', '', 'emergency-a\t\e/dental',        'emergency-ae-or-dental',        _fhir_admissiontypehomerton, 'Emergency - A&E/Dental');
+	perform from mapping.set_code_mapping(_h, 'HL7_ADMISSION_TYPE', '', '', 'emergency-o/p clinic',          'emergency-outpatients',         _fhir_admissiontypehomerton, 'Emergency - Outpatients clinic');
+	perform from mapping.set_code_mapping(_h, 'HL7_ADMISSION_TYPE', '', '', 'emergency-gp',                  'emergency-gp',                  _fhir_admissiontypehomerton, 'Emergency - GP');
+	perform from mapping.set_code_mapping(_h, 'HL7_ADMISSION_TYPE', '', '', 'emergency-other',               'emergency-other',               _fhir_admissiontypehomerton, 'Emergency - Other');
+	perform from mapping.set_code_mapping(_h, 'HL7_ADMISSION_TYPE', '', '', 'maternity-ante partum',         'maternity-ante-partum',         _fhir_admissiontypehomerton, 'Maternity - Ante partum');
+	perform from mapping.set_code_mapping(_h, 'HL7_ADMISSION_TYPE', '', '', 'maternity-post partum',         'maternity-post-partum',         _fhir_admissiontypehomerton, 'Maternity - Post partum');
+	perform from mapping.set_code_mapping(_h, 'HL7_ADMISSION_TYPE', '', '', 'baby born in hospital',         'baby-born-in-hospital',         _fhir_admissiontypehomerton, 'Baby born in hospital');
+	perform from mapping.set_code_mapping(_h, 'HL7_ADMISSION_TYPE', '', '', 'baby born outside hospital',    'baby-born-outside-hospital',    _fhir_admissiontypehomerton, 'Baby born outside hospital');
+	perform from mapping.set_code_mapping(_h, 'HL7_ADMISSION_TYPE', '', '', 'baby born at home as intended', 'baby-born-at-home-as-intended', _fhir_admissiontypehomerton, 'Baby born at home as intended');
+	perform from mapping.set_code_mapping(_h, 'HL7_ADMISSION_TYPE', '', '', 'planned',                       'planned',                       _fhir_admissiontypehomerton, 'Planned');
+	perform from mapping.set_code_mapping(_h, 'HL7_ADMISSION_TYPE', '', '', 'waiting list',                  'booked',                        _fhir_admissiontypehomerton, 'Booked');
+	perform from mapping.set_code_mapping(_h, 'HL7_ADMISSION_TYPE', '', '', 'booked',                        'wait-list',                     _fhir_admissiontypehomerton, 'Waiting list');
 
 	perform mapping.set_code_mapping_action_not_mapped(_h, 'HL7_ADMISSION_TYPE', '', '', 'cd:59514', 'X');
 	
