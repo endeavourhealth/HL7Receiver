@@ -1,6 +1,7 @@
 package org.endeavourhealth.hl7receiver.engine;
 
 import org.apache.commons.lang3.StringUtils;
+import org.endeavourhealth.common.postgres.PgStoredProcException;
 import org.endeavourhealth.hl7receiver.Configuration;
 import org.endeavourhealth.hl7receiver.DataLayer;
 import org.endeavourhealth.hl7receiver.mapping.Mapper;
@@ -12,6 +13,8 @@ import org.slf4j.LoggerFactory;
 
 import java.sql.SQLException;
 import java.time.LocalDateTime;
+import java.util.Arrays;
+import java.util.List;
 
 public class HL7ChannelProcessor implements Runnable {
 
@@ -58,14 +61,21 @@ public class HL7ChannelProcessor implements Runnable {
     @Override
     public void run() {
         boolean gotLock = false;
+        boolean isFirstRun = true;
         boolean isPaused = false;
         LocalDateTime lastLockTriedTime = null;
 
         try {
+
             while (!stopRequested) {
 
                 gotLock = getLock(gotLock);
                 lastLockTriedTime = LocalDateTime.now();
+
+                if (isFirstRun && gotLock)
+                    resetNextAttemptDateOnFailedMessages();
+
+                isFirstRun = false;
 
                 while ((!stopRequested) && (lastLockTriedTime.plusSeconds(LOCK_RECLAIM_INTERVAL_SECONDS).isAfter(LocalDateTime.now()))) {
 
@@ -102,7 +112,12 @@ public class HL7ChannelProcessor implements Runnable {
             }
         }
         catch (Exception e) {
-            LOG.error("Fatal exception in channel processor {} for instance {}", new Object[] { dbChannel.getChannelName(), configuration.getInstanceId(), e });
+            Object[] logArgs = new Object[] {
+                    dbChannel.getChannelName(),
+                    configuration.getMachineName(),
+                    e };
+
+            LOG.error("Fatal exception in channel processor {} for instance {}", logArgs);
         }
 
         releaseLock(gotLock);
@@ -133,8 +148,15 @@ public class HL7ChannelProcessor implements Runnable {
     private Integer setMessageProcessingStarted(int messageId, int instanceId) {
         try {
             return dataLayer.setMessageProcessingStarted(messageId, instanceId);
+
         } catch (Exception e) {
-            LOG.error("Error setting message processing started for message id {} in channel processor {} for instance {}", new Object[] { messageId, dbChannel.getChannelName(), configuration.getInstanceId(), e });
+            Object[] logArgs = new Object[] {
+                    messageId,
+                    dbChannel.getChannelName(),
+                    configuration.getMachineName(),
+                    e };
+
+            LOG.error("Error setting message processing started for message id {} in channel processor {} for instance {}", logArgs);
             return null;
         }
     }
@@ -143,8 +165,15 @@ public class HL7ChannelProcessor implements Runnable {
         try {
             dataLayer.setMessageProcessingSuccess(messageId, attemptId, configuration.getInstanceId());
             return true;
+
         } catch (Exception e) {
-            LOG.error("Error setting message processing success for message id {} in channel processor {} for instance {}", new Object[] { messageId, dbChannel.getChannelName(), configuration.getInstanceId(), e });
+            Object[] logArgs = new Object[] {
+                    messageId,
+                    dbChannel.getChannelName(),
+                    configuration.getMachineName(),
+                    e };
+
+            LOG.error("Error setting message processing success for message id {} in channel processor {} for instance {}", logArgs);
             return false;
         }
     }
@@ -156,11 +185,26 @@ public class HL7ChannelProcessor implements Runnable {
             if (StringUtils.isBlank(exceptionMessage))
                 exceptionMessage = null;
 
-            LOG.error("Error {} occurred while processing message {} in channel processor {} on instance {}", new Object[] { dbMessageStatus.name(), messageId, dbChannel.getChannelName(), configuration.getInstanceId(), exception });
+            Object[] logArgs = new Object[] {
+                    dbMessageStatus.name(),
+                    messageId,
+                    dbChannel.getChannelName(),
+                    configuration.getMachineName(),
+                    exception };
+
+            LOG.error("Error {} occurred while processing message {} in channel processor {} on instance {}", logArgs);
+
             dataLayer.setMessageProcessingFailure(messageId, attemptId, dbMessageStatus, exceptionMessage, configuration.getInstanceId());
 
         } catch (Exception e) {
-            LOG.error("Error adding message status {} for message id {} in channel processor {} for instance {}", new Object[] { dbMessageStatus.name(), messageId, dbChannel.getChannelName(), configuration.getInstanceId(), e });
+            Object[] logArgs = new Object[] {
+                    dbMessageStatus.name(),
+                    messageId,
+                    dbChannel.getChannelName(),
+                    configuration.getMachineName(),
+                    e };
+
+            LOG.error("Error adding message status {} for message id {} in channel processor {} for instance {}", logArgs);
         }
     }
 
@@ -168,7 +212,13 @@ public class HL7ChannelProcessor implements Runnable {
         try {
             return dataLayer.getNextUnprocessedMessage(dbChannel.getChannelId(), configuration.getInstanceId());
         } catch (Exception e) {
-            LOG.error("Error getting next unprocessed message in channel processor {} for instance {} ", new Object[] { dbChannel.getChannelName(), configuration.getInstanceId(), e });
+
+            Object[] logArgs = new Object[] {
+                    dbChannel.getChannelName(),
+                    configuration.getMachineName(),
+                    e };
+
+            LOG.error("Error getting next unprocessed message in channel processor {} for instance {} ", logArgs);
         }
 
         return null;
@@ -190,10 +240,32 @@ public class HL7ChannelProcessor implements Runnable {
             return isPaused;
 
         } catch (Exception e) {
-            LOG.error("Exception getting paused status in channel processor for channel {} for instance {}", new Object[] { dbChannel.getChannelName(), configuration.getMachineName(), e});
+            Object[] logArgs = new Object[] {
+                    dbChannel.getChannelName(),
+                    configuration.getMachineName(),
+                    e };
+
+            LOG.error("Exception getting paused status in channel processor for channel {} for instance {}", logArgs);
         }
 
         return false;
+    }
+
+    private void resetNextAttemptDateOnFailedMessages() {
+        try {
+            int messagesResetCount = dataLayer.resetNextAttemptDateOnFailedMessages(dbChannel.getChannelId(), configuration.getInstanceId());
+
+            if (messagesResetCount > 0)
+                LOG.info("Reset next attempt date of {0} message(s) in error", messagesResetCount);
+
+        } catch (Exception e) {
+            Object[] logArgs = new Object[] {
+                    dbChannel.getChannelName(),
+                    configuration.getMachineName(),
+                    e };
+
+            LOG.error("Exception resetting next attempt date on failed messages on channel {} on instance {}", logArgs);
+        }
     }
 
     private boolean getLock(boolean currentlyHaveLock) {
@@ -206,8 +278,14 @@ public class HL7ChannelProcessor implements Runnable {
             firstLockAttempt = false;
 
             return gotLock;
+
         } catch (Exception e) {
-            LOG.error("Exception getting lock in channel processor on channel {} for instance {}", new Object[] { dbChannel.getChannelName(), configuration.getMachineName(), e });
+            Object[] logArgs = new Object[] {
+                    dbChannel.getChannelName(),
+                    configuration.getMachineName(),
+                    e };
+
+            LOG.error("Exception getting lock in channel processor on channel {} for instance {}", logArgs);
         }
 
         return false;
@@ -219,8 +297,14 @@ public class HL7ChannelProcessor implements Runnable {
                 LOG.info("Releasing lock on channel {} for instance {}", dbChannel.getChannelName(), configuration.getMachineName());
 
             dataLayer.releaseChannelProcessorLock(dbChannel.getChannelId(), configuration.getInstanceId());
+
         } catch (Exception e) {
-            LOG.error("Exception releasing lock in channel processor for channel {} for instance {}", new Object[] { dbChannel.getChannelName(), configuration.getMachineName(), e });
+            Object logArgs = new Object[] {
+                    dbChannel.getChannelName(),
+                    configuration.getMachineName(),
+                    e };
+
+            LOG.error("Exception releasing lock in channel processor for channel {} for instance {}", logArgs);
         }
     }
 }

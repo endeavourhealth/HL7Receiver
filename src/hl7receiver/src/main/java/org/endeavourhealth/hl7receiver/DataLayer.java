@@ -288,6 +288,15 @@ public class DataLayer implements IDBDigestLogger {
         pgStoredProc.execute();
     }
 
+    public int resetNextAttemptDateOnFailedMessages(int channelId, int instanceId) throws PgStoredProcException {
+        PgStoredProc pgStoredProc = new PgStoredProc(dataSource)
+                .setName("log.reset_next_attempt_date_on_failed_messages")
+                .addParameter("_channel_id", channelId)
+                .addParameter("_instance_id", instanceId);
+
+        return pgStoredProc.executeSingleRow((resultSet) -> resultSet.getInt("message_count"));
+    }
+
     public void addMessageProcessingContent(int messageId, int attemptId, DbProcessingContentType processingContentTypeId, String content) throws PgStoredProcException {
         PgStoredProc pgStoredProc = new PgStoredProc(dataSource)
                 .setName("log.add_message_processing_content")
