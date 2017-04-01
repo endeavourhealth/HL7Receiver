@@ -27,7 +27,7 @@ begin
 	with updated_rows as
 	(
 		update log.message 
-		set next_attempt_date = now()
+		set next_attempt_date = case when next_attempt_date > now() then now() else next_attempt_date end
 		where message_id in
 		(
 			select 
