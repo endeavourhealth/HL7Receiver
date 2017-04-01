@@ -259,11 +259,13 @@ public class EncounterTransform extends ResourceTransformBase {
 
         Pv2Segment pv2Segment = sourceMessage.getPv2Segment();
 
-        if (pv2Segment.getAdmitReason() != null)
-            target.addReason(new CodeableConcept().setText(pv2Segment.getAdmitReason().getAsString()));
+        if (pv2Segment != null) {
+            if (pv2Segment.getAdmitReason() != null)
+                target.addReason(new CodeableConcept().setText(pv2Segment.getAdmitReason().getAsString()));
 
-        if (pv2Segment.getTransferReason() != null)
-            target.addReason(new CodeableConcept().setText(pv2Segment.getTransferReason().getAsString()));
+            if (pv2Segment.getTransferReason() != null)
+                target.addReason(new CodeableConcept().setText(pv2Segment.getTransferReason().getAsString()));
+        }
     }
 
     private void setDischargeDisposition(AdtMessage source, Encounter target) throws TransformException, MapperException {
