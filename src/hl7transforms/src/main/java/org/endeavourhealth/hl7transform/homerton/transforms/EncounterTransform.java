@@ -300,14 +300,18 @@ public class EncounterTransform extends ResourceTransformBase {
         LocationTransform locationTransform = new LocationTransform(mapper, targetResources);
 
         switch (dischargeLocation) {
+            case "usual place of residence": return locationTransform.createClassOfLocation("Usual place of residence", LocationPhysicalType.HO);
+            case "temporary home": return locationTransform.createClassOfLocation("Temporary place of residence", LocationPhysicalType.HO);
             case "nhs provider-general": return locationTransform.createClassOfLocation("NHS health care provider - general", null);
             case "nhs provider-maternity": return locationTransform.createClassOfLocation("NHS health care provider - maternity", null);
             case "nhs provider-mental health": return locationTransform.createClassOfLocation("NHS health care provider - mental health", null);
             case "nhs nursing home": return locationTransform.createClassOfLocation("NHS nursing home", null);
+            case "nhs medium secure": return locationTransform.createClassOfLocation("NHS medium secure unit", null);
+            case "high security psychiatric (sco)": return locationTransform.createClassOfLocation("High security psychiatric unit (SCO)", null);
             case "non-nhs residential care": return locationTransform.createClassOfLocation("Non-NHS residential care provider", null);
+            case "non-nhs hospital": return locationTransform.createClassOfLocation("Non-NHS hospital", null);
             case "non-nhs hospice": return locationTransform.createClassOfLocation("Non-NHS hospice", null);
-            case "usual place of residence": return locationTransform.createClassOfLocation("Usual place of residence", LocationPhysicalType.HO);
-            case "temporary home": return locationTransform.createClassOfLocation("Temporary place of residence", LocationPhysicalType.HO);
+            case "penal establishment/police station": return locationTransform.createClassOfLocation("Penal establishment/police station", null);
             case "not applicable-died or stillbirth": return null;
             case "repatriation from hsph": return null;
             case "not known": return null;

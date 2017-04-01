@@ -50,6 +50,7 @@ public class IdentifierConverter {
                 case "homerton case note number | cnn": return FhirUri.IDENTIFIER_SYSTEM_HOMERTON_CNN_PATIENT_ID;
                 case "homerton case note number | mrn": return FhirUri.IDENTIFIER_SYSTEM_HOMERTON_MRN_PATIENT_ID;
                 case "newham case note number | cnn": return FhirUri.IDENTIFIER_SYSTEM_NEWHAM_CNN_PATIENT_ID;
+                case "mrn | newham case note number": return null; //return FhirUri.IDENTIFIER_SYSTEM_NEWHAM_MRN_PATIENT_ID;
                 case "person id | person id": return FhirUri.IDENTIFIER_SYSTEM_HOMERTON_PERSONID_PATIENT_ID;
                 default: throw new TransformException("Patient identifier system not found for " + identifierTypeCode + " | " + assigningAuthority);
             }
@@ -58,7 +59,8 @@ public class IdentifierConverter {
 
             switch (assigningAuthority + " | " + identifierTypeCode) {
                 case "homerton fin | encounter no.": return FhirUri.IDENTIFIER_SYSTEM_HOMERTON_FIN_EPISODE_ID;
-                case " | attendance no.": return FhirUri.IDENTIFIER_SYSTEM_HOMERTON_ATTENDANCE_NO_EPISODE_ID;
+                case " | attendance no.":
+                case "attendance no. | homerton attendance number": return FhirUri.IDENTIFIER_SYSTEM_HOMERTON_ATTENDANCE_NO_EPISODE_ID;
                 default: throw new TransformException("Episode identifier system not found for " + identifierTypeCode + " | " + assigningAuthority);
             }
 
