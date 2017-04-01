@@ -58,6 +58,7 @@ public class HL7ChannelProcessor implements Runnable {
     @Override
     public void run() {
         boolean gotLock = false;
+        boolean isPaused = false;
         LocalDateTime lastLockTriedTime = null;
 
         try {
@@ -70,24 +71,30 @@ public class HL7ChannelProcessor implements Runnable {
 
                     if (gotLock) {
 
-                        DbMessage message = getNextMessage();
+                        isPaused = getIsPaused(isPaused);
 
-                        if (stopRequested)
-                            return;
+                        if (!isPaused) {
 
-                        if (message == null) {
-                            Thread.sleep(THREAD_SLEEP_TIME_MILLIS);
-                            continue;
-                        }
-
-                        if (!processMessage(message)) {
+                            DbMessage message = getNextMessage();
 
                             if (stopRequested)
                                 return;
 
+                            if (message == null) {
+                                Thread.sleep(THREAD_SLEEP_TIME_MILLIS);
+                                continue;
+                            }
+
+                            if (!processMessage(message)) {
+
+                                if (stopRequested)
+                                    return;
+
+                                Thread.sleep(THREAD_SLEEP_TIME_MILLIS);
+                            }
+                        } else {  // isPaused
                             Thread.sleep(THREAD_SLEEP_TIME_MILLIS);
                         }
-
                     } else {  // not gotLock
                         Thread.sleep(THREAD_SLEEP_TIME_MILLIS);
                     }
@@ -167,6 +174,28 @@ public class HL7ChannelProcessor implements Runnable {
         return null;
     }
 
+    private boolean getIsPaused(boolean isCurrentlyPaused) {
+        try {
+            String isPausedString = dataLayer.getChannelOption(dbChannel.getChannelId(), DbChannelOptionType.PAUSE_PROCESSOR);
+
+            boolean isPaused = DbChannelOptionType.isChannelOptionValueTrue(isPausedString);
+
+            final String message = "Channel processor {} on channel {} on instance {}";
+
+            if ((!isCurrentlyPaused) && (isPaused))
+                LOG.info(message, "PAUSED", dbChannel.getChannelName(), configuration.getMachineName());
+            else if ((isCurrentlyPaused) && (!isPaused))
+                LOG.info(message, "RESUMED", dbChannel.getChannelName(), configuration.getMachineName());
+
+            return isPaused;
+
+        } catch (Exception e) {
+            LOG.error("Exception getting paused status in channel processor for channel {} for instance {}", new Object[] { dbChannel.getChannelName(), configuration.getMachineName(), e});
+        }
+
+        return false;
+    }
+
     private boolean getLock(boolean currentlyHaveLock) {
         try {
             boolean gotLock = dataLayer.getChannelProcessorLock(dbChannel.getChannelId(), configuration.getInstanceId(), LOCK_BREAK_OTHERS_SECONDS);
@@ -178,7 +207,7 @@ public class HL7ChannelProcessor implements Runnable {
 
             return gotLock;
         } catch (Exception e) {
-            LOG.error("Exception getting lock in channel processor for channel {} for instance {}", new Object[] { dbChannel.getChannelName(), configuration.getMachineName(), e });
+            LOG.error("Exception getting lock in channel processor on channel {} for instance {}", new Object[] { dbChannel.getChannelName(), configuration.getMachineName(), e });
         }
 
         return false;
