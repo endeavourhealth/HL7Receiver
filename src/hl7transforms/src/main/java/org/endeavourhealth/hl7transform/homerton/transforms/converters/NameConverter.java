@@ -147,8 +147,10 @@ public class NameConverter {
         if (officialNames.size() == 0)
             throw new TransformException("Person does not have a official name");
 
+        // convert 2nd and subsequent official names to usual name - these will have come from the patient alias field
         if (officialNames.size() > 1)
-            throw new TransformException("Person has more than one official name");
+            for (int i = 1; i < officialNames.size(); i++)
+                officialNames.get(i).setUse(HumanName.NameUse.USUAL);
 
         HumanName officialName = officialNames.get(0);
 
