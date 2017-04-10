@@ -2,15 +2,13 @@ package org.endeavourhealth.hl7transform.homerton.transforms;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Validate;
+import org.endeavourhealth.common.fhir.ExtensionConverter;
 import org.endeavourhealth.common.fhir.FhirExtensionUri;
 import org.endeavourhealth.common.fhir.FhirUri;
 import org.endeavourhealth.common.utility.StreamExtension;
-import org.endeavourhealth.hl7parser.segments.Pd1Segment;
 import org.endeavourhealth.hl7transform.common.ResourceContainer;
 import org.endeavourhealth.hl7transform.common.ResourceTag;
 import org.endeavourhealth.hl7transform.common.ResourceTransformBase;
-import org.endeavourhealth.hl7transform.common.converters.ExtensionHelper;
-import org.endeavourhealth.hl7transform.homerton.parser.zdatatypes.Zpd;
 import org.endeavourhealth.hl7transform.homerton.parser.zsegments.HomertonSegmentName;
 import org.endeavourhealth.hl7transform.homerton.parser.zsegments.ZpiSegment;
 import org.endeavourhealth.hl7transform.homerton.transforms.constants.HomertonConstants;
@@ -126,13 +124,13 @@ public class PatientTransform extends ResourceTransformBase {
         return patientIdentifiers;
     }
 
-    private void addIdentifiers(AdtMessage source, Patient target) throws TransformException {
+    private void addIdentifiers(AdtMessage source, Patient target) throws TransformException, MapperException {
         List<Cx> identifiers = getAllPatientIdentifiers(source);
 
         List<Identifier> targetIdentifiers = new ArrayList<>();
 
         for (Cx cx : identifiers) {
-            Identifier identifier = IdentifierConverter.createIdentifier(cx, getResourceType());
+            Identifier identifier = IdentifierConverter.createIdentifier(cx, getResourceType(), mapper);
 
             if (identifier != null) {
 
@@ -178,43 +176,39 @@ public class PatientTransform extends ResourceTransformBase {
         }
     }
 
-    private static void addReligion(PidSegment sourcePid, Patient target) {
+    private void addReligion(PidSegment sourcePid, Patient target) throws MapperException {
         if (sourcePid.getReligion() == null)
             return;
 
-        if (StringUtils.isBlank(sourcePid.getReligion().getAsString()))
-            return;
+        CodeableConcept religion = mapper.getCodeMapper().mapReligion(sourcePid.getReligion().getAsString());
 
-        target.addExtension(new Extension()
-                .setUrl(FhirExtensionUri.PATIENT_RELIGION)
-                .setValue(new CodeableConcept()
-                        .setText(sourcePid.getReligion().getAsString())));
+        if (religion != null)
+            target.addExtension(ExtensionConverter.createExtension(FhirExtensionUri.PATIENT_RELIGION, religion));
     }
 
-    private static void addEthnicity(PidSegment sourcePid, Patient target) throws TransformException {
+    private void addEthnicity(PidSegment sourcePid, Patient target) throws TransformException, MapperException {
         if (sourcePid.getEthnicGroups() == null)
             return;
 
         for (Ce ce : sourcePid.getEthnicGroups()) {
-            if (StringUtils.isBlank(ce.getAsString()))
+            if (ce == null)
                 continue;
 
-            target.addExtension(new Extension()
-                    .setUrl(FhirExtensionUri.PATIENT_ETHNICITY)
-                    .setValue(new CodeableConcept()
-                            .setText(ce.getAsString())));
+            CodeableConcept ethnicGroup = mapper.getCodeMapper().mapEthnicGroup(ce.getAsString());
+
+            if (ethnicGroup != null)
+                target.addExtension(ExtensionConverter.createExtension(FhirExtensionUri.PATIENT_ETHNICITY, ethnicGroup));
         }
     }
 
-    private static void addMaritalStatus(PidSegment sourcePid, Patient target) {
+    private void addMaritalStatus(PidSegment sourcePid, Patient target) throws MapperException {
         if (sourcePid.getMaritalStatus() == null)
             return;
 
-        if (StringUtils.isEmpty(sourcePid.getMaritalStatus().getAsString()))
-            return;
+        CodeableConcept maritalStatus = mapper.getCodeMapper().mapMaritalStatus(sourcePid.getMaritalStatus().getAsString());
 
-        target.setMaritalStatus(new CodeableConcept()
-                .setText(sourcePid.getMaritalStatus().getAsString()));
+        if (maritalStatus != null)
+            target.setMaritalStatus(maritalStatus);
     }
 
     private void setAddress(AdtMessage source, Patient target) throws TransformException, MapperException {
@@ -256,37 +250,45 @@ public class PatientTransform extends ResourceTransformBase {
         target.setBirthDate(sourcePid.getDateOfBirth().asDate());
 
         if (sourcePid.getDateOfBirth().hasTimeComponent())
-            target.addExtension(ExtensionHelper.createDateTimeTypeExtension(FhirExtensionUri.PATIENT_BIRTH_DATE_TIME, DateConverter.getDateType(sourcePid.getDateOfBirth())));
+            target.addExtension(ExtensionConverter.createExtension(FhirExtensionUri.PATIENT_BIRTH_DATE_TIME, DateConverter.getDateType(sourcePid.getDateOfBirth())));
     }
 
-    private static void setDateOfDeath(PidSegment sourcePid, Patient target) throws ParseException, TransformException {
+    private void setDateOfDeath(PidSegment sourcePid, Patient target) throws ParseException, TransformException, MapperException {
         if (sourcePid.getDateOfDeath() != null)
             target.setDeceased(DateConverter.getDateType(sourcePid.getDateOfDeath()));
         else if (isDeceased(sourcePid.getDeathIndicator()))
             target.setDeceased(new BooleanType(true));
     }
 
-    private static void setCommunication(PidSegment sourcePid, Patient target) throws ParseException, TransformException {
-        if (sourcePid.getPrimaryLanguage() != null) {
-            Patient.PatientCommunicationComponent communicationComponent = new Patient.PatientCommunicationComponent();
-            communicationComponent.setLanguage(new CodeableConcept().setText(sourcePid.getPrimaryLanguage().getAsString()));
-            communicationComponent.setPreferred(true);
-            target.addCommunication(communicationComponent);
+    private void setCommunication(PidSegment sourcePid, Patient target) throws ParseException, TransformException, MapperException {
+        if (sourcePid.getPrimaryLanguage() == null)
+            return;
+
+        CodeableConcept primaryLanguage = mapper.getCodeMapper().mapPrimaryLanguage(sourcePid.getPrimaryLanguage().getAsString());
+
+        if (primaryLanguage != null) {
+            target.addCommunication(new Patient.PatientCommunicationComponent()
+                    .setLanguage(primaryLanguage)
+                    .setPreferred(true));
         }
     }
 
-    private static boolean isDeceased(String deathIndicator) throws TransformException {
+    private boolean isDeceased(String deathIndicator) throws TransformException, MapperException {
         if (StringUtils.isEmpty(deathIndicator))
             return false;
 
-        String indicator = deathIndicator.trim().toLowerCase().substring(0, 1);
+        String mappedDeathIndicator = mapper.getCodeMapper().mapPatientDeathIndicator(deathIndicator);
 
-        if (indicator.equals("y"))
-            return true;
-        else if (indicator.equals("n"))
+        if (StringUtils.isEmpty(mappedDeathIndicator))
             return false;
 
-        throw new TransformException(indicator + " not recognised as a death indicator");
+        if (mappedDeathIndicator.equalsIgnoreCase("false"))
+            return false;
+
+        if (mappedDeathIndicator.equalsIgnoreCase("true"))
+            return true;
+
+        throw new TransformException(mappedDeathIndicator + " not recognised as a mapped death indicator code");
     }
 
     private void addPatientContacts(AdtMessage source, Patient target) throws TransformException, ParseException, MapperException {
@@ -331,11 +333,11 @@ public class PatientTransform extends ResourceTransformBase {
             contactComponent.addRelationship(new CodeableConcept().setText((sourceNk1.getContactRole().getAsString())));
 
         if (sourceNk1.getDateTimeOfBirth() != null)
-            contactComponent.addExtension(ExtensionHelper.createDateTimeTypeExtension(FhirExtensionUri.PATIENT_CONTACT_DOB,
+            contactComponent.addExtension(ExtensionConverter.createExtension(FhirExtensionUri.PATIENT_CONTACT_DOB,
                     DateConverter.getDateType(sourceNk1.getDateTimeOfBirth())));
 
         if (sourceNk1.getPrimaryLanguage() != null)
-            contactComponent.addExtension(ExtensionHelper.createStringExtension(FhirExtensionUri.PATIENT_CONTACT_MAIN_LANGUAGE, sourceNk1.getPrimaryLanguage().getAsString()));
+            contactComponent.addExtension(ExtensionConverter.createStringExtension(FhirExtensionUri.PATIENT_CONTACT_MAIN_LANGUAGE, sourceNk1.getPrimaryLanguage().getAsString()));
 
         target.addContact(contactComponent);
     }

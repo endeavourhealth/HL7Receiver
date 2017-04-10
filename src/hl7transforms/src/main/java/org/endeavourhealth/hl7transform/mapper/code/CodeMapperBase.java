@@ -23,16 +23,39 @@ public class CodeMapperBase {
         this.mapper = mapper;
     }
 
-    protected CodeableConcept mapTerm(CodeContext codeContext, String term) throws MapperException {
+    protected String mapToCode(CodeContext codeContext, String code) throws MapperException {
         Validate.notNull(codeContext);
 
-        if (StringUtils.isEmpty(StringUtils.defaultString(term).trim()))
+        if (StringUtils.isEmpty(code))
             return null;
 
-        MappedCode mappedCode = this.mapper.mapCode(codeContext.name(), null, null, term);
+        MappedCode mappedCode = this.mapper.mapCode(codeContext.name(), code, null, null);
 
         if (mappedCode.getAction().equals(MappedCodeAction.NOT_MAPPED_FAIL_TRANSFORMATION))
-            throw new MapperException("Term '" + term + "' in context " + codeContext.name() + " received action of " + mappedCode.getAction().name());
+            throw new MapperException("Code '" + code + "' in context " + codeContext.name() + " received action of " + mappedCode.getAction().name());
+
+        if (mappedCode.getAction().equals(MappedCodeAction.NOT_MAPPED_EXCLUDE))
+            return null;
+
+        if (mappedCode.getAction().equals(MappedCodeAction.NOT_MAPPED_INCLUDE_ONLY_SOURCE_TERM))
+            throw new MapperException("Code '" + code + "' in context " + codeContext.name() + " received action of " + mappedCode.getAction().name());
+
+        if (mappedCode.getAction().equals(MappedCodeAction.MAPPED_INCLUDE))
+            return mappedCode.getCode();
+
+        throw new MapperException(mappedCode.getAction().name() + " MappedCodeAction value not recognised");
+    }
+
+    protected CodeableConcept mapToCodeableConcept(CodeContext codeContext, String code, String term) throws MapperException {
+        Validate.notNull(codeContext);
+
+        if (StringUtils.isEmpty(code) && StringUtils.isEmpty(term))
+            return null;
+
+        MappedCode mappedCode = this.mapper.mapCode(codeContext.name(), code, null, term);
+
+        if (mappedCode.getAction().equals(MappedCodeAction.NOT_MAPPED_FAIL_TRANSFORMATION))
+            throw new MapperException("Code '" + code + "' and term '" + term + "' in context " + codeContext.name() + " received action of " + mappedCode.getAction().name());
 
         if (mappedCode.getAction().equals(MappedCodeAction.NOT_MAPPED_EXCLUDE))
             return null;

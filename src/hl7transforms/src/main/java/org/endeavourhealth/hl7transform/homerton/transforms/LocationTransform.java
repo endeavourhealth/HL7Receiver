@@ -111,15 +111,12 @@ public class LocationTransform extends ResourceTransformBase {
         return ReferenceHelper.createReference(ResourceType.Location, directParentLocation.getId());
     }
 
-    public Reference createClassOfLocation(String classOfLocationName, LocationPhysicalType locationPhysicalType) throws MapperException {
+    public Reference createClassOfLocation(String classOfLocationName) throws MapperException {
         Validate.notEmpty(classOfLocationName, "classOfLocationName");
 
         Location location = new Location()
                 .setName(classOfLocationName)
                 .setMode(Location.LocationMode.KIND);
-
-        if (locationPhysicalType != null)
-            location.setPhysicalType(createLocationPhysicalType(locationPhysicalType));
 
         UUID id = getId(classOfLocationName);
         location.setId(id.toString());

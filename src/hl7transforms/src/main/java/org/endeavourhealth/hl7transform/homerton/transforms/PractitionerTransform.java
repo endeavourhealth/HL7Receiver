@@ -107,7 +107,7 @@ public class PractitionerTransform extends ResourceTransformBase {
 
         for (Xcn source : sources) {
 
-            Identifier identifier = IdentifierConverter.createIdentifier(source, getResourceType());
+            Identifier identifier = IdentifierConverter.createIdentifier(source, getResourceType(), mapper);
 
             if (identifier != null)
                 if (!hasIdentifierWithSystem(practitioner.getIdentifier(), identifier.getSystem()))

@@ -4,19 +4,21 @@ import org.apache.commons.lang3.StringUtils;
 import org.endeavourhealth.common.fhir.FhirUri;
 import org.endeavourhealth.hl7parser.datatypes.CxInterface;
 import org.endeavourhealth.hl7transform.common.TransformException;
+import org.endeavourhealth.hl7transform.mapper.Mapper;
+import org.endeavourhealth.hl7transform.mapper.exceptions.MapperException;
 import org.hl7.fhir.instance.model.Identifier;
 import org.hl7.fhir.instance.model.ResourceType;
 
 public class IdentifierConverter {
 
-    public static Identifier createIdentifier(CxInterface source, ResourceType resourceType) throws TransformException {
+    public static Identifier createIdentifier(CxInterface source, ResourceType resourceType, Mapper mapper) throws TransformException, MapperException {
         if (source == null)
             return null;
 
         if (StringUtils.isBlank(source.getId()))
             return null;
 
-        String identifierSystem = getIdentifierSystem(source, resourceType);
+        String identifierSystem = getIdentifierSystem(source, resourceType, mapper);
 
         if (StringUtils.isBlank(identifierSystem))
             return null;
@@ -35,50 +37,21 @@ public class IdentifierConverter {
                 .setValue(StringUtils.deleteWhitespace(odsCode.toUpperCase()));
     }
 
-    private static String getIdentifierSystem(CxInterface source, ResourceType resourceType) throws TransformException {
-        String id = StringUtils.trim(StringUtils.defaultString(source.getId())).toLowerCase();
+    private static String getIdentifierSystem(CxInterface source, ResourceType resourceType, Mapper mapper) throws TransformException, MapperException {
+
         String identifierTypeCode = StringUtils.trim(StringUtils.defaultString(source.getIdentifierTypeCode())).toLowerCase();
         String assigningAuthority = StringUtils.trim(StringUtils.defaultString(source.getAssigningAuthority())).toLowerCase();
 
         if (StringUtils.isEmpty(identifierTypeCode) && StringUtils.isEmpty(assigningAuthority))
             return null;
 
-        if (resourceType == ResourceType.Patient) {
-
-            switch (assigningAuthority + " | " + identifierTypeCode) {
-                case "nhs number | nhs": return FhirUri.IDENTIFIER_SYSTEM_NHSNUMBER;
-                case "homerton case note number | cnn": return FhirUri.IDENTIFIER_SYSTEM_HOMERTON_CNN_PATIENT_ID;
-                case "homerton case note number | mrn": return FhirUri.IDENTIFIER_SYSTEM_HOMERTON_MRN_PATIENT_ID;
-                case "newham case note number | cnn": return FhirUri.IDENTIFIER_SYSTEM_NEWHAM_CNN_PATIENT_ID;
-                case "newham case note number | mrn": return null; //return FhirUri.IDENTIFIER_SYSTEM_NEWHAM_MRN_PATIENT_ID;
-                case "person id | person id": return FhirUri.IDENTIFIER_SYSTEM_HOMERTON_PERSONID_PATIENT_ID;
-                default: throw new TransformException("Patient identifier system not found for " + assigningAuthority + " | " + identifierTypeCode);
-            }
-
-        } else if (resourceType == ResourceType.EpisodeOfCare) {
-
-            switch (assigningAuthority + " | " + identifierTypeCode) {
-                case "homerton fin | encounter no.": return FhirUri.IDENTIFIER_SYSTEM_HOMERTON_FIN_EPISODE_ID;
-                case " | attendance no.":
-                case "homerton attendance number | attendance no.": return FhirUri.IDENTIFIER_SYSTEM_HOMERTON_ATTENDANCE_NO_EPISODE_ID;
-                default: throw new TransformException("Episode identifier system not found for " + assigningAuthority + " | " + identifierTypeCode);
-            }
-
-        } else if (resourceType == ResourceType.Practitioner) {
-
-            switch (assigningAuthority + " | " + identifierTypeCode) {
-                case "nhs consultant number | non gp":
-                case "community dr nbr | community dr nbr":
-                case " | community dr nbr": return FhirUri.IDENTIFIER_SYSTEM_CONSULTANT_CODE;
-
-                case "external id | external identifier": return FhirUri.IDENTIFIER_SYSTEM_GMC_NUMBER;
-
-                case "personnel primary identifier | personnel primary identifier": return FhirUri.IDENTIFIER_SYSTEM_HOMERTON_PRIMARY_PRACTITIONER_ID;
-
-                default: return null;
-            }
-        } else {
+        if (resourceType == ResourceType.Patient)
+            return mapper.getCodeMapper().mapPatientIdentifierTypeAndAssigningAuth(identifierTypeCode, assigningAuthority);
+        else if (resourceType == ResourceType.EpisodeOfCare)
+            return mapper.getCodeMapper().mapEncounterIdentifierTypeAndAssigningAuth(identifierTypeCode, assigningAuthority);
+        else if (resourceType == ResourceType.Practitioner)
+            return mapper.getCodeMapper().mapDoctorIdentifierTypeAndAssigningAuth(identifierTypeCode, assigningAuthority);
+        else
             throw new TransformException("Resource type " + resourceType.name() + " does not have identifier systems mapped");
-        }
     }
 }

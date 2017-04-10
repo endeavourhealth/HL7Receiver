@@ -55,6 +55,34 @@ public class CodeMapper extends CodeMapperBase {
                         (r) -> r.getSystem());
     }
 
+    public CodeableConcept mapPrimaryLanguage(String primaryLanguage) throws MapperException {
+        return this
+                .mapToCodeableConcept(CodeContext.HL7_PRIMARY_LANGUAGE,
+                        null,
+                        primaryLanguage);
+    }
+
+    public CodeableConcept mapEthnicGroup(String ethnicGroup) throws MapperException {
+        return this
+                .mapToCodeableConcept(CodeContext.HL7_ETHNIC_GROUP,
+                        null,
+                        ethnicGroup);
+    }
+
+    public CodeableConcept mapMaritalStatus(String maritalStatus) throws MapperException {
+        return this
+                .mapToCodeableConcept(CodeContext.HL7_MARITAL_STATUS,
+                        null,
+                        maritalStatus);
+    }
+
+    public CodeableConcept mapReligion(String religion) throws MapperException {
+        return this
+                .mapToCodeableConcept(CodeContext.HL7_RELIGION,
+                        null,
+                        religion);
+    }
+
     public Encounter.EncounterState mapAccountStatus(String accountStatus) throws MapperException {
         return this
                 .mapCodeToEnum(
@@ -75,22 +103,60 @@ public class CodeMapper extends CodeMapperBase {
 
     public CodeableConcept mapPatientType(String patientType) throws MapperException {
         return this
-                .mapTerm(
-                        CodeContext.HL7_PATIENT_TYPE,
+                .mapToCodeableConcept(CodeContext.HL7_PATIENT_TYPE,
+                        null,
                         patientType);
     }
 
     public CodeableConcept mapAdmissionType(String admissionType) throws MapperException {
         return this
-                .mapTerm(
-                        CodeContext.HL7_ADMISSION_TYPE,
+                .mapToCodeableConcept(CodeContext.HL7_ADMISSION_TYPE,
+                        null,
                         admissionType);
     }
 
     public CodeableConcept mapDischargeDisposition(String dischargeDisposition) throws MapperException {
         return this
-                .mapTerm(
-                        CodeContext.HL7_DISCHARGE_DISPOSITION,
+                .mapToCodeableConcept(CodeContext.HL7_DISCHARGE_DISPOSITION,
+                        null,
                         dischargeDisposition);
+    }
+
+    public CodeableConcept mapDischargeDestination(String dischargeDestination) throws MapperException {
+        return this
+                .mapToCodeableConcept(CodeContext.HL7_DISCHARGED_TO_LOCATION,
+                        null,
+                        dischargeDestination);
+    }
+
+    public CodeableConcept mapMessageType(String messageType) throws MapperException {
+        return this
+                .mapToCodeableConcept(CodeContext.HL7_MESSAGE_TYPE,
+                        messageType,
+                        null);
+    }
+
+    public String mapPatientDeathIndicator(String patientDeathIndicator) throws MapperException {
+        return this
+                .mapToCode(CodeContext.HL7_PATIENT_DEATH_INDICATOR,
+                        patientDeathIndicator);
+    }
+
+    public String mapPatientIdentifierTypeAndAssigningAuth(String patientIdentifierType, String assigningAuth) throws MapperException {
+        return this
+                .mapToCode(CodeContext.HL7_PATIENT_ID_TYPE_AND_ASSIGNING_AUTH,
+                patientIdentifierType + "^" + assigningAuth);
+    }
+
+    public String mapDoctorIdentifierTypeAndAssigningAuth(String doctorIdentifierType, String assigningAuth) throws MapperException {
+        return this
+                .mapToCode(CodeContext.HL7_DOCTOR_ID_TYPE_AND_ASSIGNING_AUTH,
+                        doctorIdentifierType + "^" + assigningAuth);
+    }
+
+    public String mapEncounterIdentifierTypeAndAssigningAuth(String encounterIdentifierType, String assigningAuth) throws MapperException {
+        return this
+                .mapToCode(CodeContext.HL7_ENCOUNTER_ID_TYPE_AND_ASSIGNING_AUTH,
+                        encounterIdentifierType+ "^" + assigningAuth);
     }
 }

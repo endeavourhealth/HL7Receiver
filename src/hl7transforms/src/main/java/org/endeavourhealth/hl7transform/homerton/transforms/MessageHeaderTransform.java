@@ -1,13 +1,12 @@
 package org.endeavourhealth.hl7transform.homerton.transforms;
 
 import org.apache.commons.lang3.Validate;
-import org.endeavourhealth.common.fhir.FhirExtensionUri;
-import org.endeavourhealth.common.fhir.FhirUri;
+import org.endeavourhealth.common.fhir.*;
 import org.endeavourhealth.hl7parser.segments.EvnSegment;
 import org.endeavourhealth.hl7transform.common.ResourceContainer;
 import org.endeavourhealth.hl7transform.common.ResourceTag;
 import org.endeavourhealth.hl7transform.common.ResourceTransformBase;
-import org.endeavourhealth.hl7transform.homerton.transforms.valuesets.MessageTypeVs;
+import org.endeavourhealth.hl7transform.mapper.code.MappedCode;
 import org.endeavourhealth.hl7transform.mapper.exceptions.MapperException;
 import org.endeavourhealth.hl7transform.mapper.Mapper;
 import org.endeavourhealth.hl7parser.Helpers;
@@ -15,7 +14,6 @@ import org.endeavourhealth.hl7parser.ParseException;
 import org.endeavourhealth.hl7parser.messages.AdtMessage;
 import org.endeavourhealth.hl7parser.segments.MshSegment;
 import org.endeavourhealth.hl7transform.common.TransformException;
-import org.endeavourhealth.hl7transform.common.converters.ExtensionHelper;
 import org.hl7.fhir.instance.model.*;
 
 import java.time.LocalDateTime;
@@ -63,12 +61,20 @@ public class MessageHeaderTransform extends ResourceTransformBase {
             target.setTimestamp(Helpers.toDate(sourceMessageDateTime));
     }
 
-    private void setEvent(MshSegment source, MessageHeader target) {
+    private void setEvent(MshSegment source, MessageHeader target) throws MapperException, TransformException {
+
+        CodeableConcept messageType = mapper.getCodeMapper().mapMessageType(source.getMessageType());
+
+        Coding messageTypeCoding = CodeableConceptHelper.getFirstCoding(messageType);
+
+        if (messageTypeCoding == null)
+            throw new TransformException("Could not map message type");
+
         target.setEvent(new Coding()
-                .setCode(source.getMessageType())
-                .setDisplay(MessageTypeVs.getDescription(source.getMessageType()))
+                .setCode(messageTypeCoding.getCode())
+                .setDisplay(messageTypeCoding.getDisplay())
                 .setVersion(source.getVersionId())
-                .setSystem(FhirUri.CODE_SYSTEM_HL7V2_MESSAGE_TYPE));
+                .setSystem(messageTypeCoding.getSystem()));
     }
 
     private void setSource(MshSegment mshSegment, MessageHeader target) {
@@ -80,7 +86,7 @@ public class MessageHeaderTransform extends ResourceTransformBase {
     private void setDestination(MshSegment mshSegment, MessageHeader target) {
         target.addDestination()
                 .setName(mshSegment.getReceivingFacility())
-                .addExtension(ExtensionHelper.createStringExtension(FhirExtensionUri.EXTENSION_HL7V2_DESTINATION_SOFTWARE, mshSegment.getReceivingApplication()));
+                .addExtension(ExtensionConverter.createStringExtension(FhirExtensionUri.EXTENSION_HL7V2_DESTINATION_SOFTWARE, mshSegment.getReceivingApplication()));
     }
 
     private void setResponsible(MshSegment mshSegment, MessageHeader target) throws TransformException {
@@ -89,14 +95,14 @@ public class MessageHeaderTransform extends ResourceTransformBase {
     }
 
     private void setMessageControlId(MshSegment source, MessageHeader target) {
-        target.addExtension(ExtensionHelper.createStringExtension(FhirExtensionUri.EXTENSION_HL7V2_MESSAGE_CONTROL_ID, source.getMessageControlId()));
+        target.addExtension(ExtensionConverter.createStringExtension(FhirExtensionUri.EXTENSION_HL7V2_MESSAGE_CONTROL_ID, source.getMessageControlId()));
     }
 
     private void setSequenceNumber(MshSegment source, MessageHeader target) throws ParseException {
         Integer sequenceNumber = source.getSequenceNumber();
 
         if (sequenceNumber != null)
-            target.addExtension(ExtensionHelper.createIntegerExtension(FhirExtensionUri.EXTENSION_HL7V2_SEQUENCE_NUMBER, sequenceNumber));
+            target.addExtension(ExtensionConverter.createIntegerExtension(FhirExtensionUri.EXTENSION_HL7V2_SEQUENCE_NUMBER, sequenceNumber));
     }
 
     private void setEnterer(EvnSegment evnSegment, MessageHeader target) throws TransformException, MapperException, ParseException {

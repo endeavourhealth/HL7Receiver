@@ -2,6 +2,7 @@ package org.endeavourhealth.hl7transform.homerton.transforms;
 
 import org.apache.commons.lang3.NotImplementedException;
 import org.apache.commons.lang3.StringUtils;
+import org.endeavourhealth.common.fhir.CodeableConceptHelper;
 import org.endeavourhealth.common.fhir.FhirExtensionUri;
 import org.endeavourhealth.common.fhir.ReferenceHelper;
 import org.endeavourhealth.common.fhir.schema.EncounterParticipantType;
@@ -297,29 +298,14 @@ public class EncounterTransform extends ResourceTransformBase {
 
     public Reference getDischargeLocation(String dischargeLocation) throws MapperException {
 
-        dischargeLocation = StringUtils.defaultString(dischargeLocation).trim().toLowerCase();
+        CodeableConcept codeableConcept = mapper.getCodeMapper().mapDischargeDestination(dischargeLocation);
+        String locationTypeName = CodeableConceptHelper.getFirstDisplayTerm(codeableConcept);
+
+        if (StringUtils.isEmpty(locationTypeName))
+            return null;
 
         LocationTransform locationTransform = new LocationTransform(mapper, targetResources);
-
-        switch (dischargeLocation) {
-            case "usual place of residence": return locationTransform.createClassOfLocation("Usual place of residence", LocationPhysicalType.HO);
-            case "temporary home": return locationTransform.createClassOfLocation("Temporary place of residence", LocationPhysicalType.HO);
-            case "nhs provider-general": return locationTransform.createClassOfLocation("NHS health care provider - general", null);
-            case "nhs provider-maternity": return locationTransform.createClassOfLocation("NHS health care provider - maternity", null);
-            case "nhs provider-mental health": return locationTransform.createClassOfLocation("NHS health care provider - mental health", null);
-            case "nhs nursing home": return locationTransform.createClassOfLocation("NHS nursing home", null);
-            case "nhs medium secure": return locationTransform.createClassOfLocation("NHS medium secure unit", null);
-            case "high security psychiatric (sco)": return locationTransform.createClassOfLocation("High security psychiatric unit (SCO)", null);
-            case "non-nhs residential care": return locationTransform.createClassOfLocation("Non-NHS residential care provider", null);
-            case "non-nhs hospital": return locationTransform.createClassOfLocation("Non-NHS hospital", null);
-            case "non-nhs hospice": return locationTransform.createClassOfLocation("Non-NHS hospice", null);
-            case "penal establishment/police station": return locationTransform.createClassOfLocation("Penal establishment/police station", null);
-            case "not applicable-died or stillbirth": return null;
-            case "repatriation from hsph": return null;
-            case "not known": return null;
-
-            default: throw new NotImplementedException(dischargeLocation + " not recognised");
-        }
+        return locationTransform.createClassOfLocation(locationTypeName);
     }
 
     private static Encounter.EncounterHospitalizationComponent getHospitalisationComponent(Encounter target) {

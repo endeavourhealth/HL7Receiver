@@ -64,14 +64,14 @@ public class EpisodeOfCareTransform extends ResourceTransformBase {
         target.setId(episodeUuid.toString());
     }
 
-    private void setIdentifiers(AdtMessage source, EpisodeOfCare target) throws TransformException {
+    private void setIdentifiers(AdtMessage source, EpisodeOfCare target) throws TransformException, MapperException {
 
-        Identifier visitNumber = IdentifierConverter.createIdentifier(source.getPv1Segment().getVisitNumber(), getResourceType());
+        Identifier visitNumber = IdentifierConverter.createIdentifier(source.getPv1Segment().getVisitNumber(), getResourceType(), mapper);
 
         if (visitNumber != null)
             target.addIdentifier(visitNumber);
 
-        Identifier alternateVisitId = IdentifierConverter.createIdentifier(source.getPv1Segment().getAlternateVisitID(), getResourceType());
+        Identifier alternateVisitId = IdentifierConverter.createIdentifier(source.getPv1Segment().getAlternateVisitID(), getResourceType(), mapper);
 
         if (alternateVisitId != null)
             target.addIdentifier(alternateVisitId);
