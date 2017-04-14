@@ -39,18 +39,18 @@ public class IdentifierConverter {
 
     private static String getIdentifierSystem(CxInterface source, ResourceType resourceType, Mapper mapper) throws TransformException, MapperException {
 
-        String identifierTypeCode = StringUtils.trim(StringUtils.defaultString(source.getIdentifierTypeCode())).toLowerCase();
         String assigningAuthority = StringUtils.trim(StringUtils.defaultString(source.getAssigningAuthority())).toLowerCase();
+        String identifierTypeCode = StringUtils.trim(StringUtils.defaultString(source.getIdentifierTypeCode())).toLowerCase();
 
-        if (StringUtils.isEmpty(identifierTypeCode) && StringUtils.isEmpty(assigningAuthority))
+        if (StringUtils.isEmpty(assigningAuthority) && StringUtils.isEmpty(identifierTypeCode))
             return null;
 
         if (resourceType == ResourceType.Patient)
-            return mapper.getCodeMapper().mapPatientIdentifierTypeAndAssigningAuth(identifierTypeCode, assigningAuthority);
+            return mapper.getCodeMapper().mapPatientIdentifierTypeAndAssigningAuth(assigningAuthority, identifierTypeCode);
         else if (resourceType == ResourceType.EpisodeOfCare)
-            return mapper.getCodeMapper().mapEncounterIdentifierTypeAndAssigningAuth(identifierTypeCode, assigningAuthority);
+            return mapper.getCodeMapper().mapEncounterIdentifierTypeAndAssigningAuth(assigningAuthority, identifierTypeCode);
         else if (resourceType == ResourceType.Practitioner)
-            return mapper.getCodeMapper().mapDoctorIdentifierTypeAndAssigningAuth(identifierTypeCode, assigningAuthority);
+            return mapper.getCodeMapper().mapDoctorIdentifierTypeAndAssigningAuth(assigningAuthority, identifierTypeCode);
         else
             throw new TransformException("Resource type " + resourceType.name() + " does not have identifier systems mapped");
     }

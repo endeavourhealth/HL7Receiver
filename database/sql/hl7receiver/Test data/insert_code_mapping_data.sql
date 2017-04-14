@@ -270,23 +270,34 @@ begin
 	_code_context = 'HL7_PRIMARY_LANGUAGE';
 	_target_code_system = 'http://fhir.nhs.net/ValueSet/human-language-1';
 
+	perform mapping.set_code_mapping(_h, _code_context, '', '', 'turkish', 'tr', _target_code_system, 'Turkish');
+
 	----------------------------------------------------------------------------------------------
 	-- HL7 ethnic group -> FHIR ethnic group
 	----------------------------------------------------------------------------------------------
 	_code_context = 'HL7_ETHNIC_GROUP';
 	_target_code_system = 'http://endeavourhealth.org/fhir/StructureDefinition/primarycare-ethnic-category-extension';
 
+	perform mapping.set_code_mapping(_h, _code_context, '', '', 'eastern european', 'C', _target_code_system, 'Any other White background');
+	perform mapping.set_code_mapping(_h, _code_context, '', '', 'other white', 'C', _target_code_system, 'Any other White background');
+	perform mapping.set_code_mapping(_h, _code_context, '', '', 'indian (inc british)', 'H', _target_code_system, 'Indian');
+	perform mapping.set_code_mapping(_h, _code_context, '', '', 'pakistani (inc. british)', 'J', _target_code_system, 'Pakistani');
+	perform mapping.set_code_mapping(_h, _code_context, '', '', 'african (except somali)', 'N', _target_code_system, 'Africa');	perform mapping.set_code_mapping(_h, _code_context, '', '', 'other black', 'P', _target_code_system, 'Any other Black background');	
 	----------------------------------------------------------------------------------------------
 	-- HL7 marital status -> FHIR marital status
 	----------------------------------------------------------------------------------------------
 	_code_context = 'HL7_MARITAL_STATUS';
 	_target_code_system = 'http://hl7.org/fhir/marital-status';
 
+	perform mapping.set_code_mapping(_h, _code_context, '', '', 'single', 'S', _target_code_system, 'Never Married');
+
 	----------------------------------------------------------------------------------------------
 	-- HL7 religion -> FHIR religion (snomed)
 	----------------------------------------------------------------------------------------------
 	_code_context = 'HL7_RELIGION';
 	_target_code_system = 'http://snomed.info/sct';
+
+	perform mapping.set_code_mapping_action_not_mapped(_h, _code_context, '', '', 'not known', 'X');
 
 	----------------------------------------------------------------------------------------------
 	-- HL7 encounter class -> FHIR encounter class
@@ -418,7 +429,15 @@ begin
 	_target_code_system = 'http://endeavourhealth.org/fhir/v2-message-type';
 	
 	perform mapping.set_code_mapping(_h, _code_context, 'adt^a01', '', '', 'ADT^A01', _target_code_system, 'Admit/visit notification');
-	
+	perform mapping.set_code_mapping(_h, _code_context, 'adt^a02', '', '', 'ADT^A02', _target_code_system, 'Transfer a patient');
+	perform mapping.set_code_mapping(_h, _code_context, 'adt^a03', '', '', 'ADT^A03', _target_code_system, 'Discharge/end visit');
+	perform mapping.set_code_mapping(_h, _code_context, 'adt^a04', '', '', 'ADT^A04', _target_code_system, 'Register a patient');
+	perform mapping.set_code_mapping(_h, _code_context, 'adt^a05', '', '', 'ADT^A05', _target_code_system, 'Pre-admit a patient');
+	perform mapping.set_code_mapping(_h, _code_context, 'adt^a06', '', '', 'ADT^A06', _target_code_system, 'Change an outpatient to an inpatient');
+	perform mapping.set_code_mapping(_h, _code_context, 'adt^a07', '', '', 'ADT^A07', _target_code_system, 'Change an inpatient to an outpatient');
+	perform mapping.set_code_mapping(_h, _code_context, 'adt^a08', '', '', 'ADT^A08', _target_code_system, 'Update patient information');
+	perform mapping.set_code_mapping(_h, _code_context, 'adt^a31', '', '', 'ADT^A31', _target_code_system, 'Update person information');
+
 	----------------------------------------------------------------------------------------------
 	-- HL7 patient death indicator -> Deceased boolean (homerton)
 	----------------------------------------------------------------------------------------------
@@ -454,6 +473,12 @@ begin
 	perform mapping.set_code_mapping(_h, _code_context, 'external id^external identifier',                           '', '', 'http://endeavourhealth.org/fhir/Identifier/gmc-number',                                   _target_code_system, 'GMC number');
 	perform mapping.set_code_mapping(_h, _code_context, 'personnel primary identifier^personnel primary identifier', '', '', 'http://endeavourhealth.org/fhir/id/v2-local-practitioner-id/homerton-personnelprimaryid', _target_code_system, 'Homerton primary personnel identifier');
 
+	perform mapping.set_code_mapping_action_not_mapped(_h, _code_context, 'homerton sysmed prsnl pool^other', '', '', 'X');
+	perform mapping.set_code_mapping_action_not_mapped(_h, _code_context, 'nhs prsnl id^prsnlid', '', '', 'X');
+	perform mapping.set_code_mapping_action_not_mapped(_h, _code_context, '^other', '', '', 'X');
+	perform mapping.set_code_mapping_action_not_mapped(_h, _code_context, '^post code', '', '', 'X');
+	perform mapping.set_code_mapping_action_not_mapped(_h, _code_context, '^address', '', '', 'X');
+
 	----------------------------------------------------------------------------------------------
 	-- HL7 doctor identifier type and assigning auth -> FHIR practitioner identifier system (endeavour)
 	----------------------------------------------------------------------------------------------
@@ -463,6 +488,6 @@ begin
 	perform mapping.set_code_mapping(_h, _code_context, 'homerton fin^encounter no.',                '', '', 'http://endeavourhealth.org/fhir/id/v2-local-episode-id/homerton-fin',          _target_code_system, 'Homerton episode identifier (FIN)');
 	perform mapping.set_code_mapping(_h, _code_context, '^attendance no.',                           '', '', 'http://endeavourhealth.org/fhir/id/v2-local-episode-id/homerton-fin',          _target_code_system, 'Homerton episode identifier (FIN)');
 	perform mapping.set_code_mapping(_h, _code_context, 'homerton attendance number^attendance no.', '', '', 'http://endeavourhealth.org/fhir/id/v2-local-episode-id/homerton-attendanceno', _target_code_system, 'Homerton attendance number');
-
+	
 end
 $$

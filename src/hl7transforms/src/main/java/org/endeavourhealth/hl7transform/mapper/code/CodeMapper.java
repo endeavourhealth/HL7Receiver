@@ -1,5 +1,6 @@
 package org.endeavourhealth.hl7transform.mapper.code;
 
+import org.apache.commons.lang3.StringUtils;
 import org.endeavourhealth.hl7transform.mapper.Mapper;
 import org.endeavourhealth.hl7transform.mapper.exceptions.MapperException;
 import org.hl7.fhir.instance.model.*;
@@ -58,28 +59,28 @@ public class CodeMapper extends CodeMapperBase {
     public CodeableConcept mapPrimaryLanguage(String primaryLanguage) throws MapperException {
         return this
                 .mapToCodeableConcept(CodeContext.HL7_PRIMARY_LANGUAGE,
-                        null,
+                        "",
                         primaryLanguage);
     }
 
     public CodeableConcept mapEthnicGroup(String ethnicGroup) throws MapperException {
         return this
                 .mapToCodeableConcept(CodeContext.HL7_ETHNIC_GROUP,
-                        null,
+                        "",
                         ethnicGroup);
     }
 
     public CodeableConcept mapMaritalStatus(String maritalStatus) throws MapperException {
         return this
                 .mapToCodeableConcept(CodeContext.HL7_MARITAL_STATUS,
-                        null,
+                        "",
                         maritalStatus);
     }
 
     public CodeableConcept mapReligion(String religion) throws MapperException {
         return this
                 .mapToCodeableConcept(CodeContext.HL7_RELIGION,
-                        null,
+                        "",
                         religion);
     }
 
@@ -104,28 +105,28 @@ public class CodeMapper extends CodeMapperBase {
     public CodeableConcept mapPatientType(String patientType) throws MapperException {
         return this
                 .mapToCodeableConcept(CodeContext.HL7_PATIENT_TYPE,
-                        null,
+                        "",
                         patientType);
     }
 
     public CodeableConcept mapAdmissionType(String admissionType) throws MapperException {
         return this
                 .mapToCodeableConcept(CodeContext.HL7_ADMISSION_TYPE,
-                        null,
+                        "",
                         admissionType);
     }
 
     public CodeableConcept mapDischargeDisposition(String dischargeDisposition) throws MapperException {
         return this
                 .mapToCodeableConcept(CodeContext.HL7_DISCHARGE_DISPOSITION,
-                        null,
+                        "",
                         dischargeDisposition);
     }
 
     public CodeableConcept mapDischargeDestination(String dischargeDestination) throws MapperException {
         return this
                 .mapToCodeableConcept(CodeContext.HL7_DISCHARGED_TO_LOCATION,
-                        null,
+                        "",
                         dischargeDestination);
     }
 
@@ -133,7 +134,7 @@ public class CodeMapper extends CodeMapperBase {
         return this
                 .mapToCodeableConcept(CodeContext.HL7_MESSAGE_TYPE,
                         messageType,
-                        null);
+                        "");
     }
 
     public String mapPatientDeathIndicator(String patientDeathIndicator) throws MapperException {
@@ -142,21 +143,21 @@ public class CodeMapper extends CodeMapperBase {
                         patientDeathIndicator);
     }
 
-    public String mapPatientIdentifierTypeAndAssigningAuth(String patientIdentifierType, String assigningAuth) throws MapperException {
+    public String mapPatientIdentifierTypeAndAssigningAuth(String assigningAuth, String patientIdentifierType) throws MapperException {
         return this
                 .mapToCode(CodeContext.HL7_PATIENT_ID_TYPE_AND_ASSIGNING_AUTH,
-                patientIdentifierType + "^" + assigningAuth);
+                        assigningAuth + "^" + patientIdentifierType);
     }
 
-    public String mapDoctorIdentifierTypeAndAssigningAuth(String doctorIdentifierType, String assigningAuth) throws MapperException {
+    public String mapDoctorIdentifierTypeAndAssigningAuth(String assigningAuth, String doctorIdentifierType) throws MapperException {
         return this
                 .mapToCode(CodeContext.HL7_DOCTOR_ID_TYPE_AND_ASSIGNING_AUTH,
-                        doctorIdentifierType + "^" + assigningAuth);
+                        assigningAuth + "^" + doctorIdentifierType);
     }
 
-    public String mapEncounterIdentifierTypeAndAssigningAuth(String encounterIdentifierType, String assigningAuth) throws MapperException {
+    public String mapEncounterIdentifierTypeAndAssigningAuth(String assigningAuth, String encounterIdentifierType) throws MapperException {
         return this
                 .mapToCode(CodeContext.HL7_ENCOUNTER_ID_TYPE_AND_ASSIGNING_AUTH,
-                        encounterIdentifierType+ "^" + assigningAuth);
+                        assigningAuth + "^" + encounterIdentifierType);
     }
 }
