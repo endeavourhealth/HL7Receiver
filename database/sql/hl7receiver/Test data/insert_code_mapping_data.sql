@@ -43,10 +43,10 @@ values
 (13, 'HL7_ADMISSION_TYPE',                       true, true, 'F', 'HL7 ADT', 'PV1.4',     'Admission type (HL7v2 table 0007)'),
 (14, 'HL7_DISCHARGE_DISPOSITION',                true, true, 'F', 'HL7 ADT', 'PV1.36',    'Discharge disposition (HL7 table 0112)'),
 (15, 'HL7_DISCHARGED_TO_LOCATION',               true, true, 'F', 'HL7 ADT', 'PV1.37',    'Discharged to location (HL7 table 0113)'),
-(16, 'HL7_MESSAGE_TYPE',                         true, true, 'F', 'HL7 ADT', 'MSH.9',     'Message type, event and structure (HL7 tables 0076, 0003, 0354)');
-(17, 'HL7_PATIENT_DEATH_INDICATOR',              true, true, 'F', 'HL7 ADT', 'PID.30',    'Yes/no indicator used as patient death indicator (HL7 table 0164, HL7 item 00741)');
-(18, 'HL7_PATIENT_ID_TYPE_AND_ASSIGNING_AUTH',   true, true, 'F', 'HL7 ADT', 'CX.4^CX.5', 'Patient identifier type and assigning authority (HL7 table 0203, HL7 table 0363)');
-(19, 'HL7_DOCTOR_ID_TYPE_AND_ASSIGNING_AUTH',    true, true, 'F', 'HL7 ADT', 'CX.4^CX.5', 'Practitioner identifier type and assigning authority (HL7 table 0203, HL7 table 0363)');
+(16, 'HL7_MESSAGE_TYPE',                         true, true, 'F', 'HL7 ADT', 'MSH.9',     'Message type, event and structure (HL7 tables 0076, 0003, 0354)'),
+(17, 'HL7_PATIENT_DEATH_INDICATOR',              true, true, 'F', 'HL7 ADT', 'PID.30',    'Yes/no indicator used as patient death indicator (HL7 table 0164, HL7 item 00741)'),
+(18, 'HL7_PATIENT_ID_TYPE_AND_ASSIGNING_AUTH',   true, true, 'F', 'HL7 ADT', 'CX.4^CX.5', 'Patient identifier type and assigning authority (HL7 table 0203, HL7 table 0363)'),
+(19, 'HL7_DOCTOR_ID_TYPE_AND_ASSIGNING_AUTH',    true, true, 'F', 'HL7 ADT', 'CX.4^CX.5', 'Practitioner identifier type and assigning authority (HL7 table 0203, HL7 table 0363)'),
 (20, 'HL7_ENCOUNTER_ID_TYPE_AND_ASSIGNING_AUTH', true, true, 'F', 'HL7 ADT', 'CX.4^CX.5', 'Encounter identifier type and assigning authority (HL7 table 0203, HL7 table 0363)');
 
 ----------------------------------------------------------------------------------------------
@@ -462,7 +462,7 @@ begin
 
 	perform mapping.set_code_mapping(_h, _code_context, 'homerton fin^encounter no.',                '', '', 'http://endeavourhealth.org/fhir/id/v2-local-episode-id/homerton-fin',          _target_code_system, 'Homerton episode identifier (FIN)');
 	perform mapping.set_code_mapping(_h, _code_context, '^attendance no.',                           '', '', 'http://endeavourhealth.org/fhir/id/v2-local-episode-id/homerton-fin',          _target_code_system, 'Homerton episode identifier (FIN)');
-	perform mapping.set_code_mapping(_h, _code_context, 'homerton attendance number^attendance no.', '', '', "http://endeavourhealth.org/fhir/id/v2-local-episode-id/homerton-attendanceno", _target_code_system, 'Homerton attendance number');
-			
+	perform mapping.set_code_mapping(_h, _code_context, 'homerton attendance number^attendance no.', '', '', 'http://endeavourhealth.org/fhir/id/v2-local-episode-id/homerton-attendanceno', _target_code_system, 'Homerton attendance number');
+
 end
 $$

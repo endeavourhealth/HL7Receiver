@@ -245,7 +245,7 @@ create table log.message_queue
 	constraint log_messagequeue_messageid_channelid_fk foreign key (message_id, channel_id) references log.message (message_id, channel_id)
 );
 
-create index concurrently log_messagequeue_messagedate_logdate_ix on log.message_queue (message_date, log_date);
+create index log_messagequeue_messagedate_logdate_ix on log.message_queue (message_date, log_date);
 
 create table log.message_processing_content
 (
