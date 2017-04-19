@@ -1,0 +1,17 @@
+<Database>
+    <DisplayName>hl7receiver</DisplayName>
+    <DatabaseType>postgresql</DatabaseType>
+    <Connection>
+        <!-- note:  connection details passed via command line take precedence -->
+        <Hostname>localhost</Hostname>
+        <Port>5432</Port>
+        <DatabaseName>hl7receiver</DatabaseName>
+        <Username>postgres</Username>
+        <Password></Password>
+    </Connection>
+    <Paths>
+        <Schema>schema</Schema>
+        <Functions>functions</Functions>
+        <Scripts>scripts</Scripts>
+    </Paths>
+</Database>
