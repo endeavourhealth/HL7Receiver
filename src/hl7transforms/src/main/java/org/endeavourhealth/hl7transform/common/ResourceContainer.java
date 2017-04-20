@@ -64,7 +64,7 @@ public class ResourceContainer {
         return this.resources
                 .stream()
                 .filter(t -> resourceTag.equals(t.getResourceTag()))
-                .map(t -> (T)t.getResource())
+                .map(t -> resourceClass.cast(t.getResource()))
                 .collect(StreamExtension.singleOrNullCollector());
     }
 
@@ -84,10 +84,7 @@ public class ResourceContainer {
     }
 
     public <T extends Resource> T getResourceSingle(Class<T> resourceType) throws TransformException {
-        List<T> resources = getResourceContainerItems(resourceType)
-                .stream()
-                .map(t -> (T)t.getResource())
-                .collect(Collectors.toList());
+        List<ResourceContainerItem> resources = getResourceContainerItems(resourceType);
 
         if (resources.size() == 0)
             throw new TransformException("No resources found of type " + resourceType.getName());
@@ -95,7 +92,7 @@ public class ResourceContainer {
         if (resources.size() > 1)
             throw new TransformException("Multiple resources found of type " + resourceType.getName());
 
-        return resources.get(0);
+        return resourceType.cast(resources.get(0).getResource());
     }
 
     protected <T extends Resource> List<ResourceContainerItem> getResourceContainerItems(Class<T> resourceType) {
@@ -127,20 +124,21 @@ public class ResourceContainer {
     }
 
     public ResourceContainer orderByResourceType() {
-        List<ResourceContainerItem> orderedResources = Lists.newArrayList(Iterables.concat(
-                getResourceContainerItems(MessageHeader.class),
-                getResourceContainerItems(Patient.class),
-                getResourceContainerItems(EpisodeOfCare.class),
-                getResourceContainerItems(Encounter.class),
-                getResourceContainerItems(Organization.class),
-                getResourceContainerItems(Location.class),
-                getResourceContainerItems(Practitioner.class)));
+        List<ResourceContainerItem> result = new ArrayList<>();
+        result.addAll(getResourceContainerItems(MessageHeader.class));
+        result.addAll(getResourceContainerItems(Patient.class));
+        result.addAll(getResourceContainerItems(EpisodeOfCare.class));
+        result.addAll(getResourceContainerItems(Encounter.class));
+        result.addAll(getResourceContainerItems(Organization.class));
+        result.addAll(getResourceContainerItems(Location.class));
+        result.addAll(getResourceContainerItems(Practitioner.class));
+
 
         for (ResourceContainerItem resource : this.resources)
-            if (orderedResources.stream().allMatch(t -> t != resource))
-                orderedResources.add(resource);
+            if (result.stream().allMatch(t -> t != resource))
+                result.add(resource);
 
-        this.resources = orderedResources;
+        this.resources = result;
 
         return this;
     }

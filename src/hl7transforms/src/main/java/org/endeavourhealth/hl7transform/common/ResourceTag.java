@@ -9,10 +9,10 @@ public enum ResourceTag {
     MainPrimaryCareProviderOrganisation(Organization.class, ResourceType.Organization),
     MainPrimaryCareProviderPractitioner(Practitioner.class, ResourceType.Practitioner);
 
-    private Class resourceClass;
+    private Class<? extends Resource> resourceClass;
     private ResourceType resourceType;
 
-    public Class getResourceClass() {
+    public Class<? extends Resource> getResourceClass() {
         return resourceClass;
     }
 
@@ -20,7 +20,7 @@ public enum ResourceTag {
         return resourceType;
     }
 
-    ResourceTag(Class resourceClass, ResourceType resourceType) {
+    ResourceTag(Class<? extends Resource> resourceClass, ResourceType resourceType) {
         this.resourceClass = resourceClass;
         this.resourceType = resourceType;
     }
