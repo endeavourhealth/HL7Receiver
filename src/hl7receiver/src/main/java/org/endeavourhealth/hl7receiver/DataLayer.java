@@ -56,7 +56,7 @@ public class DataLayer implements IDBDigestLogger {
                         .setAllowed(resultSet.getBoolean("is_allowed")));
 
 
-        DbEds dbEds = pgStoredProc.executeMultiQuerySingleRow((resultSet) ->
+        DbEds dbEds = pgStoredProc.executeMultiQuerySingleOrEmptyRow((resultSet) ->
                 new DbEds()
                     .setEdsUrl(resultSet.getString("eds_url"))
                     .setSoftwareContentType(resultSet.getString("software_content_type"))

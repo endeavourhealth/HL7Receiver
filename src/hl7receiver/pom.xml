@@ -33,7 +33,7 @@
         </dependency>
         <dependency>
             <groupId>com.github.endeavourhealth.Common</groupId>
-            <artifactId>eds</artifactId>
+            <artifactId>eds-client</artifactId>
             <version>${eds-common.version}</version>
         </dependency>
         <dependency>
@@ -133,6 +133,13 @@
             <artifactId>HikariCP</artifactId>
             <version>${hikari.version}</version>
         </dependency>
+
+        <!-- gethostname4j -->
+        <dependency>
+            <groupId>com.kstruct</groupId>
+            <artifactId>gethostname4j</artifactId>
+            <version>0.0.2</version>
+        </dependency>
     </dependencies>
 
     <build>
@@ -155,6 +162,29 @@
                         <goals>
                             <goal>single</goal>
                         </goals>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <artifactId>maven-dependency-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>copy</goal>
+                        </goals>
+                        <configuration>
+                            <artifactItems>
+                                <artifactItem>
+                                    <groupId>${project.groupId}</groupId>
+                                    <artifactId>${project.artifactId}</artifactId>
+                                    <version>${project.version}</version>
+                                    <type>jar</type>
+                                    <classifier>jar-with-dependencies</classifier>
+                                </artifactItem>
+                            </artifactItems>
+                            <outputDirectory>${project.parent.basedir}/target</outputDirectory>
+                        </configuration>
                     </execution>
                 </executions>
             </plugin>

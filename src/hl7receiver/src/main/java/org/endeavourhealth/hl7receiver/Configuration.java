@@ -1,5 +1,6 @@
 package org.endeavourhealth.hl7receiver;
 
+import com.kstruct.gethostname4j.Hostname;
 import com.zaxxer.hikari.HikariDataSource;
 import org.endeavourhealth.common.config.ConfigManager;
 import org.endeavourhealth.common.config.ConfigManagerException;
@@ -12,13 +13,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.sql.DataSource;
-import java.net.InetAddress;
 import java.sql.SQLException;
 import java.util.List;
 import java.util.stream.Collectors;
 
-public final class Configuration
-{
+public final class Configuration {
     // class members //
     private static final Logger LOG = LoggerFactory.getLogger(Configuration.class);
     private static final String PROGRAM_CONFIG_MANAGER_NAME = "hl7receiver";
@@ -28,8 +27,7 @@ public final class Configuration
 
     private static Configuration instance = null;
 
-    public static Configuration getInstance() throws Exception
-    {
+    public static Configuration getInstance() throws Exception {
         if (instance == null)
             instance = new Configuration();
 
@@ -44,8 +42,7 @@ public final class Configuration
     private String postgresPassword;
     private DataSource dataSource;
 
-    private Configuration() throws ConfigurationException
-    {
+    private Configuration() throws ConfigurationException {
         initialiseMachineName();
         initialiseConfigManager();
         initialiseDBConnectionPool();
@@ -55,7 +52,7 @@ public final class Configuration
 
     private void initialiseMachineName() throws ConfigurationException {
         try {
-            machineName = InetAddress.getLocalHost().getHostName();
+            machineName = Hostname.getHostname();
         } catch (Exception e) {
             throw new ConfigurationException("Error getting machine name");
         }
