@@ -1,3 +1,4 @@
+<!-- see https://github.com/endeavourhealth/DBPatcher -->
 <Database>
     <DisplayName>hl7receiver</DisplayName>
     <DatabaseType>postgresql</DatabaseType>
