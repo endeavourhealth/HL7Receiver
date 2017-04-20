@@ -1,6 +1,5 @@
 .idea
 id_file
 *.iml
-/target/
-/src/*/target/
-/out/
+target/
+out/
