@@ -7,7 +7,7 @@ import org.slf4j.LoggerFactory;
 
 public class Main {
 
-	private static final String PROGRAM_DISPLAY_NAME = "EDS HL7 receiver";
+	private static final String PROGRAM_DISPLAY_NAME = "HL7 Receiver";
 	private static final Logger LOG = LoggerFactory.getLogger(Main.class);
 
 	private static HL7Service serviceManager;
