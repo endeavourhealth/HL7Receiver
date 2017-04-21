@@ -31,7 +31,7 @@
     </repositories>
 
     <modules>
-        <module>database/hl7receiver-db</module>
+        <module>database/hl7receiver</module>
         <module>src/hl7parser</module>
         <module>src/hl7receiver</module>
         <module>src/hl7test</module>
