@@ -1,37 +1,47 @@
-/* 
-	grant schema 
+/*
+	grant schema
 */
 
 do
 $$
+declare
+	_application_user varchar(100);
+	_schema_name varchar(100);
 begin
 
-	execute 'grant all on database ' || current_database() || ' to ' || current_user;
+	_application_user = 'endeavour';
 
-	execute 'grant all on schema configuration to ' || current_user;
-	execute 'grant all privileges on all tables in schema configuration to ' || current_user;
-	execute 'grant all privileges on all sequences in schema configuration to ' || current_user;
-	execute 'grant all privileges on all functions in schema configuration to ' || current_user;
+	if exists
+	(
+		select *
+		from pg_roles
+		where rolname = _application_user
+	) then
 
-	execute 'grant all on schema log to ' || current_user;
-	execute 'grant all privileges on all tables in schema log to ' || current_user;
-	execute 'grant all privileges on all sequences in schema log to ' || current_user;
-	execute 'grant all privileges on all functions in schema log to ' || current_user;
+		execute 'grant all on database ' || current_database() || ' to ' || _application_user;
 
-	execute 'grant all on schema dictionary to ' || current_user;
-	execute 'grant all privileges on all tables in schema dictionary to ' || current_user;
-	execute 'grant all privileges on all sequences in schema dictionary to ' || current_user;
-	execute 'grant all privileges on all functions in schema dictionary to ' || current_user;
+		for _schema_name in
+		(
+			select
+				n.nspname
+			from pg_namespace n
+			where n.nspname not like 'pg_%'
+			and n.nspname not in
+			(
+				'public',
+				'information_schema'
+			)
+		)
+		loop
 
-	execute 'grant all on schema mapping to ' || current_user;
-	execute 'grant all privileges on all tables in schema mapping to ' || current_user;
-	execute 'grant all privileges on all sequences in schema mapping to ' || current_user;
-	execute 'grant all privileges on all functions in schema mapping to ' || current_user;
+			execute 'grant all on schema ' || _schema_name || ' to ' || _application_user;
+			execute 'grant all privileges on all tables in schema ' || _schema_name || ' to ' || _application_user;
+			execute 'grant all privileges on all sequences in schema ' || _schema_name || ' to ' || _application_user;
+			execute 'grant all privileges on all functions in schema ' || _schema_name || ' to ' || _application_user;
 
-	execute 'grant all on schema helper to ' || current_user;
-	execute 'grant all privileges on all tables in schema helper to ' || current_user;
-	execute 'grant all privileges on all sequences in schema helper to ' || current_user;
-	execute 'grant all privileges on all functions in schema helper to ' || current_user;
+		end loop;
+
+	end if;
 
 end
 $$ language plpgsql;
