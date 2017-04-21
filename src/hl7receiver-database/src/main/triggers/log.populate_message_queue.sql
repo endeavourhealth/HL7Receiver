@@ -42,5 +42,7 @@ begin
 end;
 $$ language plpgsql;
 
+drop trigger if exists populate_message_queue_tr on log.message;
+
 create trigger populate_message_queue_tr after insert or update or delete on log.message
 for each row execute procedure log.populate_message_queue();

@@ -13,6 +13,7 @@
     <Paths>
         <Schema>schema</Schema>
         <Functions>functions</Functions>
+        <Triggers>triggers</Triggers>
         <Scripts>scripts</Scripts>
     </Paths>
 </Database>
