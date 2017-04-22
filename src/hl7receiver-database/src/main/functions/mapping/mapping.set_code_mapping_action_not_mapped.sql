@@ -49,7 +49,7 @@ begin
 	update mapping.code 
 	set 
 		is_mapped = false, 
-		target_code_action_id = 'X', 
+		target_code_action_id = _target_code_action_id, 
 		target_code = null, 
 		target_code_system_id = null, 
 		target_term = null
