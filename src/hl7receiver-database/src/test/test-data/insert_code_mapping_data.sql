@@ -87,23 +87,32 @@ begin
 	_target_code_system = 'http://fhir.nhs.net/ValueSet/human-language-1';
 
 	perform mapping.set_code_mapping(_h, _code_context, '', '', 'english',         'en', _target_code_system, 'English');
+	perform mapping.set_code_mapping(_h, _code_context, '', '', 'amharic',         'am', _target_code_system, 'Amharic');
 	perform mapping.set_code_mapping(_h, _code_context, '', '', 'arabic',          'ar', _target_code_system, 'Arabic');
 	perform mapping.set_code_mapping(_h, _code_context, '', '', 'bengali',         'bn', _target_code_system, 'Bengali');
+	perform mapping.set_code_mapping(_h, _code_context, '', '', 'cantonese',       'zh', _target_code_system, 'Chinese');
+	perform mapping.set_code_mapping(_h, _code_context, '', '', 'chinese',         'zh', _target_code_system, 'Chinese');
 	perform mapping.set_code_mapping(_h, _code_context, '', '', 'czech',           'cs', _target_code_system, 'Czech');
 	perform mapping.set_code_mapping(_h, _code_context, '', '', 'czech/slovakian', 'sk', _target_code_system, 'Slovak');
 	perform mapping.set_code_mapping(_h, _code_context, '', '', 'french',          'fr', _target_code_system, 'French');
 	perform mapping.set_code_mapping(_h, _code_context, '', '', 'german',          'de', _target_code_system, 'German');
 	perform mapping.set_code_mapping(_h, _code_context, '', '', 'greek',           'el', _target_code_system, 'Greek');
 	perform mapping.set_code_mapping(_h, _code_context, '', '', 'gujerati',        'gu', _target_code_system, 'Gujarati');
+	perform mapping.set_code_mapping(_h, _code_context, '', '', 'hebrew',          'he', _target_code_system, 'Hebrew');
+	perform mapping.set_code_mapping(_h, _code_context, '', '', 'hindi',           'hi', _target_code_system, 'Hindi');
+	perform mapping.set_code_mapping(_h, _code_context, '', '', 'italian',         'it', _target_code_system, 'Italian');
 	perform mapping.set_code_mapping(_h, _code_context, '', '', 'kurdish',         'ku', _target_code_system, 'Kurdish');
 	perform mapping.set_code_mapping(_h, _code_context, '', '', 'lithuanian',      'lt', _target_code_system, 'Lithuanian');
+	perform mapping.set_code_mapping(_h, _code_context, '', '', 'pashto',          'ps', _target_code_system, 'Pashto');
 	perform mapping.set_code_mapping(_h, _code_context, '', '', 'polish',          'pl', _target_code_system, 'Polish');
 	perform mapping.set_code_mapping(_h, _code_context, '', '', 'portuguese',      'pt', _target_code_system, 'Portuguese');
 	perform mapping.set_code_mapping(_h, _code_context, '', '', 'punjabi',         'pa', _target_code_system, 'Punjabi');
 	perform mapping.set_code_mapping(_h, _code_context, '', '', 'romanian',        'ro', _target_code_system, 'Romanian');
 	perform mapping.set_code_mapping(_h, _code_context, '', '', 'russian',         'ru', _target_code_system, 'Russian');
+	perform mapping.set_code_mapping(_h, _code_context, '', '', 'shona',           'sn', _target_code_system, 'Shona');
 	perform mapping.set_code_mapping(_h, _code_context, '', '', 'somalian',        'so', _target_code_system, 'Somali');
 	perform mapping.set_code_mapping(_h, _code_context, '', '', 'spanish',         'es', _target_code_system, 'Spanish');
+	perform mapping.set_code_mapping(_h, _code_context, '', '', 'tamil',           'ta', _target_code_system, 'Tamil');
 	perform mapping.set_code_mapping(_h, _code_context, '', '', 'turkish',         'tr', _target_code_system, 'Turkish');
 	perform mapping.set_code_mapping(_h, _code_context, '', '', 'twi',             'tw', _target_code_system, 'Twi');
 	perform mapping.set_code_mapping(_h, _code_context, '', '', 'urdu',            'ur', _target_code_system, 'Urdu');
@@ -134,6 +143,7 @@ begin
 	perform mapping.set_code_mapping(_h, _code_context, '', '', 'white and black african',       'E', _target_code_system, 'White and Black African');
 	perform mapping.set_code_mapping(_h, _code_context, '', '', 'white and asian',               'F', _target_code_system, 'White and Asian');
 	perform mapping.set_code_mapping(_h, _code_context, '', '', 'other mixed',                   'G', _target_code_system, 'Any other mixed background');
+	perform mapping.set_code_mapping(_h, _code_context, '', '', 'multiple',                      'G', _target_code_system, 'Multiple');
 
 	perform mapping.set_code_mapping(_h, _code_context, '', '', 'indian (inc british)',          'H', _target_code_system, 'Indian');
 	perform mapping.set_code_mapping(_h, _code_context, '', '', 'pakistani (inc. british)',      'J', _target_code_system, 'Pakistani');
@@ -152,8 +162,10 @@ begin
 	perform mapping.set_code_mapping(_h, _code_context, '', '', 'kurdish',                       'S', _target_code_system, 'Any other ethnic group');
 	perform mapping.set_code_mapping(_h, _code_context, '', '', 'any other group',               'S', _target_code_system, 'Any other ethnic group');
 	perform mapping.set_code_mapping(_h, _code_context, '', '', 'turkish (inc turkish cypriot)', 'S', _target_code_system, 'Any other ethnic group');
+	perform mapping.set_code_mapping(_h, _code_context, '', '', 'traveller',                     'S', _target_code_system, 'Any other ethnic group');
 
 	perform mapping.set_code_mapping(_h, _code_context, '', '', 'other not stated',              'Z', _target_code_system, 'Not stated');
+	perform mapping.set_code_mapping(_h, _code_context, '', '', 'patient refused',               'Z', _target_code_system, 'Not stated');
 
 	perform mapping.set_code_mapping_action_not_mapped(_h, _code_context, '', '', 'other not known', 'X');
 
@@ -171,6 +183,8 @@ begin
 	perform mapping.set_code_mapping(_h, _code_context, '', '', 'separated',                            'L', _target_code_system, 'Legally Separated');
 	perform mapping.set_code_mapping(_h, _code_context, '', '', 'divorced/civil partnership dissolved', 'D', _target_code_system, 'Divorced');
 	perform mapping.set_code_mapping(_h, _code_context, '', '', 'divorced',                             'D', _target_code_system, 'Divorced');
+	perform mapping.set_code_mapping(_h, _code_context, '', '', 'partner',                              'T', _target_code_system, 'Domestic partner');
+	perform mapping.set_code_mapping(_h, _code_context, '', '', 'widowed',                              'W', _target_code_system, 'Widowed');
 	perform mapping.set_code_mapping(_h, _code_context, '', '', 'widowed/surviving civil partner',      'W', _target_code_system, 'Widowed');
 	
 	perform mapping.set_code_mapping_action_not_mapped(_h, _code_context, '', '', 'not disclosed', 'X');
@@ -198,6 +212,7 @@ begin
 	perform mapping.set_code_mapping(_h, _code_context, '', '', 'sikh',                  '366740002',       _target_code_system, 'Sikh, follower of religion (person)');
 	perform mapping.set_code_mapping(_h, _code_context, '', '', 'hindu',                 '160545000',       _target_code_system, 'Hindu, follower of religion (person)');
 	perform mapping.set_code_mapping(_h, _code_context, '', '', 'baptist',               '160557009',       _target_code_system, 'Baptist, follower of religion (person)');
+	perform mapping.set_code_mapping(_h, _code_context, '', '', 'mormon',                '344081000000108', _target_code_system, 'Mormon, follower of religion (person)');
 
 	perform mapping.set_code_mapping_action_not_mapped(_h, _code_context, '', '', 'not available', 'X');
 	perform mapping.set_code_mapping_action_not_mapped(_h, _code_context, '', '', 'not known', 'X');
@@ -339,10 +354,13 @@ begin
 	perform mapping.set_code_mapping(_h, _code_context, 'adt^a06', '', '', 'ADT^A06', _target_code_system, 'Change an outpatient to an inpatient');
 	perform mapping.set_code_mapping(_h, _code_context, 'adt^a07', '', '', 'ADT^A07', _target_code_system, 'Change an inpatient to an outpatient');
 	perform mapping.set_code_mapping(_h, _code_context, 'adt^a08', '', '', 'ADT^A08', _target_code_system, 'Update patient information');
+	perform mapping.set_code_mapping(_h, _code_context, 'adt^a12', '', '', 'ADT^A12', _target_code_system, 'Cancel transfer');
 	perform mapping.set_code_mapping(_h, _code_context, 'adt^a13', '', '', 'ADT^A13', _target_code_system, 'Cancel discharge/end visit');
 	perform mapping.set_code_mapping(_h, _code_context, 'adt^a23', '', '', 'ADT^A23', _target_code_system, 'Delete a patient record');
 	perform mapping.set_code_mapping(_h, _code_context, 'adt^a28', '', '', 'ADT^A28', _target_code_system, 'Add person information');
 	perform mapping.set_code_mapping(_h, _code_context, 'adt^a31', '', '', 'ADT^A31', _target_code_system, 'Update person information');
+	perform mapping.set_code_mapping(_h, _code_context, 'adt^a34', '', '', 'ADT^A34', _target_code_system, 'Merge patient information');
+	perform mapping.set_code_mapping(_h, _code_context, 'adt^a44', '', '', 'ADT^A44', _target_code_system, 'Move account information - patient account number');
 
 	----------------------------------------------------------------------------------------------
 	-- HL7 patient death indicator -> Deceased boolean (homerton)
@@ -404,7 +422,6 @@ begin
 	perform mapping.set_code_mapping(_h, _code_context, '^attendance no.',                           '', '', 'http://endeavourhealth.org/fhir/id/v2-local-episode-id/homerton-fin',          _target_code_system, 'Homerton episode identifier (FIN)');
 	perform mapping.set_code_mapping(_h, _code_context, 'homerton attendance number^attendance no.', '', '', 'http://endeavourhealth.org/fhir/id/v2-local-episode-id/homerton-attendanceno', _target_code_system, 'Homerton attendance number');
 
-	
 end
 $$
 
