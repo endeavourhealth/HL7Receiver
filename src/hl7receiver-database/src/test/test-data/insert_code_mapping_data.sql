@@ -103,6 +103,7 @@ begin
 	perform mapping.set_code_mapping(_h, _code_context, '', '', 'hebrew',          'he', _target_code_system, 'Hebrew');
 	perform mapping.set_code_mapping(_h, _code_context, '', '', 'hindi',           'hi', _target_code_system, 'Hindi');
 	perform mapping.set_code_mapping(_h, _code_context, '', '', 'italian',         'it', _target_code_system, 'Italian');
+	perform mapping.set_code_mapping(_h, _code_context, '', '', 'japanese',        'ja', _target_code_system, 'Japanese');
 	perform mapping.set_code_mapping(_h, _code_context, '', '', 'kurdish',         'ku', _target_code_system, 'Kurdish');
 	perform mapping.set_code_mapping(_h, _code_context, '', '', 'latvian',         'lv', _target_code_system, 'Latvian');
 	perform mapping.set_code_mapping(_h, _code_context, '', '', 'lithuanian',      'lt', _target_code_system, 'Lithuanian');
