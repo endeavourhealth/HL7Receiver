@@ -16,7 +16,7 @@ returns table
 )
 as $$
 declare
-	_message_id integer;
+	_max_candidates integer;
 begin
 
 	if not exists
@@ -31,6 +31,8 @@ begin
 		return;
 	end if;
 	
+	select (cast(configuration.get_channel_option(_channel_id, 'MaxSkippableProcessingErroredMessages') as integer) + 1) into _max_candidates;
+	
 	return query
 	with candidates as
 	(
@@ -41,7 +43,7 @@ begin
 		order by
 			mq.message_date asc,
 			mq.log_date asc
-		limit (select cast(configuration.get_channel_option(_channel_id, 'MaxSkippableProcessingErroredMessages') as integer) + 1)
+		limit _max_candidates
 	)
 	select
 		m.message_id,
