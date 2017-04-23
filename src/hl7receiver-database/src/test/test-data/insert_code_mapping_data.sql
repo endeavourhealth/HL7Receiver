@@ -87,15 +87,16 @@ begin
 	_target_code_system = 'http://fhir.nhs.net/ValueSet/human-language-1';
 
 	perform mapping.set_code_mapping(_h, _code_context, '', '', 'english',         'en', _target_code_system, 'English');
+	perform mapping.set_code_mapping(_h, _code_context, '', '', 'sign',            'q4', _target_code_system, 'British Sign Language');
 	perform mapping.set_code_mapping(_h, _code_context, '', '', 'albanian',        'sq', _target_code_system, 'Albanian');
 	perform mapping.set_code_mapping(_h, _code_context, '', '', 'amharic',         'am', _target_code_system, 'Amharic');
 	perform mapping.set_code_mapping(_h, _code_context, '', '', 'arabic',          'ar', _target_code_system, 'Arabic');
 	perform mapping.set_code_mapping(_h, _code_context, '', '', 'bengali',         'bn', _target_code_system, 'Bengali');
-	perform mapping.set_code_mapping(_h, _code_context, '', '', 'cantonese',       'zh', _target_code_system, 'Chinese');
+	perform mapping.set_code_mapping(_h, _code_context, '', '', 'cantonese',       'zh', _target_code_system, 'Chinese; Cantonese');
 	perform mapping.set_code_mapping(_h, _code_context, '', '', 'chinese',         'zh', _target_code_system, 'Chinese');
 	perform mapping.set_code_mapping(_h, _code_context, '', '', 'czech',           'cs', _target_code_system, 'Czech');
 	perform mapping.set_code_mapping(_h, _code_context, '', '', 'czech/slovakian', 'sk', _target_code_system, 'Slovak');
-	perform mapping.set_code_mapping(_h, _code_context, '', '', 'farsi/persian',   'fa', _target_code_system, 'Persian');
+	perform mapping.set_code_mapping(_h, _code_context, '', '', 'farsi/persian',   'fa', _target_code_system, 'Persian; Farsi');
 	perform mapping.set_code_mapping(_h, _code_context, '', '', 'french',          'fr', _target_code_system, 'French');
 	perform mapping.set_code_mapping(_h, _code_context, '', '', 'german',          'de', _target_code_system, 'German');
 	perform mapping.set_code_mapping(_h, _code_context, '', '', 'greek',           'el', _target_code_system, 'Greek');
@@ -107,6 +108,7 @@ begin
 	perform mapping.set_code_mapping(_h, _code_context, '', '', 'kurdish',         'ku', _target_code_system, 'Kurdish');
 	perform mapping.set_code_mapping(_h, _code_context, '', '', 'latvian',         'lv', _target_code_system, 'Latvian');
 	perform mapping.set_code_mapping(_h, _code_context, '', '', 'lithuanian',      'lt', _target_code_system, 'Lithuanian');
+	perform mapping.set_code_mapping(_h, _code_context, '', '', 'mandarin',        'zh', _target_code_system, 'Chinese; Mandarin');
 	perform mapping.set_code_mapping(_h, _code_context, '', '', 'pashto',          'ps', _target_code_system, 'Pashto');
 	perform mapping.set_code_mapping(_h, _code_context, '', '', 'polish',          'pl', _target_code_system, 'Polish');
 	perform mapping.set_code_mapping(_h, _code_context, '', '', 'portuguese',      'pt', _target_code_system, 'Portuguese');
@@ -219,6 +221,7 @@ begin
 	perform mapping.set_code_mapping(_h, _code_context, '', '', 'baptist',               '160557009',       _target_code_system, 'Baptist, follower of religion (person)');
 	perform mapping.set_code_mapping(_h, _code_context, '', '', 'mormon',                '344081000000108', _target_code_system, 'Mormon, follower of religion (person)');
 	perform mapping.set_code_mapping(_h, _code_context, '', '', 'salvation army',        '160234004',       _target_code_system, 'Salvation Army member (person)');
+	perform mapping.set_code_mapping(_h, _code_context, '', '', 'free church',           '344221000000102', _target_code_system, 'Free Church of Scotland, follower of religion (person)');
 
 	perform mapping.set_code_mapping_action_not_mapped(_h, _code_context, '', '', 'not available', 'X');
 	perform mapping.set_code_mapping_action_not_mapped(_h, _code_context, '', '', 'not known', 'X');
