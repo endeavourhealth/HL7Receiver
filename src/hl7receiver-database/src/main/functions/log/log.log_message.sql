@@ -40,6 +40,8 @@ begin
 		message_uuid,
 		message_status_id,
 		message_status_date,
+		is_complete,
+		error_message,
 		processing_attempt_id,
 		next_attempt_date
 	)
@@ -60,6 +62,8 @@ begin
 		uuid_generate_v4(),
 		0,
 		_log_date,
+		false,
+		null,
 		0,
 		null
 	)

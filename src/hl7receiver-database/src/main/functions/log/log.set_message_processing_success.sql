@@ -17,6 +17,8 @@ begin
 	set
 		message_status_id = 9,
 		message_status_date = _message_status_date,
+		is_complete = true,
+		error_message = null,
 		processing_attempt_id = _attempt_id,
 		next_attempt_date = null
 	where message_id = _message_id;

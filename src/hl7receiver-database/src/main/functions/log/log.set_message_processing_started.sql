@@ -46,6 +46,8 @@ begin
 	set
 		message_status_id = _processing_started_status_id,
 		message_status_date = _processing_started_date,
+		is_complete = false,
+		error_message = null,
 		processing_attempt_id = _attempt_id,
 		next_attempt_date = _next_attempt_date
 	where message_id = _message_id;
