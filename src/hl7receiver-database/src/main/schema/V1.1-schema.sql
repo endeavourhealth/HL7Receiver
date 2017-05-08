@@ -1,3 +1,7 @@
+/*
+	Schema V1.1: Initial mapping schema
+*/
+
 /* 
 	create schemas
 */

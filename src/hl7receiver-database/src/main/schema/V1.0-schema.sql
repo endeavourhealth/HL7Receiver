@@ -1,4 +1,8 @@
 /*
+	Schema V1.0: Initial schema
+*/
+
+/*
 	create extensions
 */
 create extension "uuid-ossp";
