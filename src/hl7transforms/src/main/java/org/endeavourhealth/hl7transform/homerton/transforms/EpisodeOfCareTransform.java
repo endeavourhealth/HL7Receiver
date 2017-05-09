@@ -6,7 +6,6 @@ import org.endeavourhealth.hl7parser.ParseException;
 import org.endeavourhealth.hl7parser.datatypes.Cx;
 import org.endeavourhealth.hl7parser.messages.AdtMessage;
 import org.endeavourhealth.hl7parser.segments.Pv1Segment;
-import org.endeavourhealth.hl7parser.segments.Pv2Segment;
 import org.endeavourhealth.hl7transform.common.ResourceContainer;
 import org.endeavourhealth.hl7transform.common.ResourceTag;
 import org.endeavourhealth.hl7transform.common.ResourceTransformBase;
@@ -17,12 +16,16 @@ import org.endeavourhealth.hl7transform.mapper.Mapper;
 import org.endeavourhealth.hl7transform.mapper.exceptions.MapperException;
 import org.endeavourhealth.hl7transform.common.TransformException;
 import org.hl7.fhir.instance.model.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
 public class EpisodeOfCareTransform extends ResourceTransformBase {
+
+    private static final Logger LOG = LoggerFactory.getLogger(EpisodeOfCareTransform.class);
 
     public EpisodeOfCareTransform(Mapper mapper, ResourceContainer targetResources) {
         super(mapper, targetResources);
@@ -59,8 +62,14 @@ public class EpisodeOfCareTransform extends ResourceTransformBase {
 
         String patientIdentifierValue = PatientTransform.getPatientIdentifierValue(source, HomertonConstants.primaryPatientIdentifierTypeCode);
         String episodeIdentifierValue = getEpisodeIdentifierValue(source, HomertonConstants.primaryEpisodeIdentifierAssigningAuthority);
-        
+
+        LOG.info("episodeIdentifierValue");
+        LOG.info(episodeIdentifierValue);
+
         if (StringUtils.isNotEmpty(episodeIdentifierValue)) {
+
+            LOG.info("Got here");
+
             UUID episodeUuid = mapper.getResourceMapper().mapEpisodeUuid(HomertonConstants.primaryPatientIdentifierTypeCode, patientIdentifierValue, HomertonConstants.primaryEpisodeIdentifierAssigningAuthority, episodeIdentifierValue);
 
             target.setId(episodeUuid.toString());
