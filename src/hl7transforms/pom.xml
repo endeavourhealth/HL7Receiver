@@ -18,17 +18,22 @@
         <dependency>
             <groupId>org.endeavourhealth</groupId>
             <artifactId>hl7parser</artifactId>
-            <version>1.0-SNAPSHOT</version>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.github.endeavourhealth.ConfigManager</groupId>
+            <artifactId>configmanager</artifactId>
+            <version>${endeavour-config.version}</version>
         </dependency>
         <dependency>
             <groupId>com.github.endeavourhealth.Common</groupId>
             <artifactId>fhir</artifactId>
-            <version>${eds-common.version}</version>
+            <version>${endeavour-common.version}</version>
         </dependency>
         <dependency>
             <groupId>com.github.endeavourhealth.Common</groupId>
             <artifactId>utility</artifactId>
-            <version>${eds-common.version}</version>
+            <version>${endeavour-common.version}</version>
         </dependency>
         <dependency>
             <groupId>me.fhir</groupId>

@@ -18,12 +18,12 @@
         <dependency>
             <groupId>org.endeavourhealth</groupId>
             <artifactId>hl7transforms</artifactId>
-            <version>1.0-SNAPSHOT</version>
+            <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>com.github.endeavourhealth.Common</groupId>
             <artifactId>postgres</artifactId>
-            <version>${eds-common.version}</version>
+            <version>${endeavour-common.version}</version>
         </dependency>
     </dependencies>
 
