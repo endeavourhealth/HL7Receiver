@@ -20,10 +20,6 @@ public class Main {
             LOG.info(PROGRAM_DISPLAY_NAME);
             LOG.info("--------------------------------------------------");
 
-
-            LOG.info("TESTING TESTING TESTING");
-
-
 			hl7Service = new HL7Service(configuration);
             hl7Service.start();
 

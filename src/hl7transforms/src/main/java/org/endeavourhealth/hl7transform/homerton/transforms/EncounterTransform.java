@@ -1,6 +1,5 @@
 package org.endeavourhealth.hl7transform.homerton.transforms;
 
-import org.apache.commons.lang3.NotImplementedException;
 import org.apache.commons.lang3.StringUtils;
 import org.endeavourhealth.common.fhir.CodeableConceptHelper;
 import org.endeavourhealth.common.fhir.FhirExtensionUri;
@@ -24,11 +23,15 @@ import org.endeavourhealth.hl7transform.common.TransformException;
 import org.hl7.fhir.instance.model.*;
 import org.hl7.fhir.instance.model.Encounter;
 import org.hl7.fhir.instance.model.valuesets.LocationPhysicalType;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.List;
 import java.util.UUID;
 
 public class EncounterTransform extends ResourceTransformBase {
+
+    private static final Logger LOG = LoggerFactory.getLogger(EncounterTransform.class);
 
     public EncounterTransform(Mapper mapper, ResourceContainer targetResources) {
         super(mapper, targetResources);
@@ -40,6 +43,8 @@ public class EncounterTransform extends ResourceTransformBase {
     }
 
     public Encounter transform(AdtMessage source) throws ParseException, TransformException, MapperException {
+
+        LOG.info("TESTING - ENCOUNTER TRANSFORM");
 
         if (!source.hasPv1Segment())
             return null;
