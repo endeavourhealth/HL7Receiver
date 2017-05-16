@@ -63,17 +63,9 @@ public class EpisodeOfCareTransform extends ResourceTransformBase {
         String patientIdentifierValue = PatientTransform.getPatientIdentifierValue(source, HomertonConstants.primaryPatientIdentifierTypeCode);
         String episodeIdentifierValue = getEpisodeIdentifierValue(source, HomertonConstants.primaryEpisodeIdentifierAssigningAuthority);
 
-        LOG.info("episodeIdentifierValue");
-        LOG.info(episodeIdentifierValue);
+        UUID episodeUuid = mapper.getResourceMapper().mapEpisodeUuid(HomertonConstants.primaryPatientIdentifierTypeCode, patientIdentifierValue, HomertonConstants.primaryEpisodeIdentifierAssigningAuthority, episodeIdentifierValue);
 
-        if (StringUtils.isNotEmpty(episodeIdentifierValue)) {
-
-            LOG.info("Got here");
-
-            UUID episodeUuid = mapper.getResourceMapper().mapEpisodeUuid(HomertonConstants.primaryPatientIdentifierTypeCode, patientIdentifierValue, HomertonConstants.primaryEpisodeIdentifierAssigningAuthority, episodeIdentifierValue);
-
-            target.setId(episodeUuid.toString());
-        }
+        target.setId(episodeUuid.toString());
     }
 
     private void setIdentifiers(AdtMessage source, EpisodeOfCare target) throws TransformException, MapperException {
