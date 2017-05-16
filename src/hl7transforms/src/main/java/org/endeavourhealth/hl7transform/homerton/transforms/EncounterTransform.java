@@ -22,7 +22,6 @@ import org.endeavourhealth.hl7parser.segments.Pv2Segment;
 import org.endeavourhealth.hl7transform.common.TransformException;
 import org.hl7.fhir.instance.model.*;
 import org.hl7.fhir.instance.model.Encounter;
-import org.hl7.fhir.instance.model.valuesets.LocationPhysicalType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -45,6 +44,7 @@ public class EncounterTransform extends ResourceTransformBase {
     public Encounter transform(AdtMessage source) throws ParseException, TransformException, MapperException {
 
         LOG.info("TESTING - ENCOUNTER TRANSFORM");
+        System.out.println("TESTING - ENCOUNTER TRANSFORM");
 
         if (!source.hasPv1Segment())
             return null;

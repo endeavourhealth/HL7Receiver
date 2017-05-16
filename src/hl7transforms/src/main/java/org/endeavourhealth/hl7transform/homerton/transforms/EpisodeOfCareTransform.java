@@ -39,6 +39,7 @@ public class EpisodeOfCareTransform extends ResourceTransformBase {
     public EpisodeOfCare transform(AdtMessage source) throws TransformException, MapperException, ParseException {
 
         LOG.info("TESTING - EPISODE OF CARE TRANSFORM");
+        System.out.println("TESTING - EPISODE OF CARE TRANSFORM");
 
         if (!source.hasPv1Segment())
             return null;
