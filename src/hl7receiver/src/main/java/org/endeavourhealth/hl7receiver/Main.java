@@ -10,7 +10,7 @@ public class Main {
 	private static final String PROGRAM_DISPLAY_NAME = "HL7 Receiver";
 	private static final Logger LOG = LoggerFactory.getLogger(Main.class);
 
-	private static HL7Service serviceManager;
+	private static HL7Service hl7Service;
 
 	public static void main(String[] args) {
 		try {
@@ -20,8 +20,8 @@ public class Main {
             LOG.info(PROGRAM_DISPLAY_NAME);
             LOG.info("--------------------------------------------------");
 
-			HL7Service serviceManager = new HL7Service(configuration);
-            serviceManager.start();
+			hl7Service = new HL7Service(configuration);
+            hl7Service.start();
 
             LOG.info("Started succesfully...");
 
@@ -42,8 +42,8 @@ public class Main {
 	    try {
             LOG.info("Shutting down...");
 
-            if (serviceManager != null)
-                serviceManager.stop();
+            if (hl7Service != null)
+                hl7Service.stop();
 
 	    } catch (Exception e) {
             printToErrorConsole("Exception occurred during shutdown", e);
