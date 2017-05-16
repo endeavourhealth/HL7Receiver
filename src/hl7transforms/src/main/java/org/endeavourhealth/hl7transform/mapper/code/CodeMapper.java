@@ -1,6 +1,5 @@
 package org.endeavourhealth.hl7transform.mapper.code;
 
-import org.apache.commons.lang3.StringUtils;
 import org.endeavourhealth.hl7transform.mapper.Mapper;
 import org.endeavourhealth.hl7transform.mapper.exceptions.MapperException;
 import org.hl7.fhir.instance.model.*;

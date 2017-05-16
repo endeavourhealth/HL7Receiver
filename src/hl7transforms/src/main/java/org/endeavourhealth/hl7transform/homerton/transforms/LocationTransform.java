@@ -53,6 +53,23 @@ public class LocationTransform extends ResourceTransformBase {
         return location;
     }
 
+    public Location createStLeonardsHospitalLocation() throws MapperException, TransformException, ParseException {
+        Location location = new Location()
+                .setName(HomertonConstants.StLeonardsConstants.locationName)
+                .addIdentifier(IdentifierConverter.createOdsCodeIdentifier(HomertonConstants.StLeonardsConstants.odsSiteCode))
+                .setStatus(Location.LocationStatus.ACTIVE)
+                .setAddress(AddressConverter.createWorkAddress(HomertonConstants.StLeonardsConstants.addressLine, null, HomertonConstants.StLeonardsConstants.addressCity, HomertonConstants.StLeonardsConstants.addressPostcode))
+                .setManagingOrganization(this.targetResources.getResourceReference(ResourceTag.MainHospitalOrganisation, Organization.class))
+                .setType(createType(V3RoleCode.HOSP))
+                .setPhysicalType(createLocationPhysicalType(LocationPhysicalType.BU))
+                .setMode(Location.LocationMode.INSTANCE);
+
+        UUID id = getId(HomertonConstants.StLeonardsConstants.locationBuilding, HomertonConstants.StLeonardsConstants.locationName);
+        location.setId(id.toString());
+
+        return location;
+    }
+
     public Reference createHomertonConstituentLocation(Pl source) throws MapperException, TransformException, ParseException {
 
         if (StringUtils.isBlank(source.getFacility())
@@ -71,12 +88,8 @@ public class LocationTransform extends ResourceTransformBase {
                 && StringUtils.isBlank(source.getBed()))
             return null;
 
-        if (StringUtils.isNotBlank(source.getBuilding()))
-            if (!HomertonConstants.locationBuilding.equalsIgnoreCase(StringUtils.trim(source.getBuilding())))
-                throw new TransformException("Building of " + source.getBuilding() + " not recognised");
-
         Reference managingOrganisationReference = targetResources.getResourceReference(ResourceTag.MainHospitalOrganisation, Organization.class);
-        Location topParentBuildingLocation = targetResources.getResourceSingle(ResourceTag.MainHospitalLocation, Location.class);
+        Location topParentBuildingLocation = getHospitalBuildingLocation(source);
 
         List<Pair<LocationPhysicalType, String>> locations = new ArrayList<>();
 
@@ -109,6 +122,26 @@ public class LocationTransform extends ResourceTransformBase {
         }
 
         return ReferenceHelper.createReference(ResourceType.Location, directParentLocation.getId());
+    }
+
+    public Location getHospitalBuildingLocation(Pl source) throws TransformException, ParseException, MapperException {
+        if (StringUtils.isBlank(source.getBuilding()))
+            return targetResources.getResourceSingle(ResourceTag.MainHospitalLocation, Location.class);
+
+        if (HomertonConstants.locationBuilding.equalsIgnoreCase(StringUtils.trim(source.getBuilding())))
+            return targetResources.getResourceSingle(ResourceTag.MainHospitalLocation, Location.class);
+
+        if (HomertonConstants.StLeonardsConstants.locationBuilding.equalsIgnoreCase(StringUtils.trim(source.getBuilding()))) {
+            Location stLeonardsHospitalLocation = createStLeonardsHospitalLocation();
+
+            if (stLeonardsHospitalLocation != null)
+                if (!targetResources.hasResource(stLeonardsHospitalLocation.getId()))
+                    targetResources.addResource(stLeonardsHospitalLocation, null);
+
+            return stLeonardsHospitalLocation;
+        }
+
+        throw new TransformException("Building of " + source.getBuilding() + " not recognised");
     }
 
     public Reference createClassOfLocation(String classOfLocationName) throws MapperException {
