@@ -134,7 +134,7 @@ create table configuration.eds
 	constraint configuration_eds_edsurl_ck check (char_length(trim(eds_url)) > 0),
 	constraint configuration_eds_softwarecontenttype_ck check (char_length(trim(software_content_type)) > 0),
 	constraint configuration_eds_softwareversion_ck check (char_length(trim(software_version)) > 0),
-	constraint configuration_configurationeds_usekeycloak_keycloaktokenuri_keycloakrealm_keycloakusername_keycloakpassword_keycloakclientid_ck check ((not use_keycloak) or (keycloak_token_uri is not null and keycloak_realm is not null and keycloak_username is not null and keycloak_password is not null and keycloak_clientid is not null)),
+	constraint configuration_configurationeds_allkeycloakfields_ck check ((not use_keycloak) or (keycloak_token_uri is not null and keycloak_realm is not null and keycloak_username is not null and keycloak_password is not null and keycloak_clientid is not null)),
 	constraint configuration_configurationeds_keycloaktokenuri_ck check (keycloak_token_uri is null or (char_length(trim(keycloak_token_uri)) > 0)),
 	constraint configuration_configurationeds_keycloakrealm_ck check (keycloak_realm is null or (char_length(trim(keycloak_realm)) > 0)),
 	constraint configuration_configurationeds_keycloakusername_ck check (keycloak_username is null or (char_length(trim(keycloak_username)) > 0)),

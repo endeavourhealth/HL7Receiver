@@ -98,11 +98,11 @@ create table mapping.code
 	target_term varchar(500) null,
 	
 	constraint mapping_code_codeid_pk primary key (code_id),
-	constraint mapping_code_sccodeoriginid_sccontextid_sc_sccodesystem_sterm_pk unique (source_code_origin_id, source_code_context_id, source_code, source_code_system_id, source_term),
+	constraint mapping_code_sccodeoriginid_scocontext_sco_scosys_sterm_pk unique (source_code_origin_id, source_code_context_id, source_code, source_code_system_id, source_term),
 	constraint mapping_code_sourcecodeoriginid_fk foreign key (source_code_origin_id) references mapping.code_origin (code_origin_id),
 	constraint mapping_code_sourcecodecontextid_fk foreign key (source_code_context_id) references mapping.code_context (code_context_id),
 	constraint mapping_code_sourcecodesystemid_fk foreign key (source_code_system_id) references mapping.code_system (code_system_id),
-	constraint mapping_code_ismapped_targetcode_targetcodesystemid_targetterm_ck check (((not is_mapped) and (target_code is null and target_code_system_id is null and target_term is null)) or ((is_mapped) and (target_code is not null and target_code_system_id is not null and target_term is not null))),
+	constraint mapping_code_ismapped_targetcode_targetcodesysid_targetterm_ck check (((not is_mapped) and (target_code is null and target_code_system_id is null and target_term is null)) or ((is_mapped) and (target_code is not null and target_code_system_id is not null and target_term is not null))),
 	constraint mapping_code_targetcodesystemid_fk foreign key (target_code_system_id) references mapping.code_system (code_system_id),
 	constraint mapping_code_targetcodeactionid_fk foreign key (is_mapped, target_code_action_id) references mapping.code_action (is_mapped, code_action_id)
 );
