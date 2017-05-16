@@ -20,7 +20,7 @@
     <dependencies>
         <!-- this project -->
         <dependency>
-            <groupId>org.endeavourhealth</groupId>
+            <groupId>${project.groupId}</groupId>
             <artifactId>hl7transforms</artifactId>
             <version>${project.version}</version>
         </dependency>

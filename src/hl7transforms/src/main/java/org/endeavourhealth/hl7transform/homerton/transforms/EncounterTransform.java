@@ -43,9 +43,6 @@ public class EncounterTransform extends ResourceTransformBase {
 
     public Encounter transform(AdtMessage source) throws ParseException, TransformException, MapperException {
 
-        LOG.info("TESTING - ENCOUNTER TRANSFORM");
-        System.out.println("TESTING - ENCOUNTER TRANSFORM");
-
         if (!source.hasPv1Segment())
             return null;
 
