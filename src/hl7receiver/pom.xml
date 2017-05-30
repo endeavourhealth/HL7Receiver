@@ -141,13 +141,6 @@
             <version>0.0.2</version>
         </dependency>
 
-        <!-- jetty-server -->
-        <dependency>
-            <groupId>org.eclipse.jetty</groupId>
-            <artifactId>jetty-server</artifactId>
-            <version>9.4.5.v20170502</version>
-        </dependency>
-
     </dependencies>
 
     <build>
