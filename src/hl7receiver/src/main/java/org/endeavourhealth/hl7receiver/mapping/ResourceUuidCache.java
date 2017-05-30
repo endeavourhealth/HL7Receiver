@@ -14,7 +14,7 @@ public class ResourceUuidCache {
 
     private List<ResourceType> resourceTypesToCache;
 
-    private ConcurrentHashMap<String, UUID> hashMap = new ConcurrentHashMap<>();
+    private ConcurrentHashMap<ResourceUuidKey, UUID> hashMap = new ConcurrentHashMap<>();
 
     public ResourceUuidCache(ResourceType... resourceTypesToCache) {
         Validate.notNull(resourceTypesToCache);
@@ -29,9 +29,9 @@ public class ResourceUuidCache {
         if (!resourceTypesToCache.contains(resourceType))
             return null;
 
-        String combinedKey = getCombinedKey(resourceType, identifier);
+        ResourceUuidKey resourceUuidKey = new ResourceUuidKey(resourceType.toString(), identifier);
 
-        return hashMap.getOrDefault(combinedKey, null);
+        return hashMap.getOrDefault(resourceUuidKey, null);
     }
 
     public void putResourceUuid(ResourceType resourceType, String identifier, UUID resourceUuid) throws MapperException {
@@ -42,13 +42,13 @@ public class ResourceUuidCache {
         if (!resourceTypesToCache.contains(resourceType))
             return;
 
-        String combinedKey = getCombinedKey(resourceType, identifier);
+        ResourceUuidKey combinedKey = new ResourceUuidKey(resourceType.toString(), identifier);
 
         UUID previousValue = hashMap.putIfAbsent(combinedKey, resourceUuid);
 
         if (previousValue != null)
             if (!previousValue.equals(resourceUuid))
-                throw new MapperException("Tried to put key " + combinedKey + " with resource UUID " + resourceUuid.toString() + " but different resource UUID already exists " + previousValue.toString());
+                throw new MapperException("Tried to put key " + combinedKey.toString() + " with resource UUID " + resourceUuid.toString() + " but different resource UUID already exists " + previousValue.toString());
     }
 
     private static String getCombinedKey(ResourceType resourceType, String identifier) {
