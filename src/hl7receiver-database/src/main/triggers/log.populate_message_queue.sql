@@ -3,7 +3,7 @@ create or replace function log.populate_message_queue() returns trigger
 as $$
 begin
 
-	if ((new.message_id is null) 
+	if ((TG_OP = 'DELETE') 
 	or exists
 	(
 		select *
@@ -14,7 +14,7 @@ begin
 	then
 		delete
 		from log.message_queue mq
-		where mq.message_id = new.message_id;
+		where mq.message_id = old.message_id;
 	else 
 		insert into log.message_queue
 		(

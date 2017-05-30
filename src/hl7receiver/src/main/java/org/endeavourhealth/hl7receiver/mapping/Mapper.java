@@ -14,11 +14,13 @@ public class Mapper extends org.endeavourhealth.hl7transform.mapper.Mapper {
     private int channelId;
     private String sendingFacility;
     private DataLayer dataLayer;
+    private ResourceUuidCache resourceUuidCache;
 
     public Mapper(int channelId, String sendingFacility, DataLayer dataLayer) {
         this.channelId = channelId;
         this.sendingFacility = sendingFacility;
         this.dataLayer = dataLayer;
+        this.resourceUuidCache = new ResourceUuidCache(ResourceType.Organization, ResourceType.Location, ResourceType.Practitioner);
     }
 
     @Override
@@ -40,7 +42,15 @@ public class Mapper extends org.endeavourhealth.hl7transform.mapper.Mapper {
     @Override
     public UUID mapResourceUuid(ResourceType resourceType, String identifier) throws MapperException {
         try {
-            return this.dataLayer.getResourceUuid(channelId, resourceType.toString(), identifier);
+            UUID resourceUuid = resourceUuidCache.getResourceUuid(resourceType, identifier);
+
+            if (resourceUuid == null) {
+                resourceUuid = this.dataLayer.getResourceUuid(channelId, resourceType.toString(), identifier);
+                resourceUuidCache.putResourceUuid(resourceType, identifier, resourceUuid);
+            }
+
+            return resourceUuid;
+
         } catch (Exception e) {
             throw new MapperException("Exception while getting resource UUID, see cause", e);
         }

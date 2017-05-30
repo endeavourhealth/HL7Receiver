@@ -28,6 +28,7 @@ public class HL7ChannelProcessor implements Runnable {
     private Configuration configuration;
     private DbChannel dbChannel;
     private DataLayer dataLayer;
+    private Mapper mapper;
     private volatile boolean stopRequested = false;
     private boolean firstLockAttempt = true;
 
@@ -35,6 +36,7 @@ public class HL7ChannelProcessor implements Runnable {
         this.configuration = configuration;
         this.dbChannel = dbChannel;
         this.dataLayer = new DataLayer(configuration.getDatabaseConnection());
+        this.mapper = new Mapper(dbChannel.getChannelId(), dbChannel.getSendingFacility(), dataLayer);
     }
 
     public void start() {
@@ -130,10 +132,10 @@ public class HL7ChannelProcessor implements Runnable {
             return false;
 
         try {
-            HL7MessageProcessor messageProcessor = new HL7MessageProcessor(configuration, dbChannel,
+            HL7MessageProcessor messageProcessor = new HL7MessageProcessor(configuration,
+                    dbChannel,
                     (contentType, content) -> dataLayer.addMessageProcessingContent(message.getMessageId(), attemptId, contentType, content),
-                    new Mapper(this.dbChannel.getChannelId(), this.dbChannel.getSendingFacility(), this.dataLayer)
-            );
+                    this.mapper);
 
             if (messageProcessor.processMessage(message))
                 return setMessageProcessingSuccess(message.getMessageId(), attemptId);

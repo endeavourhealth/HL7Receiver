@@ -37,7 +37,7 @@ begin
 
 	if (_resource_uuid is null)
 	then
-		raise exception 'resource uuid could not generated for channel % resource % identifier %', _channel_id, _resource_type, _unique_identifier;
+		raise exception 'resource uuid could not be generated for channel % resource % identifier %', _channel_id, _resource_type, _unique_identifier;
 		return null;
 	end if;
 	
