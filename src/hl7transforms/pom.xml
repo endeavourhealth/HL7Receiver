@@ -21,19 +21,19 @@
             <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>com.github.endeavourhealth.ConfigManager</groupId>
+            <groupId>org.endeavourhealth.configmanager</groupId>
             <artifactId>configmanager</artifactId>
             <version>${endeavour-config.version}</version>
         </dependency>
         <dependency>
-            <groupId>com.github.endeavourhealth.Common</groupId>
+            <groupId>org.endeavourhealth.common</groupId>
             <artifactId>fhir</artifactId>
-            <version>${endeavour-common.version}</version>
+            <version>${eds-fhir.version}</version>
         </dependency>
         <dependency>
-            <groupId>com.github.endeavourhealth.Common</groupId>
+            <groupId>org.endeavourhealth.common</groupId>
             <artifactId>utility</artifactId>
-            <version>${endeavour-common.version}</version>
+            <version>${eds-utility.version}</version>
         </dependency>
         <dependency>
             <groupId>me.fhir</groupId>

@@ -27,24 +27,24 @@
 
         <!-- endeavourhealth -->
         <dependency>
-            <groupId>com.github.endeavourhealth.ConfigManager</groupId>
+            <groupId>org.endeavourhealth.configmanager</groupId>
             <artifactId>configmanager</artifactId>
             <version>${endeavour-config.version}</version>
         </dependency>
         <dependency>
-            <groupId>com.github.endeavourhealth.Common</groupId>
+            <groupId>org.endeavourhealth.common</groupId>
             <artifactId>eds-client</artifactId>
-            <version>${endeavour-common.version}</version>
+            <version>${eds-client.version}</version>
         </dependency>
         <dependency>
-            <groupId>com.github.endeavourhealth.Common</groupId>
+            <groupId>org.endeavourhealth.common</groupId>
             <artifactId>postgres</artifactId>
-            <version>${endeavour-common.version}</version>
+            <version>${eds-postgres.version}</version>
         </dependency>
         <dependency>
-            <groupId>com.github.endeavourhealth.Common</groupId>
+            <groupId>org.endeavourhealth.common</groupId>
             <artifactId>security</artifactId>
-            <version>${endeavour-common.version}</version>
+            <version>${eds-security.version}</version>
         </dependency>
 
         <!-- hapi -->

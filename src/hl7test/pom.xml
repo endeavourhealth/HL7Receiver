@@ -21,9 +21,9 @@
             <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>com.github.endeavourhealth.Common</groupId>
+            <groupId>org.endeavourhealth.common</groupId>
             <artifactId>postgres</artifactId>
-            <version>${endeavour-common.version}</version>
+            <version>${eds-postgres.version}</version>
         </dependency>
     </dependencies>
 
