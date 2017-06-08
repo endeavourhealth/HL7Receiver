@@ -30,4 +30,4 @@ insert into dictionary.message_type (message_type, description) values
 ('ACK^S22', 'Acknowledgement to notification of deletion of service/resource on appointment'),
 ('ACK^S23', 'Acknowledgement to notification of blocked schedule time slot(s)'),
 ('ACK^S24', 'Acknowledgement to notification of opened ("un-blocked") schedule time slot(s)'),
-('ACK^S26', 'Acknowledgement to notification that patient did not show up for scheduled appointment'),
+('ACK^S26', 'Acknowledgement to notification that patient did not show up for scheduled appointment');
