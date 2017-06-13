@@ -13,6 +13,7 @@ import org.endeavourhealth.hl7transform.transforms.homerton.pretransform.Homerto
 import org.endeavourhealth.hl7transform.transforms.homerton.transforms.*;
 import org.endeavourhealth.hl7transform.mapper.Mapper;
 import org.endeavourhealth.hl7transform.common.ResourceContainer;
+import org.endeavourhealth.hl7transform.transforms.homerton.transforms.constants.HomertonConstants;
 import org.hl7.fhir.instance.model.*;
 
 import java.util.Arrays;
@@ -31,7 +32,7 @@ public class HomertonAdtTransform extends Transform {
     }
 
     public List<String> getSupportedSendingFacilities() {
-        return Arrays.asList(new String[] { "HOMERTON" });
+        return Arrays.asList(new String[] { HomertonConstants.sendingFacility });
     }
 
     public HashMap<String, Class<? extends Segment>> getZSegments() {

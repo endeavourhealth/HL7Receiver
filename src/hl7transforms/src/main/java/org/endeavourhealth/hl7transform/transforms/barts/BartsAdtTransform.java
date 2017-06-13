@@ -10,6 +10,7 @@ import org.endeavourhealth.hl7transform.common.ResourceContainer;
 import org.endeavourhealth.hl7transform.common.ResourceTag;
 import org.endeavourhealth.hl7transform.common.TransformException;
 import org.endeavourhealth.hl7transform.mapper.Mapper;
+import org.endeavourhealth.hl7transform.transforms.barts.constants.BartsConstants;
 import org.endeavourhealth.hl7transform.transforms.homerton.parser.zsegments.*;
 import org.endeavourhealth.hl7transform.transforms.homerton.pretransform.HomertonPreTransform;
 import org.endeavourhealth.hl7transform.transforms.homerton.transforms.*;
@@ -24,14 +25,10 @@ public class BartsAdtTransform extends Transform {
     private HashMap<String, Class<? extends Segment>> zSegments = new HashMap<>();
 
     public BartsAdtTransform() {
-        zSegments.put(HomertonSegmentName.ZAL, ZalSegment.class);
-        zSegments.put(HomertonSegmentName.ZPI, ZpiSegment.class);
-        zSegments.put(HomertonSegmentName.ZQA, ZqaSegment.class);
-        zSegments.put(HomertonSegmentName.ZVI, ZviSegment.class);
     }
 
     public List<String> getSupportedSendingFacilities() {
-        return Arrays.asList(new String[] { "BARTS" });
+        return Arrays.asList(new String[] { BartsConstants.sendingFacility });
     }
 
     public HashMap<String, Class<? extends Segment>> getZSegments() {
@@ -58,13 +55,6 @@ public class BartsAdtTransform extends Transform {
         OrganizationTransform organizationTransform = new OrganizationTransform(mapper, targetResources);
         Organization mainHospitalOrganisation = organizationTransform.createHomertonManagingOrganisation(sourceMessage);
         targetResources.addResource(mainHospitalOrganisation, ResourceTag.MainHospitalOrganisation);
-
-        ///////////////////////////////////////////////////////////////////////////
-        // create main hospital location
-        //
-        LocationTransform locationTransform = new LocationTransform(mapper, targetResources);
-        Location location = locationTransform.createHomertonHospitalLocation();
-        targetResources.addResource(location, ResourceTag.MainHospitalLocation);
 
         ///////////////////////////////////////////////////////////////////////////
         // create usual gp organisation
@@ -96,26 +86,6 @@ public class BartsAdtTransform extends Transform {
         PatientTransform patientTransform = new PatientTransform(mapper, targetResources);
         Patient patient = patientTransform.transform(sourceMessage);
         targetResources.addResource(patient, ResourceTag.PatientSubject);
-
-        ///////////////////////////////////////////////////////////////////////////
-        // create episode of care
-        //
-        // and any associated organisations (/services), practitioners, locations
-        //
-        EpisodeOfCareTransform episodeOfCareTransform = new EpisodeOfCareTransform(mapper, targetResources);
-        EpisodeOfCare episodeOfCare = episodeOfCareTransform.transform(sourceMessage);
-
-        if (episodeOfCare != null)
-            targetResources.addResource(episodeOfCare);
-
-        ///////////////////////////////////////////////////////////////////////////
-        // create encounter
-        //
-        EncounterTransform encounterTransform = new EncounterTransform(mapper, targetResources);
-        Encounter encounter = encounterTransform.transform(sourceMessage);
-
-        if (encounter != null)
-            targetResources.addResource(encounter);
 
         ///////////////////////////////////////////////////////////////////////////
         // create bundle

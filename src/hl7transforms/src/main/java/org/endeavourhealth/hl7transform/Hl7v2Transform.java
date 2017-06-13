@@ -4,6 +4,7 @@ import org.apache.commons.lang3.NotImplementedException;
 import org.apache.commons.lang3.StringUtils;
 import org.endeavourhealth.common.fhir.JsonHelper;
 import org.endeavourhealth.hl7transform.mapper.Mapper;
+import org.endeavourhealth.hl7transform.transforms.barts.BartsAdtTransform;
 import org.endeavourhealth.hl7transform.transforms.homerton.HomertonAdtTransform;
 import org.endeavourhealth.hl7transform.common.TransformException;
 import org.endeavourhealth.hl7parser.Message;
@@ -20,7 +21,8 @@ import java.util.stream.Collectors;
 public class Hl7v2Transform {
 
     private static List<Transform> transformTypes = Arrays.asList(new Transform[] {
-        new HomertonAdtTransform()
+            new HomertonAdtTransform(),
+            new BartsAdtTransform()
     });
 
     public static String transform(String message, Mapper mapper) throws Exception {
