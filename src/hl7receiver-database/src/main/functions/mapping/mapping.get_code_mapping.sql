@@ -123,9 +123,24 @@ begin
 	and c.source_code = _source_code
 	and c.source_code_system_id = _source_code_system_id
 	and c.source_term = _source_term;
+
+	--------------------------------------------
+	-- if no mapping, attempt to find global mapping
+	--
+	if (_code_id is null)
+	then
+		select 
+			c.code_id into _code_id
+		from mapping.code c
+		where c.source_code_context_id = _source_code_context_id
+		and c.source_code_origin_id = 'G'
+		and c.source_code = _source_code
+		and c.source_code_system_id = _source_code_system_id
+		and c.source_term = _source_term;
+	end if;
 	
 	--------------------------------------------
-	-- if no mapping, insert
+	-- if still no mapping, insert
 	--
 	if (_code_id is null)
 	then
