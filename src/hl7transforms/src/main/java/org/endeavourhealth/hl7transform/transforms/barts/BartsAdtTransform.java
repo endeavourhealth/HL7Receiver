@@ -102,7 +102,7 @@ public class BartsAdtTransform extends Transform {
             validateMinAndMaxSegmentCount(sourceMessage, SegmentName.PID, 2, 2);
 
         if (!mergeMessageTypes.contains(messageType))
-            validateExactlyOneSegment(sourceMessage, SegmentName.PD1);
+            validateZeroOrOneSegments(sourceMessage, SegmentName.PD1);
         else
             validateNoSegments(sourceMessage, SegmentName.PD1);
 
