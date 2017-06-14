@@ -77,16 +77,16 @@ public class PatientTransform extends ResourceTransformBase {
 
     public void setId(AdtMessage source, Patient target) throws TransformException, MapperException {
 
-        String patientIdentifierValue = getPatientIdentifierValue(source, BartsConstants.primaryPatientIdentifierTypeCode);
-        UUID patientUuid = mapper.getResourceMapper().mapPatientUuid(BartsConstants.primaryPatientIdentifierTypeCode, patientIdentifierValue);
+        String patientIdentifierValue = getPatientIdentifierValue(source, BartsConstants.primaryPatientIdentifierAssigningAuthority);
+        UUID patientUuid = mapper.getResourceMapper().mapPatientUuid(BartsConstants.primaryPatientIdentifierAssigningAuthority, patientIdentifierValue);
 
         target.setId(patientUuid.toString());
     }
 
-    public static String getPatientIdentifierValue(AdtMessage message, String patientIdentifierTypeCode) {
+    public static String getPatientIdentifierValue(AdtMessage message, String assigningAuthority) {
         return PatientTransform.getAllPatientIdentifiers(message)
                 .stream()
-                .filter(t -> patientIdentifierTypeCode.equals(t.getIdentifierTypeCode()))
+                .filter(t -> assigningAuthority.equals(t.getAssigningAuthority()))
                 .map(t -> t.getId())
                 .collect(StreamExtension.firstOrNullCollector());
     }

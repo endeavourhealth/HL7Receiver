@@ -11,7 +11,7 @@ public class BartsConstants {
 
     public static final String sendingFacility = "2.16.840.1.113883.3.2540";  //MSH.4
 
-    public static final String primaryPatientIdentifierTypeCode = "2.16.840.1.113883.3.2540.1";  // PID.3
+    public static final String primaryPatientIdentifierAssigningAuthority = "2.16.840.1.113883.3.2540.1";  // PID.3
 
     /*
     public static final String servicingFacility = "HOMERTON UNIVER";  // PV1.39
