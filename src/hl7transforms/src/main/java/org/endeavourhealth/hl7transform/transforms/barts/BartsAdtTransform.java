@@ -11,9 +11,10 @@ import org.endeavourhealth.hl7transform.common.ResourceTag;
 import org.endeavourhealth.hl7transform.common.TransformException;
 import org.endeavourhealth.hl7transform.mapper.Mapper;
 import org.endeavourhealth.hl7transform.transforms.barts.constants.BartsConstants;
-import org.endeavourhealth.hl7transform.transforms.homerton.parser.zsegments.*;
-import org.endeavourhealth.hl7transform.transforms.homerton.pretransform.HomertonPreTransform;
-import org.endeavourhealth.hl7transform.transforms.homerton.transforms.*;
+import org.endeavourhealth.hl7transform.transforms.barts.pretransform.BartsPreTransform;
+import org.endeavourhealth.hl7transform.transforms.barts.transforms.MessageHeaderTransform;
+import org.endeavourhealth.hl7transform.transforms.barts.transforms.OrganizationTransform;
+import org.endeavourhealth.hl7transform.transforms.barts.transforms.PatientTransform;
 import org.hl7.fhir.instance.model.*;
 
 import java.util.Arrays;
@@ -39,7 +40,7 @@ public class BartsAdtTransform extends Transform {
         Validate.notNull(sourceMessage);
         validateSendingFacility(sourceMessage);
 
-        return HomertonPreTransform.preTransform(sourceMessage);
+        return BartsPreTransform.preTransform(sourceMessage);
     }
 
     public Bundle transform(AdtMessage sourceMessage, Mapper mapper) throws Exception {
@@ -53,25 +54,8 @@ public class BartsAdtTransform extends Transform {
         // create main hospital organisation
         //
         OrganizationTransform organizationTransform = new OrganizationTransform(mapper, targetResources);
-        Organization mainHospitalOrganisation = organizationTransform.createHomertonManagingOrganisation(sourceMessage);
+        Organization mainHospitalOrganisation = organizationTransform.createBartsManagingOrganisation(sourceMessage);
         targetResources.addResource(mainHospitalOrganisation, ResourceTag.MainHospitalOrganisation);
-
-        ///////////////////////////////////////////////////////////////////////////
-        // create usual gp organisation
-        //
-        Organization mainGPOrganisation = organizationTransform.createMainPrimaryCareProviderOrganisation(sourceMessage);
-
-        if (mainGPOrganisation != null)
-            targetResources.addResource(mainGPOrganisation, ResourceTag.MainPrimaryCareProviderOrganisation);
-
-        ///////////////////////////////////////////////////////////////////////////
-        // create usual gp practitioner
-        //
-        PractitionerTransform practitionerTransform = new PractitionerTransform(mapper, targetResources);
-        Practitioner mainGPPractitioner = practitionerTransform.createMainPrimaryCareProviderPractitioner(sourceMessage);
-
-        if (mainGPPractitioner != null)
-            targetResources.addResource(mainGPPractitioner, ResourceTag.MainPrimaryCareProviderPractitioner);
 
         ///////////////////////////////////////////////////////////////////////////
         // create message header

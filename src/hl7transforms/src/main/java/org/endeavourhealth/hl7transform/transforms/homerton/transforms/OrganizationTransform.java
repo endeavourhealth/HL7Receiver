@@ -14,12 +14,12 @@ import org.endeavourhealth.hl7transform.common.ResourceTransformBase;
 import org.endeavourhealth.hl7transform.common.TransformException;
 import org.endeavourhealth.hl7transform.transforms.homerton.parser.zdatatypes.Zpd;
 import org.endeavourhealth.hl7transform.transforms.homerton.transforms.constants.HomertonConstants;
-import org.endeavourhealth.hl7transform.transforms.homerton.transforms.converters.IdentifierConverter;
+import org.endeavourhealth.hl7transform.common.converters.IdentifierConverter;
 import org.endeavourhealth.hl7transform.mapper.Mapper;
 import org.endeavourhealth.hl7transform.mapper.exceptions.MapperException;
-import org.endeavourhealth.hl7transform.transforms.homerton.transforms.converters.AddressConverter;
+import org.endeavourhealth.hl7transform.common.converters.AddressConverter;
 import org.endeavourhealth.hl7transform.common.converters.StringHelper;
-import org.endeavourhealth.hl7transform.transforms.homerton.transforms.converters.TelecomConverter;
+import org.endeavourhealth.hl7transform.common.converters.TelecomConverter;
 import org.hl7.fhir.instance.model.*;
 
 import java.util.*;

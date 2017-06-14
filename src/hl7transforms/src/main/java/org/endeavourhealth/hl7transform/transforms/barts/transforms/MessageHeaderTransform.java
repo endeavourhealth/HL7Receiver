@@ -15,7 +15,6 @@ import org.endeavourhealth.hl7transform.common.ResourceTransformBase;
 import org.endeavourhealth.hl7transform.common.TransformException;
 import org.endeavourhealth.hl7transform.mapper.Mapper;
 import org.endeavourhealth.hl7transform.mapper.exceptions.MapperException;
-import org.endeavourhealth.hl7transform.transforms.homerton.transforms.PractitionerTransform;
 import org.hl7.fhir.instance.model.*;
 
 import java.time.LocalDateTime;
@@ -107,20 +106,20 @@ public class MessageHeaderTransform extends ResourceTransformBase {
             target.addExtension(ExtensionConverter.createIntegerExtension(FhirExtensionUri.EXTENSION_HL7V2_SEQUENCE_NUMBER, sequenceNumber));
     }
 
-    private void setEnterer(EvnSegment evnSegment, MessageHeader target) throws TransformException, MapperException, ParseException {
-
-        if (evnSegment.getOperators() == null)
-            return;
-
-        PractitionerTransform practitionerTransform = new PractitionerTransform(mapper, targetResources);
-        List<Reference> references = practitionerTransform.createPractitioners(evnSegment.getOperators());
-
-        if (references.size() > 1)
-            throw new TransformException("More than one entering user found");
-
-        if (references.size() == 1)
-            target.setEnterer(references.get(0));
-    }
+//    private void setEnterer(EvnSegment evnSegment, MessageHeader target) throws TransformException, MapperException, ParseException {
+//
+//        if (evnSegment.getOperators() == null)
+//            return;
+//
+//        PractitionerTransform practitionerTransform = new PractitionerTransform(mapper, targetResources);
+//        List<Reference> references = practitionerTransform.createPractitioners(evnSegment.getOperators());
+//
+//        if (references.size() > 1)
+//            throw new TransformException("More than one entering user found");
+//
+//        if (references.size() == 1)
+//            target.setEnterer(references.get(0));
+//    }
 
     private void setId(AdtMessage source, MessageHeader target) throws MapperException {
 

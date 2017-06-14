@@ -1,9 +1,8 @@
-package org.endeavourhealth.hl7transform.transforms.homerton.transforms.converters;
+package org.endeavourhealth.hl7transform.common.converters;
 
 import org.apache.commons.lang3.StringUtils;
 import org.endeavourhealth.hl7parser.datatypes.XpnInterface;
 import org.endeavourhealth.hl7transform.common.TransformException;
-import org.endeavourhealth.hl7transform.common.converters.StringHelper;
 import org.endeavourhealth.hl7transform.mapper.Mapper;
 import org.endeavourhealth.hl7transform.mapper.exceptions.MapperException;
 import org.hl7.fhir.instance.model.HumanName;

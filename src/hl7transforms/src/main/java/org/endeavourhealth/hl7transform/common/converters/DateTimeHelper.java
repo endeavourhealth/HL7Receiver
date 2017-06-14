@@ -1,4 +1,4 @@
-package org.endeavourhealth.hl7transform.transforms.homerton.transforms.converters;
+package org.endeavourhealth.hl7transform.common.converters;
 
 import org.endeavourhealth.hl7parser.Hl7DateTime;
 import org.endeavourhealth.hl7parser.ParseException;

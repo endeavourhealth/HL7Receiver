@@ -1,4 +1,4 @@
-package org.endeavourhealth.hl7transform.transforms.homerton.transforms.converters;
+package org.endeavourhealth.hl7transform.common.converters;
 
 import org.apache.commons.lang3.StringUtils;
 import org.endeavourhealth.hl7parser.datatypes.Xtn;

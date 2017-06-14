@@ -20,13 +20,11 @@ import org.endeavourhealth.hl7transform.common.TransformException;
 import org.endeavourhealth.hl7transform.common.converters.DateConverter;
 import org.endeavourhealth.hl7transform.mapper.Mapper;
 import org.endeavourhealth.hl7transform.mapper.exceptions.MapperException;
-import org.endeavourhealth.hl7transform.transforms.homerton.parser.zsegments.HomertonSegmentName;
-import org.endeavourhealth.hl7transform.transforms.homerton.parser.zsegments.ZpiSegment;
-import org.endeavourhealth.hl7transform.transforms.homerton.transforms.constants.HomertonConstants;
-import org.endeavourhealth.hl7transform.transforms.homerton.transforms.converters.AddressConverter;
-import org.endeavourhealth.hl7transform.transforms.homerton.transforms.converters.IdentifierConverter;
-import org.endeavourhealth.hl7transform.transforms.homerton.transforms.converters.NameConverter;
-import org.endeavourhealth.hl7transform.transforms.homerton.transforms.converters.TelecomConverter;
+import org.endeavourhealth.hl7transform.transforms.barts.constants.BartsConstants;
+import org.endeavourhealth.hl7transform.common.converters.AddressConverter;
+import org.endeavourhealth.hl7transform.common.converters.IdentifierConverter;
+import org.endeavourhealth.hl7transform.common.converters.NameConverter;
+import org.endeavourhealth.hl7transform.common.converters.TelecomConverter;
 import org.hl7.fhir.instance.model.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -79,8 +77,8 @@ public class PatientTransform extends ResourceTransformBase {
 
     public void setId(AdtMessage source, Patient target) throws TransformException, MapperException {
 
-        String patientIdentifierValue = getPatientIdentifierValue(source, HomertonConstants.primaryPatientIdentifierTypeCode);
-        UUID patientUuid = mapper.getResourceMapper().mapPatientUuid(HomertonConstants.primaryPatientIdentifierTypeCode, patientIdentifierValue);
+        String patientIdentifierValue = getPatientIdentifierValue(source, BartsConstants.primaryPatientIdentifierTypeCode);
+        UUID patientUuid = mapper.getResourceMapper().mapPatientUuid(BartsConstants.primaryPatientIdentifierTypeCode, patientIdentifierValue);
 
         target.setId(patientUuid.toString());
     }
@@ -220,14 +218,6 @@ public class PatientTransform extends ResourceTransformBase {
         for (Address address : AddressConverter.convert(pidSegment.getAddresses(), mapper))
             if (address != null)
                 target.addAddress(address);
-
-        ZpiSegment zpiSegment = source.getSegment(HomertonSegmentName.ZPI, ZpiSegment.class);
-
-        if (zpiSegment != null)
-            if (zpiSegment.getPatientTemporaryAddress() != null)
-                for (Address address : AddressConverter.convert(zpiSegment.getPatientTemporaryAddress(), mapper))
-                    if (address != null)
-                        target.addAddress(address);
     }
 
     private void setSex(PidSegment sourcePid, Patient target) throws TransformException, MapperException {
