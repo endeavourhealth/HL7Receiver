@@ -51,7 +51,7 @@ public class MessageHeaderTransform extends ResourceTransformBase {
         setResponsible(mshSegment, target);
         setMessageControlId(mshSegment, target);
         setSequenceNumber(mshSegment, target);
-        setEnterer(evnSegment, target);
+        //setEnterer(evnSegment, target);
 
         return target;
     }
