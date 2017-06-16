@@ -12,9 +12,12 @@ begin
 		and s.is_complete
 	))
 	then
-		delete
-		from log.message_queue mq
-		where mq.message_id = old.message_id;
+		if (TG_OP != 'INSERT')
+		then
+			delete
+			from log.message_queue mq
+			where mq.message_id = old.message_id;
+		end if;
 	else 
 		insert into log.message_queue
 		(
