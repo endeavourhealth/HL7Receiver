@@ -1,5 +1,6 @@
 package org.endeavourhealth.hl7receiver;
 
+import org.endeavourhealth.common.fhir.schema.OrganisationType;
 import org.endeavourhealth.common.postgres.PgResultSet;
 import org.endeavourhealth.common.postgres.PgStoredProc;
 import org.endeavourhealth.common.postgres.PgStoredProcException;
@@ -334,5 +335,25 @@ public class DataLayer implements IDBDigestLogger {
                         .setCode(resultSet.getString("target_code"))
                         .setSystem(resultSet.getString("target_code_system_identifier"))
                         .setTerm(resultSet.getString("target_term")));
+    }
+
+    public DbOrganisation getOrganisation(String odsCode) throws PgStoredProcException {
+
+        PgStoredProc pgStoredProc = new PgStoredProc(dataSource)
+                .setName("mapping.get_organisation")
+                .addParameter("_ods_code", odsCode);
+
+        return pgStoredProc.executeSingleRow((resultSet) ->
+                new DbOrganisation()
+                        .setOdsCode(resultSet.getString("ods_code"))
+                        .setOrganisationName(resultSet.getString("organisation_name"))
+                        .setOrganisationType(OrganisationType.fromCode(resultSet.getString("organisation_type")))
+                        .setAddressLine1(resultSet.getString("address_line1"))
+                        .setAddressLine2(resultSet.getString("address_line2"))
+                        .setTown(resultSet.getString("town"))
+                        .setCounty(resultSet.getString("county"))
+                        .setPostcode(resultSet.getString("postcode"))
+                        .setPhoneNumber(resultSet.getString("phone_number"))
+                        .setMapped(resultSet.getBoolean("is_mapped")));
     }
 }

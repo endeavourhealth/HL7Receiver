@@ -79,6 +79,7 @@ public class ResourceMapper {
     }
 
     public UUID mapOrganisationUuid(String odsCode, String name) throws MapperException {
+        Validate.notBlank(odsCode, "odsCode");
         Validate.notBlank(name, "name");
 
         String identifier = ResourceMapParameters.create()

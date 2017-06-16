@@ -2,9 +2,11 @@ package org.endeavourhealth.hl7receiver.mapping;
 
 import org.endeavourhealth.hl7receiver.DataLayer;
 import org.endeavourhealth.hl7receiver.model.db.DbCode;
+import org.endeavourhealth.hl7receiver.model.db.DbOrganisation;
 import org.endeavourhealth.hl7transform.mapper.code.MappedCode;
 import org.endeavourhealth.hl7transform.mapper.code.MappedCodeAction;
 import org.endeavourhealth.hl7transform.mapper.exceptions.MapperException;
+import org.endeavourhealth.hl7transform.mapper.organisation.MappedOrganisation;
 import org.hl7.fhir.instance.model.ResourceType;
 
 import java.util.UUID;
@@ -16,6 +18,7 @@ public class Mapper extends org.endeavourhealth.hl7transform.mapper.Mapper {
     private DataLayer dataLayer;
     private CodeCache codeCache;
     private ResourceUuidCache resourceUuidCache;
+    private OrganisationCache organisationCache;
 
     public Mapper(int channelId, String sendingFacility, DataLayer dataLayer) {
         this.channelId = channelId;
@@ -23,6 +26,7 @@ public class Mapper extends org.endeavourhealth.hl7transform.mapper.Mapper {
         this.dataLayer = dataLayer;
         this.codeCache = new CodeCache(MappedCodeAction.MAPPED_INCLUDE);
         this.resourceUuidCache = new ResourceUuidCache(ResourceType.Organization, ResourceType.Location, ResourceType.Practitioner);
+        this.organisationCache = new OrganisationCache();
     }
 
     @Override
@@ -64,6 +68,38 @@ public class Mapper extends org.endeavourhealth.hl7transform.mapper.Mapper {
 
         } catch (Exception e) {
             throw new MapperException("Exception while getting resource UUID, see cause", e);
+        }
+    }
+
+    @Override
+    public MappedOrganisation mapOrganisation(String odsCode) throws MapperException {
+        try {
+            MappedOrganisation mappedOrganisation = organisationCache.getMappedOrganisation(odsCode);
+
+            if (mappedOrganisation == null) {
+                DbOrganisation dbOrganisation = this.dataLayer.getOrganisation(odsCode);
+
+                if (!dbOrganisation.isMapped())
+                    return null;
+
+                mappedOrganisation = new MappedOrganisation()
+                        .setOdsCode(dbOrganisation.getOdsCode())
+                        .setOrganisationName(dbOrganisation.getOrganisationName())
+                        .setOrganisationType(dbOrganisation.getOrganisationType())
+                        .setAddressLine1(dbOrganisation.getAddressLine1())
+                        .setAddressLine2(dbOrganisation.getAddressLine2())
+                        .setTown(dbOrganisation.getTown())
+                        .setCounty(dbOrganisation.getCounty())
+                        .setPostcode(dbOrganisation.getPostcode())
+                        .setPhoneNumber(dbOrganisation.getPhoneNumber());
+
+                organisationCache.putMappedOrganisation(odsCode, mappedOrganisation);
+            }
+
+            return mappedOrganisation;
+
+        } catch (Exception e) {
+            throw new MapperException("Exception while mapping organisation, see cause", e);
         }
     }
 }
