@@ -1,5 +1,6 @@
 package org.endeavourhealth.hl7receiver;
 
+import org.apache.commons.lang3.StringUtils;
 import org.endeavourhealth.common.fhir.schema.OrganisationType;
 import org.endeavourhealth.common.postgres.PgResultSet;
 import org.endeavourhealth.common.postgres.PgStoredProc;
@@ -177,7 +178,8 @@ public class DataLayer implements IDBDigestLogger {
             String outboundMessageType,
             String outboundPayload,
             String exception,
-            UUID deadLetterUuid) throws PgStoredProcException {
+            UUID deadLetterUuid,
+            String outboundAckCode) throws PgStoredProcException {
 
         PgStoredProc pgStoredProc = new PgStoredProc(dataSource)
                 .setName("log.log_dead_letter")
@@ -202,7 +204,8 @@ public class DataLayer implements IDBDigestLogger {
                 .addParameter("_outbound_message_type", outboundMessageType, 100)
                 .addParameter("_outbound_payload", outboundPayload)
                 .addParameter("_exception", exception)
-                .addParameter("_dead_letter_uuid", deadLetterUuid);
+                .addParameter("_dead_letter_uuid", deadLetterUuid)
+                .addParameter("_outbound_ack_code", StringUtils.trimToNull(outboundAckCode));
 
         return pgStoredProc.executeSingleRow((resultSet) -> resultSet.getInt("log_dead_letter"));
     }

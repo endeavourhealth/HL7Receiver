@@ -10,6 +10,7 @@ import org.endeavourhealth.hl7receiver.Configuration;
 import org.endeavourhealth.hl7receiver.DataLayer;
 import org.endeavourhealth.hl7receiver.model.db.DbChannel;
 import org.endeavourhealth.hl7receiver.model.exceptions.MessageProcessingException;
+import org.endeavourhealth.hl7receiver.model.exceptions.TransientMessageProcessingException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -51,7 +52,7 @@ class HL7MessageReceiver implements ReceivingApplication {
             hl7KeyFields = HL7KeyFields.parse(message, dbChannel);
 
             if (connectionId == null)
-                throw new MessageProcessingException("Could not determine connection");
+                throw new TransientMessageProcessingException("Could not determine connection");
 
             if (!isMessageControlIdPresent(hl7KeyFields))
                 throw new MessageProcessingException("Message control ID is empty");
@@ -65,18 +66,22 @@ class HL7MessageReceiver implements ReceivingApplication {
             response = message.generateACK();
             hl7KeyFieldsResponse = HL7KeyFields.parse(response, dbChannel);
 
-            dataLayer.logMessage(
-                    dbChannel.getChannelId(),
-                    connectionId,
-                    hl7KeyFields.getMessageControlId(),
-                    hl7KeyFields.getSequenceNumber(),
-                    hl7KeyFields.getMessageDateTime(),
-                    hl7KeyFields.getPid1(),
-                    hl7KeyFields.getPid2(),
-                    hl7KeyFields.getMessageType(),
-                    hl7KeyFields.getEncodedMessage(),
-                    hl7KeyFieldsResponse.getMessageType(),
-                    hl7KeyFieldsResponse.getEncodedMessage());
+            try {
+                dataLayer.logMessage(
+                        dbChannel.getChannelId(),
+                        connectionId,
+                        hl7KeyFields.getMessageControlId(),
+                        hl7KeyFields.getSequenceNumber(),
+                        hl7KeyFields.getMessageDateTime(),
+                        hl7KeyFields.getPid1(),
+                        hl7KeyFields.getPid2(),
+                        hl7KeyFields.getMessageType(),
+                        hl7KeyFields.getEncodedMessage(),
+                        hl7KeyFieldsResponse.getMessageType(),
+                        hl7KeyFieldsResponse.getEncodedMessage());
+            } catch (Exception e) {
+                throw new TransientMessageProcessingException("Error occurred writing to message log", e);
+            }
 
             return response;
 
@@ -88,13 +93,20 @@ class HL7MessageReceiver implements ReceivingApplication {
 
                 Message negativeResponse = null;
                 HL7KeyFields negativeResponseKeyFields = null;
+                AcknowledgmentCode acknowledgmentCode = ACK_ERROR_IGNORE;
 
                 try {
-                    negativeResponse = message.generateACK(ACK_ERROR_IGNORE, new HL7Exception(e1.getMessage(), e1));
+                    if (e1.getClass().isAssignableFrom(TransientMessageProcessingException.class))
+                        acknowledgmentCode = ACK_ERROR_RETRY;
+
+                    LOG.error("Generating negative acknowledgement with error code " + acknowledgmentCode.getMessage());
+
+                    negativeResponse = message.generateACK(acknowledgmentCode, new HL7Exception(e1.getMessage(), e1));
                     negativeResponseKeyFields = HL7KeyFields.parse(negativeResponse, dbChannel);
 
                 } catch (Exception e2) {
                     LOG.error("Error generating negative acknowledgement", e2);
+                    acknowledgmentCode = null;
                 }
 
                 try {
@@ -120,14 +132,21 @@ class HL7MessageReceiver implements ReceivingApplication {
                             (negativeResponseKeyFields == null ? null : negativeResponseKeyFields.getMessageType()),
                             (negativeResponseKeyFields == null ? null : negativeResponseKeyFields.getEncodedMessage()),
                             HL7ExceptionHandler.constructFormattedException(e1),
-                            deadLetterUuid);
+                            deadLetterUuid,
+                            (acknowledgmentCode == null ? null : acknowledgmentCode.name()));
                 } catch (Exception e3) {
-                    LOG.error("Error logging dead letter. Responding to server with retry acknowledgement code", e3);
+                    LOG.error("Error logging dead letter", e3);
 
-                    try {
-                        negativeResponse = message.generateACK(ACK_ERROR_RETRY, new HL7Exception(e1.getMessage(), e3));
-                    } catch (Exception e4) {
-                        LOG.error("Error generating negative acknowledgement", e4);
+                    if (acknowledgmentCode.equals(ACK_ERROR_IGNORE)) {
+                        acknowledgmentCode = ACK_ERROR_RETRY;
+
+                        LOG.error("Because there was an error logging the dead letter, changing the negative acknowledgement response to error code " + acknowledgmentCode.getMessage());
+
+                        try {
+                            negativeResponse = message.generateACK(acknowledgmentCode, new HL7Exception(e1.getMessage(), e3));
+                        } catch (Exception e4) {
+                            LOG.error("Error generating negative acknowledgement", e4);
+                        }
                     }
                 }
 

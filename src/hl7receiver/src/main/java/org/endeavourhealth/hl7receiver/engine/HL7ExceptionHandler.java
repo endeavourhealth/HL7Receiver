@@ -54,7 +54,8 @@ class HL7ExceptionHandler implements ReceivingApplicationExceptionHandler {
                     null,
                     outgoingMessage,
                     constructFormattedException(exception),
-                    deadLetterUuid);
+                    deadLetterUuid,
+                    null);
         } catch (Exception e3) {
             LOG.error("Error logging dead letter", e3);
         }
