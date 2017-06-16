@@ -18,7 +18,10 @@ import java.util.Map;
 import java.util.UUID;
 
 class HL7MessageReceiver implements ReceivingApplication {
+
     private static final Logger LOG = LoggerFactory.getLogger(HL7MessageReceiver.class);
+    private static final AcknowledgmentCode ACK_ERROR_IGNORE = AcknowledgmentCode.AE;
+    private static final AcknowledgmentCode ACK_ERROR_RETRY = AcknowledgmentCode.AR;
 
     private Configuration configuration;
     private DbChannel dbChannel;
@@ -87,7 +90,7 @@ class HL7MessageReceiver implements ReceivingApplication {
                 HL7KeyFields negativeResponseKeyFields = null;
 
                 try {
-                    negativeResponse = message.generateACK(AcknowledgmentCode.AE, new HL7Exception(e1.getMessage(), e1));
+                    negativeResponse = message.generateACK(ACK_ERROR_IGNORE, new HL7Exception(e1.getMessage(), e1));
                     negativeResponseKeyFields = HL7KeyFields.parse(negativeResponse, dbChannel);
 
                 } catch (Exception e2) {
@@ -119,7 +122,13 @@ class HL7MessageReceiver implements ReceivingApplication {
                             HL7ExceptionHandler.constructFormattedException(e1),
                             deadLetterUuid);
                 } catch (Exception e3) {
-                    LOG.error("Error logging dead letter", e3);
+                    LOG.error("Error logging dead letter. Responding to server with retry acknowledgement code", e3);
+
+                    try {
+                        negativeResponse = message.generateACK(ACK_ERROR_RETRY, new HL7Exception(e1.getMessage(), e3));
+                    } catch (Exception e4) {
+                        LOG.error("Error generating negative acknowledgement", e4);
+                    }
                 }
 
                 return negativeResponse;
