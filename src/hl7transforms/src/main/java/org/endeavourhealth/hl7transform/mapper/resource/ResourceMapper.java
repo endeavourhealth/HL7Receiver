@@ -79,13 +79,20 @@ public class ResourceMapper {
     }
 
     public UUID mapOrganisationUuid(String odsCode, String name) throws MapperException {
-        Validate.notBlank(odsCode, "odsCode");
         Validate.notBlank(name, "name");
 
-        String identifier = ResourceMapParameters.create()
-                .put("OdsCode", odsCode)
-                .put("Name", name)
-                .createIdentifyingString();
+        String identifier = null;
+
+        if (StringUtils.isBlank(odsCode)) {
+            identifier = ResourceMapParameters.create()
+                    .put("OdsCode", odsCode)
+                    .put("Name", name)
+                    .createIdentifyingString();
+        } else {
+            identifier = ResourceMapParameters.create()
+                    .put("OdsCode", odsCode)
+                    .createIdentifyingString();
+        }
 
         return this.mapper.mapResourceUuid(ResourceType.Organization, identifier);
     }
