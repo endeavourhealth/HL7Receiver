@@ -16,7 +16,12 @@ public class EmptyMapper extends Mapper {
     }
 
     @Override
-    public UUID mapResourceUuid(ResourceType resourceType, String identifier) throws MapperException {
+    public UUID mapGlobalResourceUuid(ResourceType resourceType, String identifier) throws MapperException {
+        return UUID.randomUUID();
+    }
+
+    @Override
+    public UUID mapScopedResourceUuid(ResourceType resourceType, String identifier) throws MapperException {
         return UUID.randomUUID();
     }
 

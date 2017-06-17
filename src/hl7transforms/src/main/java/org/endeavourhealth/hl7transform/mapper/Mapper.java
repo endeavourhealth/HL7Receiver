@@ -12,6 +12,8 @@ import java.util.UUID;
 
 public abstract class Mapper {
 
+    public static final String SCOPE_GLOBAL = "GLOBAL";
+
     private ResourceMapper resourceMapper;
     private CodeMapper codeMapper;
     private OrganisationMapper organisationMapper;
@@ -23,7 +25,8 @@ public abstract class Mapper {
     }
 
     public abstract MappedCode mapCode(String codeContext, String code, String codeSystem, String term) throws MapperException;
-    public abstract UUID mapResourceUuid(ResourceType resourceType, String identifier) throws MapperException;
+    public abstract UUID mapGlobalResourceUuid(ResourceType resourceType, String identifier) throws MapperException;
+    public abstract UUID mapScopedResourceUuid(ResourceType resourceType, String identifier) throws MapperException;
     public abstract MappedOrganisation mapOrganisation(String odsCode) throws MapperException;
 
     public ResourceMapper getResourceMapper() {

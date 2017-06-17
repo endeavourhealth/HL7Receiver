@@ -36,7 +36,7 @@ public class HL7ChannelProcessor implements Runnable {
         this.configuration = configuration;
         this.dbChannel = dbChannel;
         this.dataLayer = new DataLayer(configuration.getDatabaseConnection());
-        this.mapper = new Mapper(dbChannel.getChannelId(), dbChannel.getSendingFacility(), dataLayer);
+        this.mapper = new Mapper(dbChannel.getSendingFacility(), dataLayer);
     }
 
     public void start() {

@@ -312,10 +312,10 @@ public class DataLayer implements IDBDigestLogger {
         pgStoredProc.execute();
     }
 
-    public UUID getResourceUuid(int channelId, String resourceType, String uniqueIdentifier) throws PgStoredProcException {
+    public UUID getResourceUuid(String scopeName, String resourceType, String uniqueIdentifier) throws PgStoredProcException {
         PgStoredProc pgStoredProc = new PgStoredProc(dataSource)
                 .setName("mapping.get_resource_uuid")
-                .addParameter("_channel_id", channelId)
+                .addParameter("_scope_name", scopeName)
                 .addParameter("_resource_type", resourceType)
                 .addParameter("_unique_identifier", uniqueIdentifier);
 

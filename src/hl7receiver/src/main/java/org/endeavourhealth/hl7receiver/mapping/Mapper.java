@@ -13,15 +13,13 @@ import java.util.UUID;
 
 public class Mapper extends org.endeavourhealth.hl7transform.mapper.Mapper {
 
-    private int channelId;
     private String sendingFacility;
     private DataLayer dataLayer;
     private CodeCache codeCache;
     private ResourceUuidCache resourceUuidCache;
     private OrganisationCache organisationCache;
 
-    public Mapper(int channelId, String sendingFacility, DataLayer dataLayer) {
-        this.channelId = channelId;
+    public Mapper(String sendingFacility, DataLayer dataLayer) {
         this.sendingFacility = sendingFacility;
         this.dataLayer = dataLayer;
         this.codeCache = new CodeCache(MappedCodeAction.MAPPED_INCLUDE);
@@ -55,12 +53,21 @@ public class Mapper extends org.endeavourhealth.hl7transform.mapper.Mapper {
     }
 
     @Override
-    public UUID mapResourceUuid(ResourceType resourceType, String identifier) throws MapperException {
+    public UUID mapScopedResourceUuid(ResourceType resourceType, String identifier) throws MapperException {
+        return this.mapResourceUuid(this.sendingFacility, resourceType, identifier);
+    }
+
+    @Override
+    public UUID mapGlobalResourceUuid(ResourceType resourceType, String identifier) throws MapperException {
+        return this.mapResourceUuid(Mapper.SCOPE_GLOBAL, resourceType, identifier);
+    }
+
+    private UUID mapResourceUuid(String scopeName, ResourceType resourceType, String identifier) throws MapperException {
         try {
             UUID resourceUuid = resourceUuidCache.getResourceUuid(resourceType, identifier);
 
             if (resourceUuid == null) {
-                resourceUuid = this.dataLayer.getResourceUuid(channelId, resourceType.toString(), identifier);
+                resourceUuid = this.dataLayer.getResourceUuid(scopeName, resourceType.toString(), identifier);
                 resourceUuidCache.putResourceUuid(resourceType, identifier, resourceUuid);
             }
 

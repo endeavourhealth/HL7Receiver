@@ -20,6 +20,46 @@ public class ResourceMapper {
         this.mapper = mapper;
     }
 
+    ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    // Global UUIDs
+    ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    public UUID mapLocationUuid(String classOfLocationName) throws MapperException {
+        Validate.notBlank(classOfLocationName, "classOfLocationName");
+
+        String identifier = ResourceMapParameters.create()
+                .put("ClassOfLocationName", classOfLocationName)
+                .createIdentifyingString();
+
+        return this.mapper.mapGlobalResourceUuid(ResourceType.Location, identifier);
+    }
+
+    ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    // Conditionally global/scoped UUIDs
+    ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    public UUID mapOrganisationUuid(String odsCode, String name) throws MapperException {
+        Validate.notBlank(name, "name");
+
+        String identifier = null;
+
+        if (StringUtils.isBlank(odsCode)) {
+            identifier = ResourceMapParameters.create()
+                    .put("OdsCode", odsCode)
+                    .put("Name", name)
+                    .createIdentifyingString();
+
+            return this.mapper.mapScopedResourceUuid(ResourceType.Organization, identifier);
+        }
+
+        identifier = ResourceMapParameters.create()
+                .put("OdsCode", odsCode)
+                .createIdentifyingString();
+
+        return this.mapper.mapGlobalResourceUuid(ResourceType.Organization, identifier);
+    }
+
+    ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    // Scoped UUIDs
+    ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     public UUID mapMessageHeaderUuid(String messageControlId) throws MapperException {
         Validate.notBlank(messageControlId);
 
@@ -27,7 +67,7 @@ public class ResourceMapper {
                 .put("MessageControlId", messageControlId)
                 .createIdentifyingString();
 
-        return this.mapper.mapResourceUuid(ResourceType.MessageHeader, identifier);
+        return this.mapper.mapScopedResourceUuid(ResourceType.MessageHeader, identifier);
     }
 
     public UUID mapPatientUuid(String patientIdentifierTypeCode, String patientIdentifierValue) throws MapperException {
@@ -38,7 +78,7 @@ public class ResourceMapper {
                         patientIdentifierValue)
                         .createIdentifyingString();
 
-        return this.mapper.mapResourceUuid(ResourceType.Patient, identifier);
+        return this.mapper.mapScopedResourceUuid(ResourceType.Patient, identifier);
     }
 
     public UUID mapEpisodeUuid(String patientIdentifierTypeCode,
@@ -54,7 +94,7 @@ public class ResourceMapper {
                         episodeIdentifierValue)
                         .createIdentifyingString();
 
-        return this.mapper.mapResourceUuid(ResourceType.EpisodeOfCare, identifier);
+        return this.mapper.mapScopedResourceUuid(ResourceType.EpisodeOfCare, identifier);
     }
 
     public UUID mapEncounterUuid(String patientIdentifierTypeCode,
@@ -75,26 +115,7 @@ public class ResourceMapper {
                 .put("EncounterDateTime", encounterDateTime.getLocalDateTime().format(DateTimeFormatter.ISO_LOCAL_DATE_TIME))
                 .createIdentifyingString();
 
-        return this.mapper.mapResourceUuid(ResourceType.Encounter, identifier);
-    }
-
-    public UUID mapOrganisationUuid(String odsCode, String name) throws MapperException {
-        Validate.notBlank(name, "name");
-
-        String identifier = null;
-
-        if (StringUtils.isBlank(odsCode)) {
-            identifier = ResourceMapParameters.create()
-                    .put("OdsCode", odsCode)
-                    .put("Name", name)
-                    .createIdentifyingString();
-        } else {
-            identifier = ResourceMapParameters.create()
-                    .put("OdsCode", odsCode)
-                    .createIdentifyingString();
-        }
-
-        return this.mapper.mapResourceUuid(ResourceType.Organization, identifier);
+        return this.mapper.mapScopedResourceUuid(ResourceType.Encounter, identifier);
     }
 
     public UUID mapOrganisationUuid(String parentOdsCode, String parentName, String serviceName) throws MapperException {
@@ -108,17 +129,7 @@ public class ResourceMapper {
                 .put("ServiceName", serviceName)
                 .createIdentifyingString();
 
-        return this.mapper.mapResourceUuid(ResourceType.Organization, identifier);
-    }
-
-    public UUID mapLocationUuid(String classOfLocationName) throws MapperException {
-        Validate.notBlank(classOfLocationName, "classOfLocationName");
-
-        String identifier = ResourceMapParameters.create()
-                .put("ClassOfLocationName", classOfLocationName)
-                .createIdentifyingString();
-
-        return this.mapper.mapResourceUuid(ResourceType.Location, identifier);
+        return this.mapper.mapScopedResourceUuid(ResourceType.Organization, identifier);
     }
 
     public UUID mapLocationUuid(String odsSiteCode, String locationName) throws MapperException {
@@ -130,7 +141,7 @@ public class ResourceMapper {
                 .put("LocationName", locationName.replace(".", ""))
                 .createIdentifyingString();
 
-        return this.mapper.mapResourceUuid(ResourceType.Location, identifier);
+        return this.mapper.mapScopedResourceUuid(ResourceType.Location, identifier);
     }
 
     public UUID mapLocationUuid(String parentOdsSiteCode, String parentLocationName, List<String> locationNames) throws MapperException {
@@ -144,7 +155,7 @@ public class ResourceMapper {
                 .put("LocationNameHierarchy", locationNames)
                 .createIdentifyingString();
 
-        return this.mapper.mapResourceUuid(ResourceType.Location, identifier);
+        return this.mapper.mapScopedResourceUuid(ResourceType.Location, identifier);
     }
 
     public UUID mapPractitionerUuid(String surname,
@@ -158,7 +169,7 @@ public class ResourceMapper {
                 .put("OdsCode", odsCode)
                 .createIdentifyingString();
 
-        return this.mapper.mapResourceUuid(ResourceType.Practitioner, identifier);
+        return this.mapper.mapScopedResourceUuid(ResourceType.Practitioner, identifier);
     }
 
     public UUID mapPractitionerUuid(String surname,
@@ -182,7 +193,7 @@ public class ResourceMapper {
                 .put("GmcCode", gmcCode)
                 .createIdentifyingString();
 
-        return this.mapper.mapResourceUuid(ResourceType.Practitioner, identifier);
+        return this.mapper.mapScopedResourceUuid(ResourceType.Practitioner, identifier);
     }
 
     private static ResourceMapParameters getEpisodeMap(String patientIdentifierTypeCode,
