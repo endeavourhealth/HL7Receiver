@@ -1,5 +1,5 @@
 
-create or replace function log.reset_next_attempt_date_on_failed_messages
+create or replace function log.reprocess_failed_messages
 (
 	_channel_id integer,
 	_instance_id integer

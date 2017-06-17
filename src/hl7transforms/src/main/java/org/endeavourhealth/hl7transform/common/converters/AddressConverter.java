@@ -85,7 +85,7 @@ public class AddressConverter {
         return target;
     }
 
-    private static String formatAddressLine(String line) {
+    public static String formatAddressLine(String line) {
         return insertSpaceAfterComma(StringHelper.formatName(line));
     }
 
@@ -109,7 +109,7 @@ public class AddressConverter {
         return result;
     }
 
-    private static String formatPostcode(String postcode) {
+    public static String formatPostcode(String postcode) {
         String formattedPostcode = StringUtils.deleteWhitespace(postcode.toUpperCase());
 
         if ((formattedPostcode.length() >= 5) && (formattedPostcode.length() <= 7)) {

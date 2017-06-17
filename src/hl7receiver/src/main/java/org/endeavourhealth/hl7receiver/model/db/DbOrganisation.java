@@ -11,7 +11,6 @@ public class DbOrganisation {
     private String town;
     private String county;
     private String postcode;
-    private String phoneNumber;
     private boolean isMapped;
 
     public String getOdsCode() {
@@ -83,15 +82,6 @@ public class DbOrganisation {
 
     public DbOrganisation setPostcode(String postcode) {
         this.postcode = postcode;
-        return this;
-    }
-
-    public String getPhoneNumber() {
-        return phoneNumber;
-    }
-
-    public DbOrganisation setPhoneNumber(String phoneNumber) {
-        this.phoneNumber = phoneNumber;
         return this;
     }
 

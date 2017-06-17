@@ -262,6 +262,7 @@ public class DataLayer implements IDBDigestLogger {
     }
 
     public int setMessageProcessingStarted(int messageId, int processingInstanceId) throws PgStoredProcException {
+
         PgStoredProc pgStoredProc = new PgStoredProc(dataSource)
                 .setName("log.set_message_processing_started")
                 .addParameter("_message_id", messageId)
@@ -271,6 +272,7 @@ public class DataLayer implements IDBDigestLogger {
     }
 
     public void setMessageProcessingFailure(int messageId, int attemptId, DbMessageStatus messageStatusId, String errorMessage, int instanceId) throws PgStoredProcException {
+
         PgStoredProc pgStoredProc = new PgStoredProc(dataSource)
                 .setName("log.set_message_processing_failure")
                 .addParameter("_message_id", messageId)
@@ -283,6 +285,7 @@ public class DataLayer implements IDBDigestLogger {
     }
 
     public void setMessageProcessingSuccess(int messageId, int attemptId, int instanceId) throws PgStoredProcException {
+
         PgStoredProc pgStoredProc = new PgStoredProc(dataSource)
                 .setName("log.set_message_processing_success")
                 .addParameter("_message_id", messageId)
@@ -292,9 +295,10 @@ public class DataLayer implements IDBDigestLogger {
         pgStoredProc.execute();
     }
 
-    public long resetNextAttemptDateOnFailedMessages(int channelId, int instanceId) throws PgStoredProcException {
+    public long reprocessFailedMessages(int channelId, int instanceId) throws PgStoredProcException {
+
         PgStoredProc pgStoredProc = new PgStoredProc(dataSource)
-                .setName("log.reset_next_attempt_date_on_failed_messages")
+                .setName("log.reprocess_failed_messages")
                 .addParameter("_channel_id", channelId)
                 .addParameter("_instance_id", instanceId);
 
@@ -302,6 +306,7 @@ public class DataLayer implements IDBDigestLogger {
     }
 
     public void addMessageProcessingContent(int messageId, int attemptId, DbProcessingContentType processingContentTypeId, String content) throws PgStoredProcException {
+
         PgStoredProc pgStoredProc = new PgStoredProc(dataSource)
                 .setName("log.add_message_processing_content")
                 .addParameter("_message_id", messageId)
@@ -313,6 +318,7 @@ public class DataLayer implements IDBDigestLogger {
     }
 
     public UUID getResourceUuid(String scopeName, String resourceType, String uniqueIdentifier) throws PgStoredProcException {
+
         PgStoredProc pgStoredProc = new PgStoredProc(dataSource)
                 .setName("mapping.get_resource_uuid")
                 .addParameter("_scope_name", scopeName)
@@ -350,13 +356,28 @@ public class DataLayer implements IDBDigestLogger {
                 new DbOrganisation()
                         .setOdsCode(resultSet.getString("ods_code"))
                         .setOrganisationName(resultSet.getString("organisation_name"))
-                        .setOrganisationType(OrganisationType.fromCode(resultSet.getString("organisation_type")))
+                        .setOrganisationType(resultSet.getString("organisation_type") == null ? null : OrganisationType.fromCode(resultSet.getString("organisation_type")))
                         .setAddressLine1(resultSet.getString("address_line1"))
                         .setAddressLine2(resultSet.getString("address_line2"))
                         .setTown(resultSet.getString("town"))
                         .setCounty(resultSet.getString("county"))
                         .setPostcode(resultSet.getString("postcode"))
-                        .setPhoneNumber(resultSet.getString("phone_number"))
                         .setMapped(resultSet.getBoolean("is_mapped")));
+    }
+
+    public void setOrganisation(String odsCode, String organisationName, OrganisationType organisationType, String addressLine1, String addressLine2, String town, String county, String postcode) throws PgStoredProcException {
+
+        PgStoredProc pgStoredProc = new PgStoredProc(dataSource)
+                .setName("mapping.set_organisation")
+                .addParameter("_ods_code", odsCode)
+                .addParameter("_organisation_name", organisationName)
+                .addParameter("_organisation_type", organisationType.getCode())
+                .addParameter("_address_line1", addressLine1)
+                .addParameter("_address_line2", addressLine2)
+                .addParameter("_town", town)
+                .addParameter("_county", county)
+                .addParameter("_postcode", postcode);
+
+        pgStoredProc.execute();
     }
 }

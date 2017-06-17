@@ -12,6 +12,7 @@ import org.endeavourhealth.hl7transform.common.ResourceContainer;
 import org.endeavourhealth.hl7transform.common.ResourceTag;
 import org.endeavourhealth.hl7transform.common.ResourceTransformBase;
 import org.endeavourhealth.hl7transform.common.TransformException;
+import org.endeavourhealth.hl7transform.mapper.organisation.MappedOrganisation;
 import org.endeavourhealth.hl7transform.transforms.homerton.parser.zdatatypes.Zpd;
 import org.endeavourhealth.hl7transform.transforms.homerton.transforms.constants.HomertonConstants;
 import org.endeavourhealth.hl7transform.common.converters.IdentifierConverter;
@@ -92,6 +93,46 @@ public class OrganizationTransform extends ResourceTransformBase {
     public Organization createMainPrimaryCareProviderOrganisation(AdtMessage adtMessage) throws MapperException, TransformException, ParseException {
         Zpd zpd = getZpd(adtMessage);
 
+        if (zpd == null)
+            return null;
+
+        if (StringUtils.isNotBlank(zpd.getOdsCode())) {
+            MappedOrganisation mappedOrganisation = mapper.getOrganisationMapper().mapOrganisation(zpd.getOdsCode());
+
+            if (mappedOrganisation != null)
+                return createFromMappedOrganisation(mappedOrganisation);
+        }
+
+        return createFromZpd(zpd);
+    }
+
+    private Organization createFromMappedOrganisation(MappedOrganisation mappedOrganisation) throws MapperException {
+        if (mappedOrganisation == null)
+            return null;
+
+        Organization organization = new Organization();
+
+        UUID id = mapper.getResourceMapper().mapOrganisationUuid(mappedOrganisation.getOdsCode(), mappedOrganisation.getOrganisationName());
+        organization.setId(id.toString());
+
+        Identifier identifier = IdentifierConverter.createOdsCodeIdentifier(mappedOrganisation.getOdsCode());
+
+        if (identifier != null)
+            organization.addIdentifier(identifier);
+
+        organization.setName(StringHelper.formatName(mappedOrganisation.getOrganisationName()));
+
+        Address address = AddressConverter.createWorkAddress(mappedOrganisation.getAddressLine1(), mappedOrganisation.getAddressLine2(), mappedOrganisation.getTown(), mappedOrganisation.getPostcode());
+
+        if (address != null)
+            organization.addAddress(address);
+
+        organization.setType(getOrganisationType(mappedOrganisation.getOrganisationType()));
+
+        return organization;
+    }
+
+    private Organization createFromZpd(Zpd zpd) throws MapperException {
         if (zpd == null)
             return null;
 

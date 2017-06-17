@@ -9,18 +9,18 @@ public class StringHelper {
 
         String result = "";
 
-        boolean previousWasLetter = false;
+        boolean previousWasLetterOrApostrophe = false;
 
         for (int i = 0; i < name.length(); i++) {
 
             char character = name.charAt(i);
 
-            if (previousWasLetter)
+            if (previousWasLetterOrApostrophe)
                 result += Character.toString(character).toLowerCase();
             else
                 result += Character.toString(character).toUpperCase();
 
-            previousWasLetter = (Character.isLetter(character));
+            previousWasLetterOrApostrophe = (Character.isLetter(character)) || (character == '\'');
         }
 
         return result;

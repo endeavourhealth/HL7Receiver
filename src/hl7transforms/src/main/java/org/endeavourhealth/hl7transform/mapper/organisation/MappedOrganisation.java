@@ -11,7 +11,6 @@ public class MappedOrganisation {
     private String town;
     private String county;
     private String postcode;
-    private String phoneNumber;
 
     public String getOdsCode() {
         return odsCode;
@@ -82,15 +81,6 @@ public class MappedOrganisation {
 
     public MappedOrganisation setPostcode(String postcode) {
         this.postcode = postcode;
-        return this;
-    }
-
-    public String getPhoneNumber() {
-        return phoneNumber;
-    }
-
-    public MappedOrganisation setPhoneNumber(String phoneNumber) {
-        this.phoneNumber = phoneNumber;
         return this;
     }
 }

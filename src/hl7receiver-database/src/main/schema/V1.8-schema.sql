@@ -37,5 +37,3 @@ alter table mapping.code drop constraint mapping_code_sourcecodeoriginid_fk;
 alter table mapping.code add constraint mapping_code_scopeid_fk foreign key (scope_id) references mapping.scope (scope_id);
 
 drop table mapping.code_origin;
-
-select * from mapping.scope

@@ -13,7 +13,6 @@ returns table
 	town varchar(100),
 	county varchar(100),
 	postcode varchar(10),
-	phone_number varchar(20),
 	is_mapped boolean
 )
 as $$
@@ -44,7 +43,6 @@ begin
 			town,
 			county,
 			postcode,
-			phone_number,
 			is_mapped,
 			last_updated
 			
@@ -52,7 +50,6 @@ begin
 		values
 		(
 			_ods_code,
-			null,
 			null,
 			null,
 			null,
@@ -75,7 +72,6 @@ begin
 		o.town,
 		o.county,
 		o.postcode,
-		o.phone_number,
 		o.is_mapped
 	from mapping.organisation o
 	where o.ods_code = _ods_code;

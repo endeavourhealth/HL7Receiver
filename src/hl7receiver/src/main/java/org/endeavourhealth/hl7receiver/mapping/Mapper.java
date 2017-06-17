@@ -86,19 +86,31 @@ public class Mapper extends org.endeavourhealth.hl7transform.mapper.Mapper {
             if (mappedOrganisation == null) {
                 DbOrganisation dbOrganisation = this.dataLayer.getOrganisation(odsCode);
 
-                if (!dbOrganisation.isMapped())
-                    return null;
+                if (dbOrganisation.isMapped()) {
+                    mappedOrganisation = new MappedOrganisation()
+                            .setOdsCode(dbOrganisation.getOdsCode())
+                            .setOrganisationName(dbOrganisation.getOrganisationName())
+                            .setOrganisationType(dbOrganisation.getOrganisationType())
+                            .setAddressLine1(dbOrganisation.getAddressLine1())
+                            .setAddressLine2(dbOrganisation.getAddressLine2())
+                            .setTown(dbOrganisation.getTown())
+                            .setCounty(dbOrganisation.getCounty())
+                            .setPostcode(dbOrganisation.getPostcode());
+                } else {
+                    mappedOrganisation = OdsRestClient.lookupOrganisationViaRest(odsCode);
 
-                mappedOrganisation = new MappedOrganisation()
-                        .setOdsCode(dbOrganisation.getOdsCode())
-                        .setOrganisationName(dbOrganisation.getOrganisationName())
-                        .setOrganisationType(dbOrganisation.getOrganisationType())
-                        .setAddressLine1(dbOrganisation.getAddressLine1())
-                        .setAddressLine2(dbOrganisation.getAddressLine2())
-                        .setTown(dbOrganisation.getTown())
-                        .setCounty(dbOrganisation.getCounty())
-                        .setPostcode(dbOrganisation.getPostcode())
-                        .setPhoneNumber(dbOrganisation.getPhoneNumber());
+                    if (mappedOrganisation == null)
+                        return null;
+
+                    this.dataLayer.setOrganisation(mappedOrganisation.getOdsCode(),
+                            mappedOrganisation.getOrganisationName(),
+                            mappedOrganisation.getOrganisationType(), // need to parse type from REST service
+                            mappedOrganisation.getAddressLine1(),
+                            mappedOrganisation.getAddressLine2(),
+                            mappedOrganisation.getTown(),
+                            mappedOrganisation.getCounty(),
+                            mappedOrganisation.getPostcode());
+                }
 
                 organisationCache.putMappedOrganisation(odsCode, mappedOrganisation);
             }
