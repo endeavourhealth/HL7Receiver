@@ -1,9 +1,11 @@
 package org.endeavourhealth.hl7transform.common.transform;
 
 import org.endeavourhealth.common.fhir.schema.OrganisationType;
+import org.endeavourhealth.hl7transform.common.TransformException;
 import org.endeavourhealth.hl7transform.common.converters.AddressConverter;
 import org.endeavourhealth.hl7transform.common.converters.IdentifierConverter;
 import org.endeavourhealth.hl7transform.common.converters.StringHelper;
+import org.endeavourhealth.hl7transform.mapper.Mapper;
 import org.endeavourhealth.hl7transform.mapper.exceptions.MapperException;
 import org.endeavourhealth.hl7transform.mapper.organisation.MappedOrganisation;
 import org.endeavourhealth.hl7transform.mapper.resource.ResourceMapper;
@@ -13,7 +15,16 @@ import java.util.UUID;
 
 public class OrganisationCommon {
 
-    public static Organization createFromMappedOrganisation(MappedOrganisation mappedOrganisation, ResourceMapper resourceMapper) throws MapperException {
+    public static Organization createOrganisation(String odsCode, Mapper mapper) throws MapperException, TransformException {
+        MappedOrganisation mappedOrganisation = mapper.getOrganisationMapper().mapOrganisation(odsCode);
+
+        if (mappedOrganisation == null)
+            return null;
+
+        return OrganisationCommon.createFromMappedOrganisation(mappedOrganisation, mapper.getResourceMapper());
+    }
+
+    private static Organization createFromMappedOrganisation(MappedOrganisation mappedOrganisation, ResourceMapper resourceMapper) throws MapperException {
         if (mappedOrganisation == null)
             return null;
 

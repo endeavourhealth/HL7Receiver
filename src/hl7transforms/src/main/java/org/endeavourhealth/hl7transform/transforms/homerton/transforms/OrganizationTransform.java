@@ -14,6 +14,7 @@ import org.endeavourhealth.hl7transform.common.ResourceTransformBase;
 import org.endeavourhealth.hl7transform.common.TransformException;
 import org.endeavourhealth.hl7transform.common.transform.OrganisationCommon;
 import org.endeavourhealth.hl7transform.mapper.organisation.MappedOrganisation;
+import org.endeavourhealth.hl7transform.transforms.barts.constants.BartsConstants;
 import org.endeavourhealth.hl7transform.transforms.homerton.parser.zdatatypes.Zpd;
 import org.endeavourhealth.hl7transform.transforms.homerton.transforms.constants.HomertonConstants;
 import org.endeavourhealth.hl7transform.common.converters.IdentifierConverter;
@@ -39,16 +40,12 @@ public class OrganizationTransform extends ResourceTransformBase {
 
     public Organization createHomertonManagingOrganisation(AdtMessage source) throws MapperException, TransformException, ParseException {
 
-        Organization organization = new Organization()
-                .addIdentifier(IdentifierConverter.createOdsCodeIdentifier(HomertonConstants.odsCode))
-                .setType(OrganisationCommon.getOrganisationType(OrganisationType.NHS_TRUST))
-                .setName(HomertonConstants.organisationName)
-                .addAddress(AddressConverter.createWorkAddress(HomertonConstants.addressLine, null, HomertonConstants.addressCity, HomertonConstants.addressPostcode));
+        Organization result = OrganisationCommon.createOrganisation(HomertonConstants.odsCode, mapper);
 
-        UUID id = mapper.getResourceMapper().mapOrganisationUuid(HomertonConstants.odsCode, HomertonConstants.organisationName);
-        organization.setId(id.toString());
+        if (result == null)
+            throw new TransformException("Could not create Homerton managing organisation");
 
-        return organization;
+        return result;
     }
 
     public Reference createHomertonHospitalServiceOrganisation(Pv1Segment pv1Segment) throws TransformException, ParseException, MapperException {
@@ -98,10 +95,10 @@ public class OrganizationTransform extends ResourceTransformBase {
             return null;
 
         if (StringUtils.isNotBlank(zpd.getOdsCode())) {
-            MappedOrganisation mappedOrganisation = mapper.getOrganisationMapper().mapOrganisation(zpd.getOdsCode());
+            Organization organization = OrganisationCommon.createOrganisation(zpd.getOdsCode(), mapper);
 
-            if (mappedOrganisation != null)
-                return OrganisationCommon.createFromMappedOrganisation(mappedOrganisation, mapper.getResourceMapper());
+            if (organization != null)
+                return organization;
         }
 
         return createFromZpd(zpd);

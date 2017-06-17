@@ -1,7 +1,9 @@
 package org.endeavourhealth.hl7transform.common.converters;
 
 public class StringHelper {
+
     public static String formatName(String name) {
+
         if (name == null)
             return null;
 
@@ -22,6 +24,9 @@ public class StringHelper {
 
             previousWasLetterOrApostrophe = (Character.isLetter(character)) || (character == '\'');
         }
+
+        result = result.replace(" Nhs ", " NHS ");
+        result = result.replace(" Gp ", " GP ");
 
         return result;
     }

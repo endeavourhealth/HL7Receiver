@@ -35,16 +35,12 @@ public class OrganizationTransform extends ResourceTransformBase {
 
     public Organization createBartsManagingOrganisation(AdtMessage source) throws MapperException, TransformException, ParseException {
 
-        Organization organization = new Organization()
-                .addIdentifier(IdentifierConverter.createOdsCodeIdentifier(BartsConstants.odsCode))
-                .setType(getOrganisationType(OrganisationType.NHS_TRUST))
-                .setName(BartsConstants.organisationName)
-                .addAddress(AddressConverter.createWorkAddress(BartsConstants.addressLine1, BartsConstants.addressLine2, BartsConstants.town, BartsConstants.addressPostcode));
+        Organization result = OrganisationCommon.createOrganisation(BartsConstants.odsCode, mapper);
 
-        UUID id = mapper.getResourceMapper().mapOrganisationUuid(BartsConstants.odsCode, BartsConstants.organisationName);
-        organization.setId(id.toString());
+        if (result == null)
+            throw new TransformException("Could not create Barts managing organisation");
 
-        return organization;
+        return result;
     }
 
     public Organization createMainPrimaryCareProviderOrganisation(AdtMessage adtMessage) throws MapperException, TransformException, ParseException {
@@ -75,14 +71,13 @@ public class OrganizationTransform extends ResourceTransformBase {
             throw new TransformException("ODS code blank but organisation name populated");
         }
 
-        MappedOrganisation mappedOrganisation = mapper.getOrganisationMapper().mapOrganisation(odsCode);
+        Organization result = OrganisationCommon.createOrganisation(odsCode, mapper);
 
-        if (mappedOrganisation == null)
-            throw new TransformException("Could not map organisation " + odsCode);
+        if (result == null)
+            throw new TransformException("Could not create organisation " + odsCode);
 
-        return OrganisationCommon.createFromMappedOrganisation(mappedOrganisation, mapper.getResourceMapper());
+        return result;
     }
-
 
     private CodeableConcept getOrganisationType(OrganisationType organisationType) {
         return new CodeableConcept()
