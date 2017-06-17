@@ -170,7 +170,7 @@ public class PatientTransform extends ResourceTransformBase {
             target.addCareProvider(organisationReference);
         }
 
-        if (targetResources.hasResource(ResourceTag.MainPrimaryCareProviderOrganisation)) {
+        if (targetResources.hasResource(ResourceTag.MainPrimaryCareProviderPractitioner)) {
             Reference practitionerReference = targetResources.getResourceReference(ResourceTag.MainPrimaryCareProviderPractitioner, Practitioner.class);
             target.addCareProvider(practitionerReference);
         }
