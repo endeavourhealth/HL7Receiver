@@ -28,5 +28,3 @@ alter table mapping.organisation add constraint mapping_organisation_allfields_c
 		and postcode is null
 	)
 );
-
-select * from mapping.organisation
