@@ -29,7 +29,33 @@ create table mapping.organisation
 
 	constraint mapping_organisation_odscode_pk primary key (ods_code),
 	constraint mapping_organisation_odscode_ck check ((char_length(trim(ods_code)) > 0) and (upper(ods_code) = ods_code)),
-	constraint mapping_organisation_organisationtype_fk foreign key (organisation_type) references mapping.organisation_type (organisation_type)
+	constraint mapping_organisation_organisationtype_fk foreign key (organisation_type) references mapping.organisation_type (organisation_type),
+	constraint mapping_organisation_allfields_ck check 
+	(
+		(
+			is_mapped 
+			and organisation_name is not null
+			and organisation_type is not null 
+			and address_line1 is not null 
+			and address_line2 is not null 
+			and town is not null 
+			and county is not null 
+			and postcode is not null 
+			and phone_number is not null
+		)
+		or
+		(
+			(not is_mapped)
+			and organisation_name is null
+			and organisation_type is null
+			and address_line1 is null
+			and address_line2 is null
+			and town is null
+			and county is null
+			and postcode is null
+			and phone_number is null
+		)
+	)
 );
 
 insert into mapping.organisation_type 
