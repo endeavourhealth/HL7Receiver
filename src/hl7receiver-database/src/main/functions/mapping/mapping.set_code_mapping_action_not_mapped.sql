@@ -1,7 +1,7 @@
 
 create or replace function mapping.set_code_mapping_action_not_mapped
 (
-	_source_code_origin_name varchar(100),
+	_scope_name varchar(100),
 	_source_code_context_name varchar(100),
 	_source_code varchar(100),
 	_source_code_system_identifier varchar(500),
@@ -36,7 +36,7 @@ begin
 		code_id into _code_id
 	from mapping.get_code_mapping
 	(
-		_source_code_origin_name := _source_code_origin_name,
+		_scope_name := _scope_name,
 		_source_code_context_name := _source_code_context_name,
 		_source_code := _source_code,
 		_source_code_system_identifier := _source_code_system_identifier,

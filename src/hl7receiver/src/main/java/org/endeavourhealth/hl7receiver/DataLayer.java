@@ -322,11 +322,11 @@ public class DataLayer implements IDBDigestLogger {
         return pgStoredProc.executeSingleRow((resultSet) -> UUID.fromString(resultSet.getString("get_resource_uuid")));
     }
 
-    public DbCode getCode(String sourceCodeOriginName, String sourceCodeContextName, String sourceCode, String sourceCodeSystemIdentifier, String sourceTerm) throws PgStoredProcException {
+    public DbCode getCode(String scopeName, String sourceCodeContextName, String sourceCode, String sourceCodeSystemIdentifier, String sourceTerm) throws PgStoredProcException {
 
         PgStoredProc pgStoredProc = new PgStoredProc(dataSource)
                 .setName("mapping.get_code_mapping")
-                .addParameter("_source_code_origin_name", sourceCodeOriginName)
+                .addParameter("_scope_name", scopeName)
                 .addParameter("_source_code_context_name", sourceCodeContextName)
                 .addParameter("_source_code", sourceCode)
                 .addParameter("_source_code_system_identifier", sourceCodeSystemIdentifier)

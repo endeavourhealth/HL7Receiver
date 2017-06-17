@@ -1,7 +1,7 @@
 
 create or replace function mapping.get_code_mapping
 (
-	_source_code_origin_name varchar(100),
+	_scope_name varchar(100),
 	_source_code_context_name varchar(100),
 	_source_code varchar(100),
 	_source_code_system_identifier varchar(500),
@@ -17,7 +17,7 @@ returns table
 )
 as $$
 declare
-	_source_code_origin_id char(1);
+	_scope_id char(1);
 	_source_code_context_id integer;
 	_source_code_is_case_insensitive boolean;
 	_source_term_is_case_insensitive boolean;
@@ -27,18 +27,18 @@ declare
 begin
 
 	--------------------------------------------
-	-- lookup source_code_origin
+	-- lookup scope
 	--
-	_source_code_origin_name = trim(coalesce(_source_code_origin_name, ''));
+	_scope_name = trim(coalesce(_scope_name, ''));
 	
 	select
-		code_origin_id into _source_code_origin_id
-	from mapping.code_origin 
-	where code_origin_name = _source_code_origin_name;
+		scope_id into _scope_id
+	from mapping.scope 
+	where scope_name = _scope_name;
 	
-	if (_source_code_origin_id is null)
+	if (_scope_id is null)
 	then
-		raise exception 'Could not find code_origin_name of %', _source_code_origin_name;
+		raise exception 'Could not find scope_name of %', _scope_name;
 		return;
 	end if;
 
@@ -119,7 +119,7 @@ begin
 		c.code_id into _code_id
 	from mapping.code c
 	where c.source_code_context_id = _source_code_context_id
-	and c.source_code_origin_id = _source_code_origin_id
+	and c.scope_id = _scope_id
 	and c.source_code = _source_code
 	and c.source_code_system_id = _source_code_system_id
 	and c.source_term = _source_term;
@@ -133,7 +133,7 @@ begin
 			c.code_id into _code_id
 		from mapping.code c
 		where c.source_code_context_id = _source_code_context_id
-		and c.source_code_origin_id = 'G'
+		and c.scope_id = 'G'
 		and c.source_code = _source_code
 		and c.source_code_system_id = _source_code_system_id
 		and c.source_term = _source_term;
@@ -146,7 +146,7 @@ begin
 	then
 		insert into mapping.code
 		(
-			source_code_origin_id,
+			scope_id,
 			source_code_context_id,
 			source_code,
 			source_code_system_id,
@@ -156,7 +156,7 @@ begin
 		)
 		values
 		(
-			_source_code_origin_id,
+			_scope_id,
 			_source_code_context_id,
 			_source_code,
 			_source_code_system_id,
