@@ -235,6 +235,6 @@ public class PractitionerTransform extends ResourceTransformBase {
             return mapper.getResourceMapper().mapPractitionerUuid(surname, forename, odsCode);
         }
 
-        return mapper.getResourceMapper().mapPractitionerUuid(surname, forename, HomertonConstants.primaryPatientIdentifierTypeCode, primaryIdentifier, consultantCode, gmcCode);
+        return mapper.getResourceMapper().mapPractitionerUuid(surname, forename, HomertonConstants.primaryPractitionerIdentifierTypeCode, primaryIdentifier, consultantCode, gmcCode);
     }
 }

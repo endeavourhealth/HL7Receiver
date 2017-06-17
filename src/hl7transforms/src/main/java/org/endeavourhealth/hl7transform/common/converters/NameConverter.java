@@ -23,6 +23,10 @@ public class NameConverter {
     }
 
     public static HumanName createOfficialName(String surname, String forenames, String title) {
+        return createOfficialName(surname, forenames, null, title);
+    }
+
+    public static HumanName createOfficialName(String surname, String forenames, String middleNames, String title) {
         HumanName humanName = new HumanName();
 
         if (StringUtils.isNotBlank(surname))
@@ -30,6 +34,9 @@ public class NameConverter {
 
         if (StringUtils.isNotBlank(forenames))
             humanName.addGiven(formatName(forenames));
+
+        if (StringUtils.isNotBlank(middleNames))
+            humanName.addGiven(formatName(middleNames));
 
         if (StringUtils.isNotBlank(title))
             humanName.addPrefix(formatTitle(title));

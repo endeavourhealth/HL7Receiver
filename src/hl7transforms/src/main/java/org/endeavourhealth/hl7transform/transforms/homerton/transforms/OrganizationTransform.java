@@ -12,6 +12,7 @@ import org.endeavourhealth.hl7transform.common.ResourceContainer;
 import org.endeavourhealth.hl7transform.common.ResourceTag;
 import org.endeavourhealth.hl7transform.common.ResourceTransformBase;
 import org.endeavourhealth.hl7transform.common.TransformException;
+import org.endeavourhealth.hl7transform.common.transform.OrganisationCommon;
 import org.endeavourhealth.hl7transform.mapper.organisation.MappedOrganisation;
 import org.endeavourhealth.hl7transform.transforms.homerton.parser.zdatatypes.Zpd;
 import org.endeavourhealth.hl7transform.transforms.homerton.transforms.constants.HomertonConstants;
@@ -40,7 +41,7 @@ public class OrganizationTransform extends ResourceTransformBase {
 
         Organization organization = new Organization()
                 .addIdentifier(IdentifierConverter.createOdsCodeIdentifier(HomertonConstants.odsCode))
-                .setType(getOrganisationType(OrganisationType.NHS_TRUST))
+                .setType(OrganisationCommon.getOrganisationType(OrganisationType.NHS_TRUST))
                 .setName(HomertonConstants.organisationName)
                 .addAddress(AddressConverter.createWorkAddress(HomertonConstants.addressLine, null, HomertonConstants.addressCity, HomertonConstants.addressPostcode));
 
@@ -67,7 +68,7 @@ public class OrganizationTransform extends ResourceTransformBase {
 
         Organization organization = new Organization()
                 .setName(hospitalServiceName)
-                .setType(getOrganisationType(OrganisationType.NHS_TRUST_SERVICE))
+                .setType(OrganisationCommon.getOrganisationType(OrganisationType.NHS_TRUST_SERVICE))
                 .addAddress(AddressConverter.createWorkAddress(HomertonConstants.organisationName, HomertonConstants.addressLine, HomertonConstants.addressCity, HomertonConstants.addressPostcode))
                 .setPartOf(managingOrganisationReference);
 
@@ -100,36 +101,10 @@ public class OrganizationTransform extends ResourceTransformBase {
             MappedOrganisation mappedOrganisation = mapper.getOrganisationMapper().mapOrganisation(zpd.getOdsCode());
 
             if (mappedOrganisation != null)
-                return createFromMappedOrganisation(mappedOrganisation);
+                return OrganisationCommon.createFromMappedOrganisation(mappedOrganisation, mapper.getResourceMapper());
         }
 
         return createFromZpd(zpd);
-    }
-
-    private Organization createFromMappedOrganisation(MappedOrganisation mappedOrganisation) throws MapperException {
-        if (mappedOrganisation == null)
-            return null;
-
-        Organization organization = new Organization();
-
-        UUID id = mapper.getResourceMapper().mapOrganisationUuid(mappedOrganisation.getOdsCode(), mappedOrganisation.getOrganisationName());
-        organization.setId(id.toString());
-
-        Identifier identifier = IdentifierConverter.createOdsCodeIdentifier(mappedOrganisation.getOdsCode());
-
-        if (identifier != null)
-            organization.addIdentifier(identifier);
-
-        organization.setName(StringHelper.formatName(mappedOrganisation.getOrganisationName()));
-
-        Address address = AddressConverter.createWorkAddress(mappedOrganisation.getAddressLine1(), mappedOrganisation.getAddressLine2(), mappedOrganisation.getTown(), mappedOrganisation.getPostcode());
-
-        if (address != null)
-            organization.addAddress(address);
-
-        organization.setType(getOrganisationType(mappedOrganisation.getOrganisationType()));
-
-        return organization;
     }
 
     private Organization createFromZpd(Zpd zpd) throws MapperException {
@@ -159,16 +134,8 @@ public class OrganizationTransform extends ResourceTransformBase {
         if (address != null)
             organization.addAddress(address);
 
-        organization.setType(getOrganisationType(OrganisationType.GP_PRACTICE));
+        organization.setType(OrganisationCommon.getOrganisationType(OrganisationType.GP_PRACTICE));
 
         return organization;
-    }
-
-    private CodeableConcept getOrganisationType(OrganisationType organisationType) {
-        return new CodeableConcept()
-                .addCoding(new Coding()
-                        .setSystem(organisationType.getSystem())
-                        .setDisplay(organisationType.getDescription())
-                        .setCode(organisationType.getCode()));
     }
 }

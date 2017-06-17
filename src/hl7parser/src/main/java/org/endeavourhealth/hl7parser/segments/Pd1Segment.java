@@ -6,6 +6,7 @@ import org.endeavourhealth.hl7parser.Seperators;
 import org.endeavourhealth.hl7parser.datatypes.Ce;
 import org.endeavourhealth.hl7parser.datatypes.Cx;
 import org.endeavourhealth.hl7parser.datatypes.Xcn;
+import org.endeavourhealth.hl7parser.datatypes.Xon;
 
 import java.util.List;
 
@@ -16,7 +17,7 @@ public class Pd1Segment extends Segment {
 
     public String getLivingDependency() { return this.getFieldAsString(1); }
     public String getLivingArrangement() { return this.getFieldAsString(2); }
-    public String getPatientPrimaryCareFacility() { return this.getFieldAsString(3); }
+    public List<Xon> getPatientPrimaryCareFacility() { return this.getFieldAsDatatypes(3, Xon.class); }
     public List<Xcn> getPatientPrimaryCareProvider() { return this.getFieldAsDatatypes(4, Xcn.class); }
     public String getStudentIndicator() { return this.getFieldAsString(5); }
     public String getHandicap() { return this.getFieldAsString(6); }

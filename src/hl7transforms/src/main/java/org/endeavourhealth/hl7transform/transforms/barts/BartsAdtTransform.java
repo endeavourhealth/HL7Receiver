@@ -15,6 +15,7 @@ import org.endeavourhealth.hl7transform.transforms.barts.pretransform.BartsPreTr
 import org.endeavourhealth.hl7transform.transforms.barts.transforms.MessageHeaderTransform;
 import org.endeavourhealth.hl7transform.transforms.barts.transforms.OrganizationTransform;
 import org.endeavourhealth.hl7transform.transforms.barts.transforms.PatientTransform;
+import org.endeavourhealth.hl7transform.transforms.barts.transforms.PractitionerTransform;
 import org.hl7.fhir.instance.model.*;
 
 import java.util.Arrays;
@@ -56,6 +57,23 @@ public class BartsAdtTransform extends Transform {
         OrganizationTransform organizationTransform = new OrganizationTransform(mapper, targetResources);
         Organization mainHospitalOrganisation = organizationTransform.createBartsManagingOrganisation(sourceMessage);
         targetResources.addResource(mainHospitalOrganisation, ResourceTag.MainHospitalOrganisation);
+
+        ///////////////////////////////////////////////////////////////////////////
+        // create usual gp organisation
+        //
+        Organization mainGPOrganisation = organizationTransform.createMainPrimaryCareProviderOrganisation(sourceMessage);
+
+        if (mainGPOrganisation != null)
+            targetResources.addResource(mainGPOrganisation, ResourceTag.MainPrimaryCareProviderOrganisation);
+
+        ///////////////////////////////////////////////////////////////////////////
+        // create usual gp practitioner
+        //
+        PractitionerTransform practitionerTransform = new PractitionerTransform(mapper, targetResources);
+        Practitioner mainGPPractitioner = practitionerTransform.createMainPrimaryCareProviderPractitioner(sourceMessage);
+
+        if (mainGPPractitioner != null)
+            targetResources.addResource(mainGPPractitioner, ResourceTag.MainPrimaryCareProviderPractitioner);
 
         ///////////////////////////////////////////////////////////////////////////
         // create message header
