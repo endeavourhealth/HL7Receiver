@@ -61,15 +61,20 @@ public class OrganizationTransform extends ResourceTransformBase {
             if (!servicingFacilityName.equals(HomertonConstants.servicingFacility))
                 throw new TransformException("Hospital servicing facility of " + servicingFacilityName + " not recognised");
 
-        Reference managingOrganisationReference = this.targetResources.getResourceReference(ResourceTag.MainHospitalOrganisation, Organization.class);
+        Organization managingOrganisation = this.targetResources.getResourceSingle(ResourceTag.MainHospitalOrganisation, Organization.class);
 
         Organization organization = new Organization()
                 .setName(hospitalServiceName)
                 .setType(OrganisationCommon.getOrganisationType(OrganisationType.NHS_TRUST_SERVICE))
-                .addAddress(AddressConverter.createWorkAddress(HomertonConstants.organisationName, HomertonConstants.addressLine, HomertonConstants.addressCity, HomertonConstants.addressPostcode))
-                .setPartOf(managingOrganisationReference);
+                .setPartOf(ReferenceHelper.createReference(managingOrganisation.getResourceType(), managingOrganisation.getId()));
 
-        UUID id = mapper.getResourceMapper().mapOrganisationUuid(HomertonConstants.odsCode, HomertonConstants.organisationName, hospitalServiceName);
+        if (managingOrganisation.getAddress().size() > 0) {
+            Address hospitalServiceAddress = managingOrganisation.getAddress().get(0).copy();
+            hospitalServiceAddress.getLine().add(0, new StringType(managingOrganisation.getName()));
+            organization.addAddress(hospitalServiceAddress);
+        }
+
+        UUID id = mapper.getResourceMapper().mapOrganisationUuid(HomertonConstants.odsCode, managingOrganisation.getName(), hospitalServiceName);
         organization.setId(id.toString());
 
         targetResources.addResource(organization);

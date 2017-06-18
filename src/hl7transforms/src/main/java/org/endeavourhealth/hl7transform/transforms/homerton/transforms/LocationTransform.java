@@ -12,15 +12,13 @@ import org.endeavourhealth.hl7transform.common.ResourceContainer;
 import org.endeavourhealth.hl7transform.common.ResourceTag;
 import org.endeavourhealth.hl7transform.common.ResourceTransformBase;
 import org.endeavourhealth.hl7transform.common.TransformException;
+import org.endeavourhealth.hl7transform.common.transform.LocationCommon;
 import org.endeavourhealth.hl7transform.transforms.homerton.transforms.constants.HomertonConstants;
-import org.endeavourhealth.hl7transform.common.converters.AddressConverter;
-import org.endeavourhealth.hl7transform.common.converters.IdentifierConverter;
 import org.endeavourhealth.hl7transform.mapper.Mapper;
 import org.endeavourhealth.hl7transform.mapper.exceptions.MapperException;
 import org.endeavourhealth.hl7parser.datatypes.Pl;
 import org.hl7.fhir.instance.model.*;
 import org.hl7.fhir.instance.model.valuesets.LocationPhysicalType;
-import org.hl7.fhir.instance.model.valuesets.V3RoleCode;
 
 import java.util.*;
 
@@ -36,38 +34,13 @@ public class LocationTransform extends ResourceTransformBase {
     }
 
     public Location createHomertonHospitalLocation() throws MapperException, TransformException, ParseException {
-
-        Location location = new Location()
-                .setName(HomertonConstants.locationName)
-                .addIdentifier(IdentifierConverter.createOdsCodeIdentifier(HomertonConstants.odsSiteCode))
-                .setStatus(Location.LocationStatus.ACTIVE)
-                .setAddress(AddressConverter.createWorkAddress(HomertonConstants.addressLine, null, HomertonConstants.addressCity, HomertonConstants.addressPostcode))
-                .setManagingOrganization(this.targetResources.getResourceReference(ResourceTag.MainHospitalOrganisation, Organization.class))
-                .setType(createType(V3RoleCode.HOSP))
-                .setPhysicalType(createLocationPhysicalType(LocationPhysicalType.BU))
-                .setMode(Location.LocationMode.INSTANCE);
-
-        UUID id = getId(HomertonConstants.odsSiteCode, HomertonConstants.locationName);
-        location.setId(id.toString());
-
-        return location;
+        Reference mainHospitalOrganisationReference = this.targetResources.getResourceReference(ResourceTag.MainHospitalOrganisation, Organization.class);
+        return LocationCommon.createMainHospitalLocation(HomertonConstants.odsSiteCodeHomerton, mainHospitalOrganisationReference, mapper);
     }
 
     public Location createStLeonardsHospitalLocation() throws MapperException, TransformException, ParseException {
-        Location location = new Location()
-                .setName(HomertonConstants.StLeonardsConstants.locationName)
-                .addIdentifier(IdentifierConverter.createOdsCodeIdentifier(HomertonConstants.StLeonardsConstants.odsSiteCode))
-                .setStatus(Location.LocationStatus.ACTIVE)
-                .setAddress(AddressConverter.createWorkAddress(HomertonConstants.StLeonardsConstants.addressLine, null, HomertonConstants.StLeonardsConstants.addressCity, HomertonConstants.StLeonardsConstants.addressPostcode))
-                .setManagingOrganization(this.targetResources.getResourceReference(ResourceTag.MainHospitalOrganisation, Organization.class))
-                .setType(createType(V3RoleCode.HOSP))
-                .setPhysicalType(createLocationPhysicalType(LocationPhysicalType.BU))
-                .setMode(Location.LocationMode.INSTANCE);
-
-        UUID id = getId(HomertonConstants.StLeonardsConstants.locationBuilding, HomertonConstants.StLeonardsConstants.locationName);
-        location.setId(id.toString());
-
-        return location;
+        Reference mainHospitalOrganisationReference = this.targetResources.getResourceReference(ResourceTag.MainHospitalOrganisation, Organization.class);
+        return LocationCommon.createMainHospitalLocation(HomertonConstants.odsSiteCodeStLeonards, mainHospitalOrganisationReference, mapper);
     }
 
     public Reference createHomertonConstituentLocation(Pl source) throws MapperException, TransformException, ParseException {
@@ -128,10 +101,10 @@ public class LocationTransform extends ResourceTransformBase {
         if (StringUtils.isBlank(source.getBuilding()))
             return targetResources.getResourceSingle(ResourceTag.MainHospitalLocation, Location.class);
 
-        if (HomertonConstants.locationBuilding.equalsIgnoreCase(StringUtils.trim(source.getBuilding())))
+        if (HomertonConstants.locationBuildingHomerton.equalsIgnoreCase(StringUtils.trim(source.getBuilding())))
             return targetResources.getResourceSingle(ResourceTag.MainHospitalLocation, Location.class);
 
-        if (HomertonConstants.StLeonardsConstants.locationBuilding.equalsIgnoreCase(StringUtils.trim(source.getBuilding()))) {
+        if (HomertonConstants.locationBuildingStLeonards.equalsIgnoreCase(StringUtils.trim(source.getBuilding()))) {
             Location stLeonardsHospitalLocation = createStLeonardsHospitalLocation();
 
             if (stLeonardsHospitalLocation != null)
@@ -151,7 +124,7 @@ public class LocationTransform extends ResourceTransformBase {
                 .setName(classOfLocationName)
                 .setMode(Location.LocationMode.KIND);
 
-        UUID id = getId(classOfLocationName);
+        UUID id = mapper.getResourceMapper().mapClassOfLocationUuid(classOfLocationName);
         location.setId(id.toString());
 
         return ReferenceHelper.createReference(ResourceType.Location, classOfLocationName);
@@ -191,7 +164,7 @@ public class LocationTransform extends ResourceTransformBase {
                 .build()));
 
         location.setMode(Location.LocationMode.INSTANCE);
-        location.setPhysicalType(createLocationPhysicalType(locationPhysicalType));
+        location.setPhysicalType(LocationCommon.createLocationPhysicalType(locationPhysicalType));
 
         if (managingOrganisation != null)
             location.setManagingOrganization(managingOrganisation);
@@ -199,14 +172,6 @@ public class LocationTransform extends ResourceTransformBase {
         setPartOf(location, directParentLocation);
 
         return location;
-    }
-
-    private UUID getId(String classOfLocationName) throws MapperException {
-        return mapper.getResourceMapper().mapLocationUuid(classOfLocationName);
-    }
-
-    private UUID getId(String odsSiteCode, String locationName) throws MapperException {
-        return mapper.getResourceMapper().mapLocationUuid(odsSiteCode, locationName);
     }
 
     public UUID getId(String parentOdsSiteCode, String parentLocationName, List<String> locationNames) throws MapperException {
@@ -224,22 +189,5 @@ public class LocationTransform extends ResourceTransformBase {
 
     private static void setPartOf(Location location, Location partOfLocation) {
         location.setPartOf(ReferenceHelper.createReference(ResourceType.Location, partOfLocation.getId()));
-    }
-
-    private static CodeableConcept createType(V3RoleCode v3RoleCode) {
-        return new CodeableConcept()
-                .addCoding(new Coding()
-                        .setCode(v3RoleCode.toCode())
-                        .setDisplay(v3RoleCode.getDisplay())
-                        .setSystem(v3RoleCode.getSystem()));
-    }
-
-    private static CodeableConcept createLocationPhysicalType(LocationPhysicalType locationPhysicalType) {
-        return new CodeableConcept()
-                .addCoding(
-                        new Coding()
-                                .setCode(locationPhysicalType.toCode())
-                                .setSystem(locationPhysicalType.getSystem())
-                                .setDisplay(locationPhysicalType.getDisplay()));
     }
 }

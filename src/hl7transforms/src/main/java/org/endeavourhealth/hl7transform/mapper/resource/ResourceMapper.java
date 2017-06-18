@@ -23,11 +23,21 @@ public class ResourceMapper {
     ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     // Global UUIDs
     ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-    public UUID mapLocationUuid(String classOfLocationName) throws MapperException {
+    public UUID mapClassOfLocationUuid(String classOfLocationName) throws MapperException {
         Validate.notBlank(classOfLocationName, "classOfLocationName");
 
         String identifier = ResourceMapParameters.create()
                 .put("ClassOfLocationName", classOfLocationName)
+                .createIdentifyingString();
+
+        return this.mapper.mapGlobalResourceUuid(ResourceType.Location, identifier);
+    }
+
+    public UUID mapLocationUuid(String odsSiteCode) throws MapperException {
+        Validate.notBlank(odsSiteCode, "odsSiteCode");
+
+        String identifier = ResourceMapParameters.create()
+                .put("OdsSiteCode", odsSiteCode)
                 .createIdentifyingString();
 
         return this.mapper.mapGlobalResourceUuid(ResourceType.Location, identifier);
@@ -130,18 +140,6 @@ public class ResourceMapper {
                 .createIdentifyingString();
 
         return this.mapper.mapScopedResourceUuid(ResourceType.Organization, identifier);
-    }
-
-    public UUID mapLocationUuid(String odsSiteCode, String locationName) throws MapperException {
-        Validate.notBlank(odsSiteCode, "odsSiteCode");
-        Validate.notBlank(locationName, "locationName");
-
-        String identifier = ResourceMapParameters.create()
-                .put("OdsSiteCode", odsSiteCode)
-                .put("LocationName", locationName.replace(".", ""))
-                .createIdentifyingString();
-
-        return this.mapper.mapScopedResourceUuid(ResourceType.Location, identifier);
     }
 
     public UUID mapLocationUuid(String parentOdsSiteCode, String parentLocationName, List<String> locationNames) throws MapperException {
