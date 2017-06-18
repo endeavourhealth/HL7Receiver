@@ -378,7 +378,8 @@ public class DataLayer implements IDBDigestLogger {
                 .addParameter("_address_line2", addressLine2)
                 .addParameter("_town", town)
                 .addParameter("_county", county)
-                .addParameter("_postcode", postcode);
+                .addParameter("_postcode", postcode)
+                .addParameter("_manual_mapping", false);
 
         pgStoredProc.execute();
     }

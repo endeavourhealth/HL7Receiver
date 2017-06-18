@@ -9,7 +9,8 @@ create or replace function mapping.set_organisation
 	_address_line2 varchar(100),
 	_town varchar(100),
 	_county varchar(100),
-	_postcode varchar(10)
+	_postcode varchar(10),
+	_manual_mapping boolean
 )
 returns void
 as $$
@@ -35,6 +36,7 @@ begin
 		county,
 		postcode,
 		is_mapped,
+		manual_mapping,
 		last_updated
 		
 	)
@@ -50,6 +52,7 @@ begin
 		coalesce(_county, ''),
 		coalesce(_postcode, ''),
 		true,
+		_manual_mapping,
 		now()
 	)
 	on conflict (ods_code)
@@ -64,8 +67,9 @@ begin
 		county = coalesce(_county, ''),
 		postcode = coalesce(_postcode, ''),
 		is_mapped = true,
+		manual_mapping = _manual_mapping,
 		last_updated = now()
-	where ods_code = _ods_code;
+	where excluded.ods_code = _ods_code;
 	 	
 end;
 $$ language plpgsql;
