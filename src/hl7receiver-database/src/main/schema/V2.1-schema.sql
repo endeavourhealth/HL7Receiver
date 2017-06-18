@@ -104,6 +104,6 @@ select
 	is_mapped,
 	false,
 	last_updated
-from mapping.organisation	 _old;
+from mapping.organisation_old;
 
 drop table mapping.organisation_old;
