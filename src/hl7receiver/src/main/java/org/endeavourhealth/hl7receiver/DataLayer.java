@@ -1,6 +1,7 @@
 package org.endeavourhealth.hl7receiver;
 
 import org.apache.commons.lang3.StringUtils;
+import org.endeavourhealth.common.fhir.schema.OrganisationClass;
 import org.endeavourhealth.common.fhir.schema.OrganisationType;
 import org.endeavourhealth.common.postgres.PgResultSet;
 import org.endeavourhealth.common.postgres.PgStoredProc;
@@ -352,25 +353,26 @@ public class DataLayer implements IDBDigestLogger {
                 .setName("mapping.get_organisation")
                 .addParameter("_ods_code", odsCode);
 
-        return pgStoredProc.executeSingleRow((resultSet) ->
+        return pgStoredProc.executeSingleOrEmptyRow((resultSet) ->
                 new DbOrganisation()
                         .setOdsCode(resultSet.getString("ods_code"))
                         .setOrganisationName(resultSet.getString("organisation_name"))
-                        .setOrganisationType(resultSet.getString("organisation_type") == null ? null : OrganisationType.fromCode(resultSet.getString("organisation_type")))
+                        .setOrganisationClass(OrganisationClass.fromOrganisationClass(resultSet.getString("organisation_class")))
+                        .setOrganisationType(OrganisationType.fromCode(resultSet.getString("organisation_type")))
                         .setAddressLine1(resultSet.getString("address_line1"))
                         .setAddressLine2(resultSet.getString("address_line2"))
                         .setTown(resultSet.getString("town"))
                         .setCounty(resultSet.getString("county"))
-                        .setPostcode(resultSet.getString("postcode"))
-                        .setMapped(resultSet.getBoolean("is_mapped")));
+                        .setPostcode(resultSet.getString("postcode")));
     }
 
-    public void setOrganisation(String odsCode, String organisationName, OrganisationType organisationType, String addressLine1, String addressLine2, String town, String county, String postcode) throws PgStoredProcException {
+    public void setOrganisation(String odsCode, String organisationName, OrganisationClass organisationClass, OrganisationType organisationType, String addressLine1, String addressLine2, String town, String county, String postcode) throws PgStoredProcException {
 
         PgStoredProc pgStoredProc = new PgStoredProc(dataSource)
                 .setName("mapping.set_organisation")
                 .addParameter("_ods_code", odsCode)
                 .addParameter("_organisation_name", organisationName)
+                .addParameter("_organisation_class", organisationClass.getOrganisationClass())
                 .addParameter("_organisation_type", organisationType.getCode())
                 .addParameter("_address_line1", addressLine1)
                 .addParameter("_address_line2", addressLine2)

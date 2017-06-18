@@ -6,6 +6,7 @@ import com.mashape.unirest.http.Unirest;
 import com.mashape.unirest.http.exceptions.UnirestException;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Validate;
+import org.endeavourhealth.common.fhir.schema.OrganisationClass;
 import org.endeavourhealth.common.fhir.schema.OrganisationType;
 import org.endeavourhealth.hl7transform.common.converters.AddressConverter;
 import org.endeavourhealth.hl7transform.common.converters.StringHelper;
@@ -37,7 +38,8 @@ class OdsRestClient {
 
         MappedOrganisation mappedOrganisation = new MappedOrganisation()
                 .setOrganisationName(StringHelper.formatName(organisation.getString("name")))
-                .setOdsCode(organisation.getString("odsCode"));
+                .setOdsCode(organisation.getString("odsCode"))
+                .setOrganisationClass(OrganisationClass.fromOrganisationClassName(organisation.getString("recordClass")));
 
         if (StringUtils.isEmpty(mappedOrganisation.getOdsCode()))
             throw new MapperException("Returned ODS code is empty");

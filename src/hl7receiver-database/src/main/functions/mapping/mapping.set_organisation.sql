@@ -3,6 +3,7 @@ create or replace function mapping.set_organisation
 (
 	_ods_code varchar(10),
 	_organisation_name varchar(100),
+	_organisation_class char(1),
 	_organisation_type char(2),
 	_address_line1 varchar(100),
 	_address_line2 varchar(100),
@@ -26,6 +27,7 @@ begin
 	(
 		ods_code,
 		organisation_name,
+		organisation_class,
 		organisation_type,
 		address_line1,
 		address_line2,
@@ -40,6 +42,7 @@ begin
 	(
 		_ods_code,
 		_organisation_name,
+		_organisation_class,
 		_organisation_type,
 		coalesce(_address_line1, ''),
 		coalesce(_address_line2, ''),
@@ -53,6 +56,7 @@ begin
 	do update
 	set
 		organisation_name = _organisation_name,
+		organisation_class = _organisation_class,
 		organisation_type = _organisation_type,
 		address_line1 = coalesce(_address_line1, ''),
 		address_line2 = coalesce(_address_line2, ''),
@@ -60,7 +64,8 @@ begin
 		county = coalesce(_county, ''),
 		postcode = coalesce(_postcode, ''),
 		is_mapped = true,
-		last_updated = now();
+		last_updated = now()
+	where ods_code = _ods_code;
 	 	
 end;
 $$ language plpgsql;

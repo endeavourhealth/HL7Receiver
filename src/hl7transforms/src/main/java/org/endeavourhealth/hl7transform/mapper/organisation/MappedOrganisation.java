@@ -1,10 +1,12 @@
 package org.endeavourhealth.hl7transform.mapper.organisation;
 
+import org.endeavourhealth.common.fhir.schema.OrganisationClass;
 import org.endeavourhealth.common.fhir.schema.OrganisationType;
 
 public class MappedOrganisation {
     private String odsCode;
     private String organisationName;
+    private OrganisationClass organisationClass;
     private OrganisationType organisationType;
     private String addressLine1;
     private String addressLine2;
@@ -27,6 +29,15 @@ public class MappedOrganisation {
 
     public MappedOrganisation setOrganisationName(String organisationName) {
         this.organisationName = organisationName;
+        return this;
+    }
+
+    public OrganisationClass getOrganisationClass() {
+        return organisationClass;
+    }
+
+    public MappedOrganisation setOrganisationClass(OrganisationClass organisationClass) {
+        this.organisationClass = organisationClass;
         return this;
     }
 

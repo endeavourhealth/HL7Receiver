@@ -7,13 +7,13 @@ returns table
 (
 	ods_code varchar(10),
 	organisation_name varchar(100),
+	organisation_class char(1),
 	organisation_type char(2),
 	address_line1 varchar(100),
 	address_line2 varchar(100),
 	town varchar(100),
 	county varchar(100),
-	postcode varchar(10),
-	is_mapped boolean
+	postcode varchar(10)
 )
 as $$
 begin
@@ -37,6 +37,7 @@ begin
 		(
 			ods_code,
 			organisation_name,
+			organisation_class,
 			organisation_type,
 			address_line1,
 			address_line2,
@@ -44,6 +45,7 @@ begin
 			county,
 			postcode,
 			is_mapped,
+			manual_mapping,
 			last_updated
 			
 		)
@@ -57,7 +59,9 @@ begin
 			null,
 			null,
 			null,
+			null,
 			false,
+			null,
 			now()
 		);
 	end if;
@@ -66,15 +70,16 @@ begin
 	select
 		o.ods_code,
 		o.organisation_name,
+		o.organisation_class,
 		o.organisation_type,
 		o.address_line1,
 		o.address_line2,
 		o.town,
 		o.county,
-		o.postcode,
-		o.is_mapped
+		o.postcode
 	from mapping.organisation o
-	where o.ods_code = _ods_code;
+	where o.ods_code = _ods_code
+	and o.is_mapped;
  	
 end;
 $$ language plpgsql;

@@ -86,10 +86,11 @@ public class Mapper extends org.endeavourhealth.hl7transform.mapper.Mapper {
             if (mappedOrganisation == null) {
                 DbOrganisation dbOrganisation = this.dataLayer.getOrganisation(odsCode);
 
-                if (dbOrganisation.isMapped()) {
+                if (dbOrganisation != null) {
                     mappedOrganisation = new MappedOrganisation()
                             .setOdsCode(dbOrganisation.getOdsCode())
                             .setOrganisationName(dbOrganisation.getOrganisationName())
+                            .setOrganisationClass(dbOrganisation.getOrganisationClass())
                             .setOrganisationType(dbOrganisation.getOrganisationType())
                             .setAddressLine1(dbOrganisation.getAddressLine1())
                             .setAddressLine2(dbOrganisation.getAddressLine2())
@@ -104,7 +105,8 @@ public class Mapper extends org.endeavourhealth.hl7transform.mapper.Mapper {
 
                     this.dataLayer.setOrganisation(mappedOrganisation.getOdsCode(),
                             mappedOrganisation.getOrganisationName(),
-                            mappedOrganisation.getOrganisationType(), // need to parse type from REST service
+                            mappedOrganisation.getOrganisationClass(),
+                            mappedOrganisation.getOrganisationType(),
                             mappedOrganisation.getAddressLine1(),
                             mappedOrganisation.getAddressLine2(),
                             mappedOrganisation.getTown(),

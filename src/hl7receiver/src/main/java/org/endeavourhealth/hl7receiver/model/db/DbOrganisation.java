@@ -1,17 +1,18 @@
 package org.endeavourhealth.hl7receiver.model.db;
 
+import org.endeavourhealth.common.fhir.schema.OrganisationClass;
 import org.endeavourhealth.common.fhir.schema.OrganisationType;
 
 public class DbOrganisation {
     private String odsCode;
     private String organisationName;
+    private OrganisationClass organisationClass;
     private OrganisationType organisationType;
     private String addressLine1;
     private String addressLine2;
     private String town;
     private String county;
     private String postcode;
-    private boolean isMapped;
 
     public String getOdsCode() {
         return odsCode;
@@ -28,6 +29,15 @@ public class DbOrganisation {
 
     public DbOrganisation setOrganisationName(String organisationName) {
         this.organisationName = organisationName;
+        return this;
+    }
+
+    public OrganisationClass getOrganisationClass() {
+        return organisationClass;
+    }
+
+    public DbOrganisation setOrganisationClass(OrganisationClass organisationClass) {
+        this.organisationClass = organisationClass;
         return this;
     }
 
@@ -82,15 +92,6 @@ public class DbOrganisation {
 
     public DbOrganisation setPostcode(String postcode) {
         this.postcode = postcode;
-        return this;
-    }
-
-    public boolean isMapped() {
-        return isMapped;
-    }
-
-    public DbOrganisation setMapped(boolean mapped) {
-        isMapped = mapped;
         return this;
     }
 }
