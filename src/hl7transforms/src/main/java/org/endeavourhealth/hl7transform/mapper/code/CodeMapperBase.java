@@ -61,15 +61,28 @@ public class CodeMapperBase {
             return null;
 
         if (mappedCode.getAction().equals(MappedCodeAction.NOT_MAPPED_INCLUDE_ONLY_SOURCE_TERM))
-            return new CodeableConcept().setText(term);
+            return new CodeableConcept().setText(StringUtils.isEmpty(term) ? code : term);          //  revisit
 
         if (mappedCode.getAction().equals(MappedCodeAction.MAPPED_INCLUDE)) {
-            return new CodeableConcept()
-                    .addCoding(new Coding()
-                            .setCode(mappedCode.getCode())
-                            .setDisplay(mappedCode.getTerm())
-                            .setSystem(mappedCode.getSystem()))
-                    .setText(term);
+            if (StringUtils.isNotBlank(code)) {
+                return new CodeableConcept()
+                        .addCoding(new Coding()
+                                .setCode(mappedCode.getCode())
+                                .setDisplay(mappedCode.getTerm())
+                                .setSystem(mappedCode.getSystem()))
+                        .addCoding(new Coding()
+                                .setCode(code)
+                                .setDisplay(term)
+                                .setUserSelected(true))
+                        .setText(StringUtils.isEmpty(term) ? mappedCode.getTerm() : term);          // revisit
+            } else {
+                return new CodeableConcept()
+                        .addCoding(new Coding()
+                                .setCode(mappedCode.getCode())
+                                .setDisplay(mappedCode.getTerm())
+                                .setSystem(mappedCode.getSystem()))
+                        .setText(term);
+            }
         }
 
         throw new MapperException(mappedCode.getAction().name() + " MappedCodeAction value not recognised");

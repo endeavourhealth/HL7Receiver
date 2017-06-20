@@ -227,7 +227,7 @@ public class PatientTransform extends ResourceTransformBase {
         if (sourcePid.getPrimaryLanguage() == null)
             return;
 
-        CodeableConcept primaryLanguage = mapper.getCodeMapper().mapPrimaryLanguage(sourcePid.getPrimaryLanguage().getAsString());
+        CodeableConcept primaryLanguage = mapper.getCodeMapper().mapPrimaryLanguage(null, sourcePid.getPrimaryLanguage().getAsString());
 
         if (primaryLanguage != null) {
             target.addCommunication(new Patient.PatientCommunicationComponent()

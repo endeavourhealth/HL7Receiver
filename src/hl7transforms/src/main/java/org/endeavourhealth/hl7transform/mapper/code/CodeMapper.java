@@ -55,11 +55,11 @@ public class CodeMapper extends CodeMapperBase {
                         (r) -> r.getSystem());
     }
 
-    public CodeableConcept mapPrimaryLanguage(String primaryLanguage) throws MapperException {
+    public CodeableConcept mapPrimaryLanguage(String code, String term) throws MapperException {
         return this
                 .mapToCodeableConcept(CodeContext.HL7_PRIMARY_LANGUAGE,
-                        "",
-                        primaryLanguage);
+                        code,
+                        term);
     }
 
     public CodeableConcept mapEthnicGroup(String ethnicGroup) throws MapperException {
