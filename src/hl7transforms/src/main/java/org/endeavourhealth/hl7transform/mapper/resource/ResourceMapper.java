@@ -80,26 +80,32 @@ public class ResourceMapper {
         return this.mapper.mapScopedResourceUuid(ResourceType.MessageHeader, identifier);
     }
 
-    public UUID mapPatientUuid(String patientIdentifierTypeCode, String patientIdentifierValue) throws MapperException {
+    public UUID mapPatientUuid(String patientIdentifierTypeCode, String patientIdentifierAssigningAuthority, String patientIdentifierValue) throws MapperException {
+        String identifier;
 
-        String identifier =
-                getPatientMap(
-                        patientIdentifierTypeCode,
-                        patientIdentifierValue)
-                        .createIdentifyingString();
+            identifier =
+                    getPatientMap(
+                            patientIdentifierTypeCode,
+                            patientIdentifierAssigningAuthority,
+                            patientIdentifierValue)
+                            .createIdentifyingString();
 
         return this.mapper.mapScopedResourceUuid(ResourceType.Patient, identifier);
     }
 
     public UUID mapEpisodeUuid(String patientIdentifierTypeCode,
+                               String patientIdentifierAssigningAuthority,
                                String patientIdentifierValue,
+                               String episodeIdentifierTypeCode,
                                String episodeIdentifierAssigningAuthority,
                                String episodeIdentifierValue) throws MapperException {
 
         String identifier =
                 getEpisodeMap(
                         patientIdentifierTypeCode,
+                        patientIdentifierAssigningAuthority,
                         patientIdentifierValue,
+                        episodeIdentifierTypeCode,
                         episodeIdentifierAssigningAuthority,
                         episodeIdentifierValue)
                         .createIdentifyingString();
@@ -108,7 +114,9 @@ public class ResourceMapper {
     }
 
     public UUID mapEncounterUuid(String patientIdentifierTypeCode,
+                                 String patientIdentifierAssigningAuthority,
                                  String patientIdentifierValue,
+                                 String episodeIdentifierTypeCode,
                                  String episodeIdentifierAssigningAuthority,
                                  String episodeIdentifierValue,
                                  Hl7DateTime encounterDateTime) throws MapperException {
@@ -119,7 +127,9 @@ public class ResourceMapper {
         String identifier = ResourceMapParameters.create()
                 .putExisting(getEpisodeMap(
                         patientIdentifierTypeCode,
+                        patientIdentifierAssigningAuthority,
                         patientIdentifierValue,
+                        episodeIdentifierTypeCode,
                         episodeIdentifierAssigningAuthority,
                         episodeIdentifierValue))
                 .put("EncounterDateTime", encounterDateTime.getLocalDateTime().format(DateTimeFormatter.ISO_LOCAL_DATE_TIME))
@@ -195,27 +205,46 @@ public class ResourceMapper {
     }
 
     private static ResourceMapParameters getEpisodeMap(String patientIdentifierTypeCode,
+                                                       String patientIdentifierAssigningAuthority,
                                                        String patientIdentifierValue,
+                                                       String episodeIdentifierTypeCode,
                                                        String episodeIdentifierAssigningAuthority,
                                                        String episodeIdentifierValue) {
 
-        Validate.notEmpty(episodeIdentifierAssigningAuthority, "episodeIdentifierAssigningAuthority");
+        Validate.isTrue(StringUtils.isNotBlank(episodeIdentifierTypeCode) || StringUtils.isNotBlank(episodeIdentifierAssigningAuthority), "episodeIdentifierTypeCode and episodeIdentifierAssigningAuthority are both blank");
         Validate.notEmpty(episodeIdentifierValue, "episodeIdentifierValue");
 
-        return ResourceMapParameters.create()
-                .putExisting(getPatientMap(patientIdentifierTypeCode, patientIdentifierValue))
-                .put("EpisodeIdentifierAssigningAuthority", episodeIdentifierAssigningAuthority)
-                .put("EpisodeIdentifierValue", episodeIdentifierValue);
+        ResourceMapParameters resourceMapParameters = ResourceMapParameters.create()
+                .putExisting(getPatientMap(patientIdentifierTypeCode, patientIdentifierAssigningAuthority, patientIdentifierValue));
+
+        if (StringUtils.isNotEmpty(episodeIdentifierTypeCode))
+            resourceMapParameters.put("EpisodeIdentifierTypeCode", episodeIdentifierTypeCode);
+
+        if (StringUtils.isNotEmpty(episodeIdentifierAssigningAuthority))
+            resourceMapParameters.put("EpisodeIdentifierAssigningAuthority", episodeIdentifierAssigningAuthority);
+
+        resourceMapParameters.put("EpisodeIdentifierValue", episodeIdentifierValue);
+
+        return resourceMapParameters;
     }
 
     private static ResourceMapParameters getPatientMap(String patientIdentifierTypeCode,
+                                                       String patientIdentifierAssigningAuthority,
                                                        String patientIdentifierValue) {
 
-        Validate.notEmpty(patientIdentifierTypeCode, "patientIdentifierTypeCode");
+        Validate.isTrue(StringUtils.isNotBlank(patientIdentifierTypeCode) || StringUtils.isNotBlank(patientIdentifierAssigningAuthority), "patientIdentifierTypeCode and patientIdentifierAssigningAuthority are both blank");
         Validate.notEmpty(patientIdentifierValue, "patientIdentifierValue");
 
-        return ResourceMapParameters.create()
-                .put("PatientIdentifierTypeCode", patientIdentifierTypeCode)
-                .put("PatientIdentifierValue", patientIdentifierValue);
+        ResourceMapParameters resourceMapParameters = ResourceMapParameters.create();
+
+        if (StringUtils.isNotEmpty(patientIdentifierTypeCode))
+            resourceMapParameters.put("PatientIdentifierTypeCode", patientIdentifierTypeCode);
+
+        if (StringUtils.isNotEmpty(patientIdentifierAssigningAuthority))
+            resourceMapParameters.put("PatientIdentifierAssigningAuthority", patientIdentifierTypeCode);
+
+        resourceMapParameters.put("PatientIdentifierValue", patientIdentifierValue);
+
+        return resourceMapParameters;
     }
 }
