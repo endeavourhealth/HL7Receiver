@@ -25,21 +25,7 @@ public class HomertonPreTransform {
         for (Segment pidSegment : sourceMessage.getSegments(SegmentName.PID))
             movePid19ToPid3(pidSegment);
 
-        // PID18 (populated with Homerton FIN number) - copy from PID18 to PV1.51
-        copyPid19ToPv1_50(sourceMessage);
-
         return sourceMessage;
-    }
-
-    private static void copyPid19ToPv1_50(AdtMessage sourceMessage) {
-        PidSegment pidSegment = sourceMessage.getPidSegment();
-        Pv1Segment pv1Segment = sourceMessage.getPv1Segment();
-
-        if ((pidSegment == null) || (pv1Segment == null))
-            return;
-
-        Field field18 = pidSegment.getField(18); // encounter number
-        pv1Segment.setFieldAsString(50, field18.getAsString());
     }
 
     private static void removeEmptyDoubleQuotes(AdtMessage sourceMessage) {

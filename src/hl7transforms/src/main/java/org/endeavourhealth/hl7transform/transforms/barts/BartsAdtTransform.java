@@ -12,10 +12,7 @@ import org.endeavourhealth.hl7transform.common.TransformException;
 import org.endeavourhealth.hl7transform.mapper.Mapper;
 import org.endeavourhealth.hl7transform.transforms.barts.constants.BartsConstants;
 import org.endeavourhealth.hl7transform.transforms.barts.pretransform.BartsPreTransform;
-import org.endeavourhealth.hl7transform.transforms.barts.transforms.MessageHeaderTransform;
-import org.endeavourhealth.hl7transform.transforms.barts.transforms.OrganizationTransform;
-import org.endeavourhealth.hl7transform.transforms.barts.transforms.PatientTransform;
-import org.endeavourhealth.hl7transform.transforms.barts.transforms.PractitionerTransform;
+import org.endeavourhealth.hl7transform.transforms.barts.transforms.*;
 import org.hl7.fhir.instance.model.*;
 
 import java.util.Arrays;
@@ -88,6 +85,17 @@ public class BartsAdtTransform extends Transform {
         PatientTransform patientTransform = new PatientTransform(mapper, targetResources);
         Patient patient = patientTransform.transform(sourceMessage);
         targetResources.addResource(patient, ResourceTag.PatientSubject);
+
+        ///////////////////////////////////////////////////////////////////////////
+        // create episode of care
+        //
+        // and any associated organisations (/services), practitioners, locations
+        //
+        EpisodeOfCareTransform episodeOfCareTransform = new EpisodeOfCareTransform(mapper, targetResources);
+        EpisodeOfCare episodeOfCare = episodeOfCareTransform.transform(sourceMessage);
+
+        if (episodeOfCare != null)
+            targetResources.addResource(episodeOfCare);
 
         ///////////////////////////////////////////////////////////////////////////
         // create bundle

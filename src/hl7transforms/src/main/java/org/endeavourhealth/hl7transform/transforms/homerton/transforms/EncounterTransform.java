@@ -9,6 +9,7 @@ import org.endeavourhealth.hl7parser.segments.EvnSegment;
 import org.endeavourhealth.hl7transform.common.ResourceContainer;
 import org.endeavourhealth.hl7transform.common.ResourceTag;
 import org.endeavourhealth.hl7transform.common.ResourceTransformBase;
+import org.endeavourhealth.hl7transform.common.transform.EpisodeOfCareCommon;
 import org.endeavourhealth.hl7transform.common.transform.PatientCommon;
 import org.endeavourhealth.hl7transform.transforms.homerton.transforms.constants.HomertonConstants;
 import org.endeavourhealth.hl7transform.common.converters.DateTimeHelper;
@@ -80,7 +81,7 @@ public class EncounterTransform extends ResourceTransformBase {
     protected void setId(AdtMessage source, Encounter target) throws TransformException, ParseException, MapperException {
 
         String patientIdentifierValue = PatientCommon.getPatientIdentifierValueByTypeCode(source, HomertonConstants.primaryPatientIdentifierTypeCode);
-        String episodeIdentifierValue = EpisodeOfCareTransform.getEpisodeIdentifierValue(source, HomertonConstants.primaryEpisodeIdentifierAssigningAuthority);
+        String episodeIdentifierValue = EpisodeOfCareCommon.getEpisodeIdentifierValueByAssigningAuthority(source, HomertonConstants.primaryEpisodeIdentifierAssigningAuthority);
 
         UUID encounterUuid = mapper.getResourceMapper().mapEncounterUuid(
                 HomertonConstants.primaryPatientIdentifierTypeCode,

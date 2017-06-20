@@ -10,7 +10,7 @@ public class BartsConstants {
     public static final String primaryPractitionerIdentifierTypeCode = "XXXDoNotUse";
 
     /*
-    public static final String servicingFacility = "HOMERTON UNIVER";  // PV1.39
+
     public static final String locationFacility = servicingFacility;   // PV1.3.4
     public static final String locationBuilding = "HOMERTON UH";       // PV1.3.7
 
