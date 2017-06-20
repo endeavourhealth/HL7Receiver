@@ -5,6 +5,7 @@ import org.apache.commons.lang3.Validate;
 import org.endeavourhealth.common.fhir.ExtensionConverter;
 import org.endeavourhealth.common.fhir.FhirExtensionUri;
 import org.endeavourhealth.common.fhir.FhirUri;
+import org.endeavourhealth.common.utility.StreamExtension;
 import org.endeavourhealth.hl7transform.common.ResourceContainer;
 import org.endeavourhealth.hl7transform.common.ResourceTag;
 import org.endeavourhealth.hl7transform.common.ResourceTransformBase;
@@ -76,10 +77,18 @@ public class PatientTransform extends ResourceTransformBase {
 
     public void setId(AdtMessage source, Patient target) throws TransformException, MapperException {
 
-        String patientIdentifierValue = PatientCommon.getPatientIdentifierValue(source, HomertonConstants.primaryPatientIdentifierTypeCode);
+        String patientIdentifierValue = getPatientIdentifierValue(source, HomertonConstants.primaryPatientIdentifierTypeCode);
         UUID patientUuid = mapper.getResourceMapper().mapPatientUuid(HomertonConstants.primaryPatientIdentifierTypeCode, patientIdentifierValue);
 
         target.setId(patientUuid.toString());
+    }
+
+    public static String getPatientIdentifierValue(AdtMessage message, String patientIdentifierTypeCode) {
+        return PatientCommon.getAllPatientIdentifiers(message)
+                .stream()
+                .filter(t -> patientIdentifierTypeCode.equals(t.getIdentifierTypeCode()))
+                .map(t -> t.getId())
+                .collect(StreamExtension.firstOrNullCollector());
     }
 
     private void addIdentifiers(AdtMessage source, Patient target) throws TransformException, MapperException {

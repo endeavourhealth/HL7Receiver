@@ -48,12 +48,4 @@ public class PatientCommon {
 
         return patientIdentifiers;
     }
-
-    public static String getPatientIdentifierValue(AdtMessage message, String patientIdentifierTypeCode) {
-        return getAllPatientIdentifiers(message)
-                .stream()
-                .filter(t -> patientIdentifierTypeCode.equals(t.getIdentifierTypeCode()))
-                .map(t -> t.getId())
-                .collect(StreamExtension.firstOrNullCollector());
-    }
 }
