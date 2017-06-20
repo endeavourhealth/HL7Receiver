@@ -158,7 +158,7 @@ public class PatientTransform extends ResourceTransformBase {
             if (ce == null)
                 continue;
 
-            CodeableConcept ethnicGroup = mapper.getCodeMapper().mapEthnicGroup(ce.getAsString());
+            CodeableConcept ethnicGroup = mapper.getCodeMapper().mapEthnicGroup(ce.getAsString(), null);
 
             if (ethnicGroup != null)
                 target.addExtension(ExtensionConverter.createExtension(FhirExtensionUri.PATIENT_ETHNICITY, ethnicGroup));
