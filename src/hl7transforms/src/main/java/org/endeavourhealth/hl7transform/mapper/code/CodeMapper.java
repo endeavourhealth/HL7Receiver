@@ -76,11 +76,11 @@ public class CodeMapper extends CodeMapperBase {
                         term);
     }
 
-    public CodeableConcept mapReligion(String religion) throws MapperException {
+    public CodeableConcept mapReligion(String code, String term) throws MapperException {
         return this
                 .mapToCodeableConcept(CodeContext.HL7_RELIGION,
-                        "",
-                        religion);
+                        code,
+                        term);
     }
 
     public Encounter.EncounterState mapAccountStatus(String accountStatus) throws MapperException {

@@ -144,7 +144,7 @@ public class PatientTransform extends ResourceTransformBase {
         if (sourcePid.getReligion() == null)
             return;
 
-        CodeableConcept religion = mapper.getCodeMapper().mapReligion(sourcePid.getReligion().getAsString());
+        CodeableConcept religion = mapper.getCodeMapper().mapReligion(sourcePid.getReligion().getAsString(), null);
 
         if (religion != null)
             target.addExtension(ExtensionConverter.createExtension(FhirExtensionUri.PATIENT_RELIGION, religion));
