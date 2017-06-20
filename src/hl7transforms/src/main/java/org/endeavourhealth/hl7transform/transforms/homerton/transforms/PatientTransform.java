@@ -168,7 +168,7 @@ public class PatientTransform extends ResourceTransformBase {
         if (sourcePid.getMaritalStatus() == null)
             return;
 
-        CodeableConcept maritalStatus = mapper.getCodeMapper().mapMaritalStatus(sourcePid.getMaritalStatus().getAsString());
+        CodeableConcept maritalStatus = mapper.getCodeMapper().mapMaritalStatus(null, sourcePid.getMaritalStatus().getAsString());
 
         if (maritalStatus != null)
             target.setMaritalStatus(maritalStatus);

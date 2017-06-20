@@ -69,11 +69,11 @@ public class CodeMapper extends CodeMapperBase {
                         ethnicGroup);
     }
 
-    public CodeableConcept mapMaritalStatus(String maritalStatus) throws MapperException {
+    public CodeableConcept mapMaritalStatus(String code, String term) throws MapperException {
         return this
                 .mapToCodeableConcept(CodeContext.HL7_MARITAL_STATUS,
-                        "",
-                        maritalStatus);
+                        code,
+                        term);
     }
 
     public CodeableConcept mapReligion(String religion) throws MapperException {
