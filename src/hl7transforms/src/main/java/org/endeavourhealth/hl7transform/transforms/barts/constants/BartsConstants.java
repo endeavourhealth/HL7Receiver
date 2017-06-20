@@ -18,28 +18,7 @@ public class BartsConstants {
 
     public static final int bartsXpdPrimaryCarePd1FieldNumber = 4;*/
 
-    public class MileEndConstants {
-        public static final String odsSiteCode = "R1H13";
-
-        //public static final String locationBuilding = "";    // PV1.3.7
-    }
-
-    public class NewhamConstants {
-        public static final String odsSiteCode = "R1HNH";
-
-        //public static final locationBuilding = ""     // PV1.3.7
-    }
-
-    public class RoyalLondonConstants {
-        public static final String odsSiteCode = "R1H12";
-        
-    }
-
-    public class StBartholomewsConstants {
-
-    }
-
-    public class WhippsCrossConstants {
-
-    }
+    public static final String odsSiteCodeMileEnd = "R1H13";
+    public static final String odsSiteCodeNewham = "R1HNH";
+    public static final String odsSiteCodeRoyalLondon = "R1H12";
 }
