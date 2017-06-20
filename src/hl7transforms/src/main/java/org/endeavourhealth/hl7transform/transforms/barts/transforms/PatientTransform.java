@@ -18,6 +18,7 @@ import org.endeavourhealth.hl7transform.common.ResourceTag;
 import org.endeavourhealth.hl7transform.common.ResourceTransformBase;
 import org.endeavourhealth.hl7transform.common.TransformException;
 import org.endeavourhealth.hl7transform.common.converters.DateConverter;
+import org.endeavourhealth.hl7transform.common.transform.PatientCommon;
 import org.endeavourhealth.hl7transform.mapper.Mapper;
 import org.endeavourhealth.hl7transform.mapper.exceptions.MapperException;
 import org.endeavourhealth.hl7transform.transforms.barts.constants.BartsConstants;
@@ -57,7 +58,7 @@ public class PatientTransform extends ResourceTransformBase {
 
         setId(source, target);
 
-        addNames(source, target, mapper);
+        PatientCommon.addNames(source, target, mapper);
         setDateOfBirth(source.getPidSegment(), target);
         setDateOfDeath(source.getPidSegment(), target);
         setSex(source.getPidSegment(), target);
@@ -68,7 +69,7 @@ public class PatientTransform extends ResourceTransformBase {
         addEthnicity(source.getPidSegment(), target);
         addReligion(source.getPidSegment(), target);
         addMaritalStatus(source.getPidSegment(), target);
-        setPrimaryCareProvider(source, target);
+        setPrimaryCareProvider(target);
         addPatientContacts(source, target);
         setManagingOrganization(source, target);
 
@@ -77,55 +78,14 @@ public class PatientTransform extends ResourceTransformBase {
 
     public void setId(AdtMessage source, Patient target) throws TransformException, MapperException {
 
-        String patientIdentifierValue = getPatientIdentifierValue(source, BartsConstants.primaryPatientIdentifierAssigningAuthority);
+        String patientIdentifierValue = PatientCommon.getPatientIdentifierValue(source, BartsConstants.primaryPatientIdentifierAssigningAuthority);
         UUID patientUuid = mapper.getResourceMapper().mapPatientUuid(BartsConstants.primaryPatientIdentifierAssigningAuthority, patientIdentifierValue);
 
         target.setId(patientUuid.toString());
     }
 
-    public static String getPatientIdentifierValue(AdtMessage message, String assigningAuthority) {
-        return PatientTransform.getAllPatientIdentifiers(message)
-                .stream()
-                .filter(t -> assigningAuthority.equals(t.getAssigningAuthority()))
-                .map(t -> t.getId())
-                .collect(StreamExtension.firstOrNullCollector());
-    }
-
-    private static List<XpnInterface> getPatientNames(PidSegment pidSegment) {
-        List<XpnInterface> names = new ArrayList<>();
-
-        if (pidSegment.getPatientNames() != null)
-            names.addAll(pidSegment.getPatientNames());
-
-        if (pidSegment.getPatientAlias() != null)
-            names.addAll(pidSegment.getPatientAlias());
-
-        return names;
-    }
-
-    private static void addNames(AdtMessage source, Patient target, Mapper mapper) throws TransformException, MapperException {
-
-        List<HumanName> names = NameConverter.convert(getPatientNames(source.getPidSegment()), mapper);
-
-        for (HumanName name : names)
-            if (name != null)
-                target.addName(name);
-    }
-
-    public static List<Cx> getAllPatientIdentifiers(AdtMessage source) {
-        List<Cx> patientIdentifiers = new ArrayList<>();
-
-        if (source.getPidSegment().getExternalPatientId() != null)
-            patientIdentifiers.add(source.getPidSegment().getExternalPatientId());
-
-        if (source.getPidSegment().getInternalPatientId() != null)
-            patientIdentifiers.addAll(source.getPidSegment().getInternalPatientId());
-
-        return patientIdentifiers;
-    }
-
     private void addIdentifiers(AdtMessage source, Patient target) throws TransformException, MapperException {
-        List<Cx> identifiers = getAllPatientIdentifiers(source);
+        List<Cx> identifiers = PatientCommon.getAllPatientIdentifiers(source);
 
         List<Identifier> targetIdentifiers = new ArrayList<>();
 
@@ -163,7 +123,7 @@ public class PatientTransform extends ResourceTransformBase {
                         .setText(sourcePid.getTraceStatus().getAsString())));
     }
 
-    private void setPrimaryCareProvider(AdtMessage source, Patient target) throws MapperException, TransformException, ParseException {
+    private void setPrimaryCareProvider(Patient target) throws MapperException, TransformException, ParseException {
 
         if (targetResources.hasResource(ResourceTag.MainPrimaryCareProviderOrganisation)) {
             Reference organisationReference = targetResources.getResourceReference(ResourceTag.MainPrimaryCareProviderOrganisation, Organization.class);
@@ -332,11 +292,6 @@ public class PatientTransform extends ResourceTransformBase {
             contactComponent.addExtension(ExtensionConverter.createStringExtension(FhirExtensionUri.PATIENT_CONTACT_MAIN_LANGUAGE, sourceNk1.getPrimaryLanguage().getAsString()));
 
         target.addContact(contactComponent);
-    }
-
-    public <T> void setIfNotNull(Consumer<T> setter, T item) {
-        if (item != null)
-            setter.accept(item);
     }
 
     private void setManagingOrganization(AdtMessage source, Patient target) throws MapperException, TransformException {
