@@ -59,7 +59,7 @@ public class EpisodeOfCareTransform extends ResourceTransformBase {
 
     protected void setId(AdtMessage source, EpisodeOfCare target) throws TransformException, MapperException {
 
-        String patientIdentifierValue = PatientCommon.getPatientIdentifierValueByAssigningAuth(source, BartsConstants.primaryPatientIdentifierAssigningAuthority);
+        String patientIdentifierValue = PatientTransform.getBartsPrimaryPatientIdentifierValue(source);
         String episodeIdentifierValue = EpisodeOfCareCommon.getEpisodeIdentifierValueByTypeCode(source, BartsConstants.primaryEpisodeIdentifierTypeCode);
 
         UUID episodeUuid = mapper.getResourceMapper().mapEpisodeUuid(

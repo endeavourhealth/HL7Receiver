@@ -80,7 +80,7 @@ public class EncounterTransform extends ResourceTransformBase {
 
     protected void setId(AdtMessage source, Encounter target) throws TransformException, ParseException, MapperException {
 
-        String patientIdentifierValue = PatientCommon.getPatientIdentifierValueByTypeCode(source, HomertonConstants.primaryPatientIdentifierTypeCode);
+        String patientIdentifierValue = PatientTransform.getHomertonPrimaryPatientIdentifierValue(source);
         String episodeIdentifierValue = EpisodeOfCareCommon.getEpisodeIdentifierValueByAssigningAuthority(source, HomertonConstants.primaryEpisodeIdentifierAssigningAuthority);
 
         UUID encounterUuid = mapper.getResourceMapper().mapEncounterUuid(
