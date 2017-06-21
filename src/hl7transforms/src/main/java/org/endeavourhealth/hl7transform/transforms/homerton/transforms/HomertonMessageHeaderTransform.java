@@ -9,20 +9,18 @@ import org.endeavourhealth.hl7transform.common.ResourceTransformBase;
 import org.endeavourhealth.hl7transform.common.transform.MessageHeaderCommon;
 import org.endeavourhealth.hl7transform.mapper.exceptions.MapperException;
 import org.endeavourhealth.hl7transform.mapper.Mapper;
-import org.endeavourhealth.hl7parser.Helpers;
 import org.endeavourhealth.hl7parser.ParseException;
 import org.endeavourhealth.hl7parser.messages.AdtMessage;
 import org.endeavourhealth.hl7parser.segments.MshSegment;
 import org.endeavourhealth.hl7transform.common.TransformException;
 import org.hl7.fhir.instance.model.*;
 
-import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 
-public class MessageHeaderTransform extends ResourceTransformBase {
+public class HomertonMessageHeaderTransform extends ResourceTransformBase {
 
-    public MessageHeaderTransform(Mapper mapper, ResourceContainer targetResources) {
+    public HomertonMessageHeaderTransform(Mapper mapper, ResourceContainer targetResources) {
         super(mapper, targetResources);
     }
 
@@ -100,8 +98,8 @@ public class MessageHeaderTransform extends ResourceTransformBase {
         if (evnSegment.getOperators() == null)
             return;
 
-        PractitionerTransform practitionerTransform = new PractitionerTransform(mapper, targetResources);
-        List<Reference> references = practitionerTransform.createPractitioners(evnSegment.getOperators());
+        HomertonPractitionerTransform homertonPractitionerTransform = new HomertonPractitionerTransform(mapper, targetResources);
+        List<Reference> references = homertonPractitionerTransform.createPractitioners(evnSegment.getOperators());
 
         if (references.size() > 1)
             throw new TransformException("More than one entering user found");

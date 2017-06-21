@@ -22,9 +22,9 @@ import org.hl7.fhir.instance.model.valuesets.LocationPhysicalType;
 
 import java.util.*;
 
-public class LocationTransform extends ResourceTransformBase {
+public class HomertonLocationTransform extends ResourceTransformBase {
 
-    public LocationTransform(Mapper mapper, ResourceContainer targetResources) {
+    public HomertonLocationTransform(Mapper mapper, ResourceContainer targetResources) {
         super(mapper, targetResources);
     }
 

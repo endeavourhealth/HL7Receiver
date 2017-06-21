@@ -27,9 +27,9 @@ import org.hl7.fhir.instance.model.*;
 
 import java.util.*;
 
-public class OrganizationTransform extends ResourceTransformBase {
+public class HomertonOrganizationTransform extends ResourceTransformBase {
 
-    public OrganizationTransform(Mapper mapper, ResourceContainer resourceContainer) {
+    public HomertonOrganizationTransform(Mapper mapper, ResourceContainer resourceContainer) {
         super(mapper, resourceContainer);
     }
 

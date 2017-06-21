@@ -5,7 +5,6 @@ import org.apache.commons.lang3.Validate;
 import org.endeavourhealth.common.fhir.ExtensionConverter;
 import org.endeavourhealth.common.fhir.FhirExtensionUri;
 import org.endeavourhealth.common.fhir.FhirUri;
-import org.endeavourhealth.common.utility.StreamExtension;
 import org.endeavourhealth.hl7transform.common.ResourceContainer;
 import org.endeavourhealth.hl7transform.common.ResourceTag;
 import org.endeavourhealth.hl7transform.common.ResourceTransformBase;
@@ -34,11 +33,11 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
-public class PatientTransform extends ResourceTransformBase {
+public class HomertonPatientTransform extends ResourceTransformBase {
 
-    private static final Logger LOG = LoggerFactory.getLogger(PatientTransform.class);
+    private static final Logger LOG = LoggerFactory.getLogger(HomertonPatientTransform.class);
 
-    public PatientTransform(Mapper mapper, ResourceContainer targetResources) {
+    public HomertonPatientTransform(Mapper mapper, ResourceContainer targetResources) {
         super(mapper, targetResources);
     }
 

@@ -8,7 +8,6 @@ import org.endeavourhealth.hl7transform.common.ResourceContainer;
 import org.endeavourhealth.hl7transform.common.ResourceTag;
 import org.endeavourhealth.hl7transform.common.ResourceTransformBase;
 import org.endeavourhealth.hl7transform.common.transform.EpisodeOfCareCommon;
-import org.endeavourhealth.hl7transform.common.transform.PatientCommon;
 import org.endeavourhealth.hl7transform.transforms.homerton.transforms.constants.HomertonConstants;
 import org.endeavourhealth.hl7transform.common.converters.DateTimeHelper;
 import org.endeavourhealth.hl7transform.common.converters.IdentifierConverter;
@@ -21,11 +20,11 @@ import org.slf4j.LoggerFactory;
 
 import java.util.UUID;
 
-public class EpisodeOfCareTransform extends ResourceTransformBase {
+public class HomertonEpisodeOfCareTransform extends ResourceTransformBase {
 
-    private static final Logger LOG = LoggerFactory.getLogger(EpisodeOfCareTransform.class);
+    private static final Logger LOG = LoggerFactory.getLogger(HomertonEpisodeOfCareTransform.class);
 
-    public EpisodeOfCareTransform(Mapper mapper, ResourceContainer targetResources) {
+    public HomertonEpisodeOfCareTransform(Mapper mapper, ResourceContainer targetResources) {
         super(mapper, targetResources);
     }
 
@@ -58,7 +57,7 @@ public class EpisodeOfCareTransform extends ResourceTransformBase {
 
     protected void setId(AdtMessage source, EpisodeOfCare target) throws TransformException, MapperException {
 
-        String patientIdentifierValue = PatientTransform.getHomertonPrimaryPatientIdentifierValue(source);
+        String patientIdentifierValue = HomertonPatientTransform.getHomertonPrimaryPatientIdentifierValue(source);
         String episodeIdentifierValue = EpisodeOfCareCommon.getEpisodeIdentifierValueByAssigningAuthority(source, HomertonConstants.primaryEpisodeIdentifierAssigningAuthority);
 
         UUID episodeUuid = mapper.getResourceMapper().mapEpisodeUuid(

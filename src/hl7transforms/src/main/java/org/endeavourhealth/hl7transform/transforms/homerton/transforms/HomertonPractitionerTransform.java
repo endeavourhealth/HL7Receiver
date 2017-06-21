@@ -24,9 +24,9 @@ import org.hl7.fhir.instance.model.*;
 import java.util.*;
 import java.util.stream.Collectors;
 
-public class PractitionerTransform extends ResourceTransformBase {
+public class HomertonPractitionerTransform extends ResourceTransformBase {
 
-    public PractitionerTransform(Mapper mapper, ResourceContainer targetResources) {
+    public HomertonPractitionerTransform(Mapper mapper, ResourceContainer targetResources) {
         super(mapper, targetResources);
     }
 
@@ -36,7 +36,7 @@ public class PractitionerTransform extends ResourceTransformBase {
     }
 
     public Practitioner createMainPrimaryCareProviderPractitioner(AdtMessage adtMessage) throws MapperException, TransformException, ParseException {
-        Zpd zpd = OrganizationTransform.getZpd(adtMessage);
+        Zpd zpd = HomertonOrganizationTransform.getZpd(adtMessage);
 
         if (zpd == null)
             return null;

@@ -10,7 +10,6 @@ import org.endeavourhealth.hl7transform.common.ResourceContainer;
 import org.endeavourhealth.hl7transform.common.ResourceTag;
 import org.endeavourhealth.hl7transform.common.ResourceTransformBase;
 import org.endeavourhealth.hl7transform.common.transform.EpisodeOfCareCommon;
-import org.endeavourhealth.hl7transform.common.transform.PatientCommon;
 import org.endeavourhealth.hl7transform.transforms.homerton.transforms.constants.HomertonConstants;
 import org.endeavourhealth.hl7transform.common.converters.DateTimeHelper;
 import org.endeavourhealth.hl7transform.mapper.exceptions.MapperException;
@@ -30,11 +29,11 @@ import org.slf4j.LoggerFactory;
 import java.util.List;
 import java.util.UUID;
 
-public class EncounterTransform extends ResourceTransformBase {
+public class HomertonEncounterTransform extends ResourceTransformBase {
 
-    private static final Logger LOG = LoggerFactory.getLogger(EncounterTransform.class);
+    private static final Logger LOG = LoggerFactory.getLogger(HomertonEncounterTransform.class);
 
-    public EncounterTransform(Mapper mapper, ResourceContainer targetResources) {
+    public HomertonEncounterTransform(Mapper mapper, ResourceContainer targetResources) {
         super(mapper, targetResources);
     }
 
@@ -80,7 +79,7 @@ public class EncounterTransform extends ResourceTransformBase {
 
     protected void setId(AdtMessage source, Encounter target) throws TransformException, ParseException, MapperException {
 
-        String patientIdentifierValue = PatientTransform.getHomertonPrimaryPatientIdentifierValue(source);
+        String patientIdentifierValue = HomertonPatientTransform.getHomertonPrimaryPatientIdentifierValue(source);
         String episodeIdentifierValue = EpisodeOfCareCommon.getEpisodeIdentifierValueByAssigningAuthority(source, HomertonConstants.primaryEpisodeIdentifierAssigningAuthority);
 
         UUID encounterUuid = mapper.getResourceMapper().mapEncounterUuid(
@@ -225,8 +224,8 @@ public class EncounterTransform extends ResourceTransformBase {
         if (xcns == null)
             return;
 
-        PractitionerTransform practitionerTransform = new PractitionerTransform(mapper, targetResources);
-        List<Reference> references = practitionerTransform.createPractitioners(xcns);
+        HomertonPractitionerTransform homertonPractitionerTransform = new HomertonPractitionerTransform(mapper, targetResources);
+        List<Reference> references = homertonPractitionerTransform.createPractitioners(xcns);
 
         for (Reference reference : references) {
             target.addParticipant(new Encounter.EncounterParticipantComponent()
@@ -252,7 +251,7 @@ public class EncounterTransform extends ResourceTransformBase {
 
     private void addLocation(Pl location, Encounter.EncounterLocationStatus encounterLocationStatus, Encounter target) throws MapperException, TransformException, ParseException {
 
-        Reference assignedLocationReference = new LocationTransform(mapper, targetResources)
+        Reference assignedLocationReference = new HomertonLocationTransform(mapper, targetResources)
                 .createHomertonConstituentLocation(location);
 
         if (assignedLocationReference != null) {
@@ -310,8 +309,8 @@ public class EncounterTransform extends ResourceTransformBase {
         if (StringUtils.isEmpty(locationTypeName))
             return null;
 
-        LocationTransform locationTransform = new LocationTransform(mapper, targetResources);
-        return locationTransform.createClassOfLocation(locationTypeName);
+        HomertonLocationTransform homertonLocationTransform = new HomertonLocationTransform(mapper, targetResources);
+        return homertonLocationTransform.createClassOfLocation(locationTypeName);
     }
 
     private static Encounter.EncounterHospitalizationComponent getHospitalisationComponent(Encounter target) {
@@ -333,8 +332,8 @@ public class EncounterTransform extends ResourceTransformBase {
 
         Pv1Segment pv1Segment = sourceMessage.getPv1Segment();
 
-        OrganizationTransform organizationTransform = new OrganizationTransform(mapper, targetResources);
-        Reference reference = organizationTransform.createHomertonHospitalServiceOrganisation(pv1Segment);
+        HomertonOrganizationTransform homertonOrganizationTransform = new HomertonOrganizationTransform(mapper, targetResources);
+        Reference reference = homertonOrganizationTransform.createHomertonHospitalServiceOrganisation(pv1Segment);
 
         if (reference != null)
             target.setServiceProvider(reference);
