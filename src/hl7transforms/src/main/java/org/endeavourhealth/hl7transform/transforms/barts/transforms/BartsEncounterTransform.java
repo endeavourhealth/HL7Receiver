@@ -54,7 +54,7 @@ public class BartsEncounterTransform extends ResourceTransformBase {
         setStatusHistory(source, target);
         setClass(source, target);
         setType(source, target);
-        setAdmissionType(source, target);
+//        setAdmissionType(source, target);
 
         // patient, episodeofcare, serviceprovider, locations, practitioners
         setPatient(target);
@@ -168,17 +168,17 @@ public class BartsEncounterTransform extends ResourceTransformBase {
         }
     }
 
-    private void setAdmissionType(AdtMessage source, Encounter target) throws MapperException {
-        Pv1Segment pv1Segment = source.getPv1Segment();
-
-        CodeableConcept admissionType = this.mapper.getCodeMapper().mapAdmissionType(pv1Segment.getAdmissionType());
-
-        if (admissionType != null) {
-            target.addExtension(new Extension()
-                    .setUrl(FhirExtensionUri.ENCOUNTER_ADMISSION_TYPE)
-                    .setValue(admissionType));
-        }
-    }
+//    private void setAdmissionType(AdtMessage source, Encounter target) throws MapperException {
+//        Pv1Segment pv1Segment = source.getPv1Segment();
+//
+//        CodeableConcept admissionType = this.mapper.getCodeMapper().mapAdmissionType(pv1Segment.getAdmissionType());
+//
+//        if (admissionType != null) {
+//            target.addExtension(new Extension()
+//                    .setUrl(FhirExtensionUri.ENCOUNTER_ADMISSION_TYPE)
+//                    .setValue(admissionType));
+//        }
+//    }
 
     private void setType(AdtMessage source, Encounter target) throws TransformException, MapperException {
 
