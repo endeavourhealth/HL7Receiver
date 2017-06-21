@@ -75,7 +75,7 @@ public class BartsEncounterTransform extends ResourceTransformBase {
     protected void setId(AdtMessage source, Encounter target) throws TransformException, ParseException, MapperException {
 
         String patientIdentifierValue = BartsPatientTransform.getBartsPrimaryPatientIdentifierValue(source);
-        String episodeIdentifierValue = EpisodeOfCareCommon.getEpisodeIdentifierValueByTypeCode(source, BartsConstants.primaryEpisodeIdentifierTypeCode);
+        String episodeIdentifierValue = BartsEpisodeOfCareTransform.getBartsPrimaryEpisodeIdentifierValue(source);
 
         UUID encounterUuid = mapper.getResourceMapper().mapEncounterUuid(
                 null,
