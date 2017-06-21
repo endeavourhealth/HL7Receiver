@@ -9,16 +9,11 @@ public class BartsConstants {
     public static final String primaryEpisodeIdentifierTypeCode = "VISITID";  // PV1.19
     public static final String primaryPractitionerIdentifierTypeCode = "XXXDoNotUse";
 
-    /*
+//    public static final String locationFacility = servicingFacility;   // PV1.3.4
+//    public static final String locationBuilding = "HOMERTON UH";       // PV1.3.7
+//
+//    public static final String primaryPractitionerIdentifierTypeCode = "Personnel Primary Identifier";
+//
+//    public static final int bartsXpdPrimaryCarePd1FieldNumber = 4;
 
-    public static final String locationFacility = servicingFacility;   // PV1.3.4
-    public static final String locationBuilding = "HOMERTON UH";       // PV1.3.7
-
-    public static final String primaryPractitionerIdentifierTypeCode = "Personnel Primary Identifier";
-
-    public static final int bartsXpdPrimaryCarePd1FieldNumber = 4;*/
-
-    public static final String odsSiteCodeMileEnd = "R1H13";
-    public static final String odsSiteCodeNewham = "R1HNH";
-    public static final String odsSiteCodeRoyalLondon = "R1H12";
 }
