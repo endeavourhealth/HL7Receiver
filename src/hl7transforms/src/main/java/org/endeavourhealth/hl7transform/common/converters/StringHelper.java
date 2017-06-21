@@ -2,6 +2,8 @@ package org.endeavourhealth.hl7transform.common.converters;
 
 public class StringHelper {
 
+    private static String[] acronyms = new String[] { "NHS", "GP" };
+
     public static String formatName(String name) {
 
         if (name == null)
@@ -25,8 +27,13 @@ public class StringHelper {
             previousWasLetterOrApostrophe = (Character.isLetter(character)) || (character == '\'');
         }
 
-        result = result.replace(" Nhs ", " NHS ");
-        result = result.replace(" Gp ", " GP ");
+        for (String acronym : acronyms) {
+            String search = acronym.substring(0, 1).toUpperCase() + acronym.substring(1).toLowerCase();
+
+            result = result.replaceFirst("^" + search + " ", acronym + " ");
+            result = result.replaceFirst(" " + search + "$", " " + acronym);
+            result = result.replaceAll(" " + search + " ", " " + acronym + " ");
+        }
 
         return result;
     }
