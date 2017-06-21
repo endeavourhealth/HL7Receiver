@@ -24,11 +24,11 @@ import org.slf4j.LoggerFactory;
 
 import java.util.UUID;
 
-public class EncounterTransform extends ResourceTransformBase {
+public class BartsEncounterTransform extends ResourceTransformBase {
 
-    private static final Logger LOG = LoggerFactory.getLogger(EncounterTransform.class);
+    private static final Logger LOG = LoggerFactory.getLogger(BartsEncounterTransform.class);
 
-    public EncounterTransform(Mapper mapper, ResourceContainer targetResources) {
+    public BartsEncounterTransform(Mapper mapper, ResourceContainer targetResources) {
         super(mapper, targetResources);
     }
 
@@ -74,7 +74,7 @@ public class EncounterTransform extends ResourceTransformBase {
 
     protected void setId(AdtMessage source, Encounter target) throws TransformException, ParseException, MapperException {
 
-        String patientIdentifierValue = PatientTransform.getBartsPrimaryPatientIdentifierValue(source);
+        String patientIdentifierValue = BartsPatientTransform.getBartsPrimaryPatientIdentifierValue(source);
         String episodeIdentifierValue = EpisodeOfCareCommon.getEpisodeIdentifierValueByTypeCode(source, BartsConstants.primaryEpisodeIdentifierTypeCode);
 
         UUID encounterUuid = mapper.getResourceMapper().mapEncounterUuid(
@@ -304,8 +304,8 @@ public class EncounterTransform extends ResourceTransformBase {
         if (StringUtils.isEmpty(locationTypeName))
             return null;
 
-        LocationTransform locationTransform = new LocationTransform(mapper, targetResources);
-        return locationTransform.createClassOfLocation(locationTypeName);
+        BartsLocationTransform bartsLocationTransform = new BartsLocationTransform(mapper, targetResources);
+        return bartsLocationTransform.createClassOfLocation(locationTypeName);
     }
 
     private static Encounter.EncounterHospitalizationComponent getHospitalisationComponent(Encounter target) {

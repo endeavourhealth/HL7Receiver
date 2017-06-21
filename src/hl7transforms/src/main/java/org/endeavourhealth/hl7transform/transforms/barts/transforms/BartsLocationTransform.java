@@ -27,9 +27,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
-public class LocationTransform extends ResourceTransformBase {
+public class BartsLocationTransform extends ResourceTransformBase {
 
-    public LocationTransform(Mapper mapper, ResourceContainer targetResources) {
+    public BartsLocationTransform(Mapper mapper, ResourceContainer targetResources) {
         super(mapper, targetResources);
     }
 

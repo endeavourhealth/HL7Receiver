@@ -22,9 +22,9 @@ import org.hl7.fhir.instance.model.*;
 import java.util.List;
 import java.util.UUID;
 
-public class OrganizationTransform extends ResourceTransformBase {
+public class BartsOrganizationTransform extends ResourceTransformBase {
 
-    public OrganizationTransform(Mapper mapper, ResourceContainer resourceContainer) {
+    public BartsOrganizationTransform(Mapper mapper, ResourceContainer resourceContainer) {
         super(mapper, resourceContainer);
     }
 

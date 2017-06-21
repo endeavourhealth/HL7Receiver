@@ -21,9 +21,9 @@ import org.hl7.fhir.instance.model.*;
 import java.util.List;
 import java.util.UUID;
 
-public class PractitionerTransform extends ResourceTransformBase {
+public class BartsPractitionerTransform extends ResourceTransformBase {
 
-    public PractitionerTransform(Mapper mapper, ResourceContainer targetResources) {
+    public BartsPractitionerTransform(Mapper mapper, ResourceContainer targetResources) {
         super(mapper, targetResources);
     }
 

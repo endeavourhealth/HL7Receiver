@@ -22,9 +22,9 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 
-public class MessageHeaderTransform extends ResourceTransformBase {
+public class BartsMessageHeaderTransform extends ResourceTransformBase {
 
-    public MessageHeaderTransform(Mapper mapper, ResourceContainer targetResources) {
+    public BartsMessageHeaderTransform(Mapper mapper, ResourceContainer targetResources) {
         super(mapper, targetResources);
     }
 

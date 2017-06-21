@@ -11,7 +11,6 @@ import org.endeavourhealth.hl7transform.common.TransformException;
 import org.endeavourhealth.hl7transform.common.converters.DateTimeHelper;
 import org.endeavourhealth.hl7transform.common.converters.IdentifierConverter;
 import org.endeavourhealth.hl7transform.common.transform.EpisodeOfCareCommon;
-import org.endeavourhealth.hl7transform.common.transform.PatientCommon;
 import org.endeavourhealth.hl7transform.mapper.Mapper;
 import org.endeavourhealth.hl7transform.mapper.exceptions.MapperException;
 import org.endeavourhealth.hl7transform.transforms.barts.constants.BartsConstants;
@@ -22,11 +21,11 @@ import org.slf4j.LoggerFactory;
 import java.util.List;
 import java.util.UUID;
 
-public class EpisodeOfCareTransform extends ResourceTransformBase {
+public class BartsEpisodeOfCareTransform extends ResourceTransformBase {
 
-    private static final Logger LOG = LoggerFactory.getLogger(EpisodeOfCareTransform.class);
+    private static final Logger LOG = LoggerFactory.getLogger(BartsEpisodeOfCareTransform.class);
 
-    public EpisodeOfCareTransform(Mapper mapper, ResourceContainer targetResources) {
+    public BartsEpisodeOfCareTransform(Mapper mapper, ResourceContainer targetResources) {
         super(mapper, targetResources);
     }
 
@@ -59,7 +58,7 @@ public class EpisodeOfCareTransform extends ResourceTransformBase {
 
     protected void setId(AdtMessage source, EpisodeOfCare target) throws TransformException, MapperException {
 
-        String patientIdentifierValue = PatientTransform.getBartsPrimaryPatientIdentifierValue(source);
+        String patientIdentifierValue = BartsPatientTransform.getBartsPrimaryPatientIdentifierValue(source);
         String episodeIdentifierValue = EpisodeOfCareCommon.getEpisodeIdentifierValueByTypeCode(source, BartsConstants.primaryEpisodeIdentifierTypeCode);
 
         UUID episodeUuid = mapper.getResourceMapper().mapEpisodeUuid(

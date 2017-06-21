@@ -12,12 +12,12 @@ import org.endeavourhealth.hl7transform.common.TransformException;
 import org.endeavourhealth.hl7transform.mapper.Mapper;
 import org.endeavourhealth.hl7transform.transforms.barts.constants.BartsConstants;
 import org.endeavourhealth.hl7transform.transforms.barts.pretransform.BartsPreTransform;
-import org.endeavourhealth.hl7transform.transforms.barts.transforms.EncounterTransform;
-import org.endeavourhealth.hl7transform.transforms.barts.transforms.EpisodeOfCareTransform;
-import org.endeavourhealth.hl7transform.transforms.barts.transforms.MessageHeaderTransform;
-import org.endeavourhealth.hl7transform.transforms.barts.transforms.OrganizationTransform;
-import org.endeavourhealth.hl7transform.transforms.barts.transforms.PatientTransform;
-import org.endeavourhealth.hl7transform.transforms.barts.transforms.PractitionerTransform;
+import org.endeavourhealth.hl7transform.transforms.barts.transforms.BartsEncounterTransform;
+import org.endeavourhealth.hl7transform.transforms.barts.transforms.BartsEpisodeOfCareTransform;
+import org.endeavourhealth.hl7transform.transforms.barts.transforms.BartsMessageHeaderTransform;
+import org.endeavourhealth.hl7transform.transforms.barts.transforms.BartsOrganizationTransform;
+import org.endeavourhealth.hl7transform.transforms.barts.transforms.BartsPatientTransform;
+import org.endeavourhealth.hl7transform.transforms.barts.transforms.BartsPractitionerTransform;
 import org.hl7.fhir.instance.model.*;
 
 import java.util.Arrays;
@@ -56,14 +56,14 @@ public class BartsAdtTransform extends Transform {
         ///////////////////////////////////////////////////////////////////////////
         // create main hospital organisation
         //
-        OrganizationTransform organizationTransform = new OrganizationTransform(mapper, targetResources);
-        Organization mainHospitalOrganisation = organizationTransform.createBartsManagingOrganisation(sourceMessage);
+        BartsOrganizationTransform bartsOrganizationTransform = new BartsOrganizationTransform(mapper, targetResources);
+        Organization mainHospitalOrganisation = bartsOrganizationTransform.createBartsManagingOrganisation(sourceMessage);
         targetResources.addResource(mainHospitalOrganisation, ResourceTag.MainHospitalOrganisation);
 
         ///////////////////////////////////////////////////////////////////////////
         // create usual gp organisation
         //
-        Organization mainGPOrganisation = organizationTransform.createMainPrimaryCareProviderOrganisation(sourceMessage);
+        Organization mainGPOrganisation = bartsOrganizationTransform.createMainPrimaryCareProviderOrganisation(sourceMessage);
 
         if (mainGPOrganisation != null)
             targetResources.addResource(mainGPOrganisation, ResourceTag.MainPrimaryCareProviderOrganisation);
@@ -71,8 +71,8 @@ public class BartsAdtTransform extends Transform {
         ///////////////////////////////////////////////////////////////////////////
         // create usual gp practitioner
         //
-        PractitionerTransform practitionerTransform = new PractitionerTransform(mapper, targetResources);
-        Practitioner mainGPPractitioner = practitionerTransform.createMainPrimaryCareProviderPractitioner(sourceMessage);
+        BartsPractitionerTransform bartsPractitionerTransform = new BartsPractitionerTransform(mapper, targetResources);
+        Practitioner mainGPPractitioner = bartsPractitionerTransform.createMainPrimaryCareProviderPractitioner(sourceMessage);
 
         if (mainGPPractitioner != null)
             targetResources.addResource(mainGPPractitioner, ResourceTag.MainPrimaryCareProviderPractitioner);
@@ -80,8 +80,8 @@ public class BartsAdtTransform extends Transform {
         ///////////////////////////////////////////////////////////////////////////
         // create patient
         //
-        PatientTransform patientTransform = new PatientTransform(mapper, targetResources);
-        Patient patient = patientTransform.transform(sourceMessage);
+        BartsPatientTransform bartsPatientTransform = new BartsPatientTransform(mapper, targetResources);
+        Patient patient = bartsPatientTransform.transform(sourceMessage);
         targetResources.addResource(patient, ResourceTag.PatientSubject);
 
         ///////////////////////////////////////////////////////////////////////////
@@ -89,8 +89,8 @@ public class BartsAdtTransform extends Transform {
         //
         // and any associated organisations (/services), practitioners, locations
         //
-        EpisodeOfCareTransform episodeOfCareTransform = new EpisodeOfCareTransform(mapper, targetResources);
-        EpisodeOfCare episodeOfCare = episodeOfCareTransform.transform(sourceMessage);
+        BartsEpisodeOfCareTransform bartsEpisodeOfCareTransform = new BartsEpisodeOfCareTransform(mapper, targetResources);
+        EpisodeOfCare episodeOfCare = bartsEpisodeOfCareTransform.transform(sourceMessage);
 
         if (episodeOfCare != null)
             targetResources.addResource(episodeOfCare);
@@ -98,8 +98,8 @@ public class BartsAdtTransform extends Transform {
         ///////////////////////////////////////////////////////////////////////////
         // create encounter
         //
-        EncounterTransform encounterTransform = new EncounterTransform(mapper, targetResources);
-        Encounter encounter = encounterTransform.transform(sourceMessage);
+        BartsEncounterTransform bartsEncounterTransform = new BartsEncounterTransform(mapper, targetResources);
+        Encounter encounter = bartsEncounterTransform.transform(sourceMessage);
 
         if (encounter != null)
             targetResources.addResource(encounter);
@@ -107,8 +107,8 @@ public class BartsAdtTransform extends Transform {
         ///////////////////////////////////////////////////////////////////////////
         // create message header
         //
-        MessageHeaderTransform messageHeaderTransform = new MessageHeaderTransform(mapper, targetResources);
-        MessageHeader messageHeader = messageHeaderTransform.transform(sourceMessage);
+        BartsMessageHeaderTransform bartsMessageHeaderTransform = new BartsMessageHeaderTransform(mapper, targetResources);
+        MessageHeader messageHeader = bartsMessageHeaderTransform.transform(sourceMessage);
         targetResources.addResource(messageHeader);
 
         ///////////////////////////////////////////////////////////////////////////

@@ -5,11 +5,9 @@ import org.apache.commons.lang3.Validate;
 import org.endeavourhealth.common.fhir.ExtensionConverter;
 import org.endeavourhealth.common.fhir.FhirExtensionUri;
 import org.endeavourhealth.common.fhir.FhirUri;
-import org.endeavourhealth.common.utility.StreamExtension;
 import org.endeavourhealth.hl7parser.ParseException;
 import org.endeavourhealth.hl7parser.datatypes.Ce;
 import org.endeavourhealth.hl7parser.datatypes.Cx;
-import org.endeavourhealth.hl7parser.datatypes.XpnInterface;
 import org.endeavourhealth.hl7parser.messages.AdtMessage;
 import org.endeavourhealth.hl7parser.segments.Nk1Segment;
 import org.endeavourhealth.hl7parser.segments.PidSegment;
@@ -33,13 +31,12 @@ import org.slf4j.LoggerFactory;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
-import java.util.function.Consumer;
 
-public class PatientTransform extends ResourceTransformBase {
+public class BartsPatientTransform extends ResourceTransformBase {
 
-    private static final Logger LOG = LoggerFactory.getLogger(PatientTransform.class);
+    private static final Logger LOG = LoggerFactory.getLogger(BartsPatientTransform.class);
 
-    public PatientTransform(Mapper mapper, ResourceContainer targetResources) {
+    public BartsPatientTransform(Mapper mapper, ResourceContainer targetResources) {
         super(mapper, targetResources);
     }
 
