@@ -1,7 +1,5 @@
 package org.endeavourhealth.hl7transform.common;
 
-import com.google.common.collect.Iterables;
-import com.google.common.collect.Lists;
 import org.apache.commons.lang3.Validate;
 import org.endeavourhealth.common.fhir.ReferenceHelper;
 import org.endeavourhealth.common.utility.StreamExtension;
@@ -43,6 +41,13 @@ public class ResourceContainer {
         Resource resource = getResourceSingle(resourceTag, resourceClass);
 
         return ReferenceHelper.createReference(resource.getResourceType(), resource.getId());
+    }
+
+    public List<Reference> getAllReferences() {
+        return resources
+                .stream()
+                .map(t -> ReferenceHelper.createReference(t.getResource().getResourceType(), t.getResource().getId()))
+                .collect(Collectors.toList());
     }
 
     public boolean hasResource(ResourceTag resourceTag) {

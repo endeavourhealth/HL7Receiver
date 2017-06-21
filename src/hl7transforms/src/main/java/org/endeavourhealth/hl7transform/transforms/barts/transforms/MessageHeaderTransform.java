@@ -51,6 +51,7 @@ public class MessageHeaderTransform extends ResourceTransformBase {
         setMessageControlId(mshSegment, target);
         setSequenceNumber(mshSegment, target);
         //setEnterer(evnSegment, target);
+        setData(target);
 
         return target;
     }
@@ -120,6 +121,11 @@ public class MessageHeaderTransform extends ResourceTransformBase {
 //        if (references.size() == 1)
 //            target.setEnterer(references.get(0));
 //    }
+
+    private void setData(MessageHeader target) {
+        for (Reference reference : this.targetResources.getAllReferences())
+            target.addData(reference);
+    }
 
     private void setId(AdtMessage source, MessageHeader target) throws MapperException {
 

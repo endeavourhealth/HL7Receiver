@@ -73,13 +73,6 @@ public class BartsAdtTransform extends Transform {
             targetResources.addResource(mainGPPractitioner, ResourceTag.MainPrimaryCareProviderPractitioner);
 
         ///////////////////////////////////////////////////////////////////////////
-        // create message header
-        //
-        MessageHeaderTransform messageHeaderTransform = new MessageHeaderTransform(mapper, targetResources);
-        MessageHeader messageHeader = messageHeaderTransform.transform(sourceMessage);
-        targetResources.addResource(messageHeader);
-
-        ///////////////////////////////////////////////////////////////////////////
         // create patient
         //
         PatientTransform patientTransform = new PatientTransform(mapper, targetResources);
@@ -96,6 +89,13 @@ public class BartsAdtTransform extends Transform {
 
         if (episodeOfCare != null)
             targetResources.addResource(episodeOfCare);
+
+        ///////////////////////////////////////////////////////////////////////////
+        // create message header
+        //
+        MessageHeaderTransform messageHeaderTransform = new MessageHeaderTransform(mapper, targetResources);
+        MessageHeader messageHeader = messageHeaderTransform.transform(sourceMessage);
+        targetResources.addResource(messageHeader);
 
         ///////////////////////////////////////////////////////////////////////////
         // create bundle
