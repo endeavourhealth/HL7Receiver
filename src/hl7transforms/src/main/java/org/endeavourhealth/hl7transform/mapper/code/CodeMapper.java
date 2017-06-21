@@ -101,11 +101,11 @@ public class CodeMapper extends CodeMapperBase {
                         (r) -> r.getSystem());
     }
 
-    public CodeableConcept mapPatientType(String patientType) throws MapperException {
+    public CodeableConcept mapPatientType(String code, String term) throws MapperException {
         return this
                 .mapToCodeableConcept(CodeContext.HL7_PATIENT_TYPE,
-                        "",
-                        patientType);
+                        code,
+                        term);
     }
 
     public CodeableConcept mapAdmissionType(String admissionType) throws MapperException {

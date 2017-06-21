@@ -184,7 +184,7 @@ public class BartsEncounterTransform extends ResourceTransformBase {
 
         Pv1Segment pv1Segment = source.getPv1Segment();
 
-        CodeableConcept patientType = this.mapper.getCodeMapper().mapPatientType(pv1Segment.getPatientType());
+        CodeableConcept patientType = this.mapper.getCodeMapper().mapPatientType(pv1Segment.getPatientType(), null);
 
         if (patientType != null)
             target.addType(patientType);

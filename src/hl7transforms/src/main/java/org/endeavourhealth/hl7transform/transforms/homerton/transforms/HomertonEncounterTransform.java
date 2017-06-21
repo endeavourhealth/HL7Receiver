@@ -190,7 +190,7 @@ public class HomertonEncounterTransform extends ResourceTransformBase {
 
         Pv1Segment pv1Segment = source.getPv1Segment();
 
-        CodeableConcept patientType = this.mapper.getCodeMapper().mapPatientType(pv1Segment.getPatientType());
+        CodeableConcept patientType = this.mapper.getCodeMapper().mapPatientType(null, pv1Segment.getPatientType());
 
         if (patientType != null)
             target.addType(patientType);
