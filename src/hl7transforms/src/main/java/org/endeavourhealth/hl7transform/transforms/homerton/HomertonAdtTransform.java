@@ -56,21 +56,21 @@ public class HomertonAdtTransform extends Transform {
         ///////////////////////////////////////////////////////////////////////////
         // create main hospital organisation
         //
-        OrganizationTransform organizationTransform = new OrganizationTransform(mapper, targetResources);
-        Organization mainHospitalOrganisation = organizationTransform.createHomertonManagingOrganisation(sourceMessage);
+        HomertonOrganizationTransform homertonOrganizationTransform = new HomertonOrganizationTransform(mapper, targetResources);
+        Organization mainHospitalOrganisation = homertonOrganizationTransform.createHomertonManagingOrganisation(sourceMessage);
         targetResources.addResource(mainHospitalOrganisation, ResourceTag.MainHospitalOrganisation);
 
         ///////////////////////////////////////////////////////////////////////////
         // create main hospital location
         //
-        LocationTransform locationTransform = new LocationTransform(mapper, targetResources);
-        Location location = locationTransform.createHomertonHospitalLocation();
+        HomertonLocationTransform homertonLocationTransform = new HomertonLocationTransform(mapper, targetResources);
+        Location location = homertonLocationTransform.createHomertonHospitalLocation();
         targetResources.addResource(location, ResourceTag.MainHospitalLocation);
 
         ///////////////////////////////////////////////////////////////////////////
         // create usual gp organisation
         //
-        Organization mainGPOrganisation = organizationTransform.createMainPrimaryCareProviderOrganisation(sourceMessage);
+        Organization mainGPOrganisation = homertonOrganizationTransform.createMainPrimaryCareProviderOrganisation(sourceMessage);
 
         if (mainGPOrganisation != null)
             targetResources.addResource(mainGPOrganisation, ResourceTag.MainPrimaryCareProviderOrganisation);
@@ -78,8 +78,8 @@ public class HomertonAdtTransform extends Transform {
         ///////////////////////////////////////////////////////////////////////////
         // create usual gp practitioner
         //
-        PractitionerTransform practitionerTransform = new PractitionerTransform(mapper, targetResources);
-        Practitioner mainGPPractitioner = practitionerTransform.createMainPrimaryCareProviderPractitioner(sourceMessage);
+        HomertonPractitionerTransform homertonPractitionerTransform = new HomertonPractitionerTransform(mapper, targetResources);
+        Practitioner mainGPPractitioner = homertonPractitionerTransform.createMainPrimaryCareProviderPractitioner(sourceMessage);
 
         if (mainGPPractitioner != null)
             targetResources.addResource(mainGPPractitioner, ResourceTag.MainPrimaryCareProviderPractitioner);
@@ -87,8 +87,8 @@ public class HomertonAdtTransform extends Transform {
         ///////////////////////////////////////////////////////////////////////////
         // create patient
         //
-        PatientTransform patientTransform = new PatientTransform(mapper, targetResources);
-        Patient patient = patientTransform.transform(sourceMessage);
+        HomertonPatientTransform homertonPatientTransform = new HomertonPatientTransform(mapper, targetResources);
+        Patient patient = homertonPatientTransform.transform(sourceMessage);
         targetResources.addResource(patient, ResourceTag.PatientSubject);
 
         ///////////////////////////////////////////////////////////////////////////
@@ -96,8 +96,8 @@ public class HomertonAdtTransform extends Transform {
         //
         // and any associated organisations (/services), practitioners, locations
         //
-        EpisodeOfCareTransform episodeOfCareTransform = new EpisodeOfCareTransform(mapper, targetResources);
-        EpisodeOfCare episodeOfCare = episodeOfCareTransform.transform(sourceMessage);
+        HomertonEpisodeOfCareTransform homertonEpisodeOfCareTransform = new HomertonEpisodeOfCareTransform(mapper, targetResources);
+        EpisodeOfCare episodeOfCare = homertonEpisodeOfCareTransform.transform(sourceMessage);
 
         if (episodeOfCare != null)
             targetResources.addResource(episodeOfCare);
@@ -105,8 +105,8 @@ public class HomertonAdtTransform extends Transform {
         ///////////////////////////////////////////////////////////////////////////
         // create encounter
         //
-        EncounterTransform encounterTransform = new EncounterTransform(mapper, targetResources);
-        Encounter encounter = encounterTransform.transform(sourceMessage);
+        HomertonEncounterTransform homertonEncounterTransform = new HomertonEncounterTransform(mapper, targetResources);
+        Encounter encounter = homertonEncounterTransform.transform(sourceMessage);
 
         if (encounter != null)
             targetResources.addResource(encounter);
@@ -114,8 +114,8 @@ public class HomertonAdtTransform extends Transform {
         ///////////////////////////////////////////////////////////////////////////
         // create message header
         //
-        MessageHeaderTransform messageHeaderTransform = new MessageHeaderTransform(mapper, targetResources);
-        MessageHeader messageHeader = messageHeaderTransform.transform(sourceMessage);
+        HomertonMessageHeaderTransform homertonMessageHeaderTransform = new HomertonMessageHeaderTransform(mapper, targetResources);
+        MessageHeader messageHeader = homertonMessageHeaderTransform.transform(sourceMessage);
         targetResources.addResource(messageHeader);
 
         ///////////////////////////////////////////////////////////////////////////
