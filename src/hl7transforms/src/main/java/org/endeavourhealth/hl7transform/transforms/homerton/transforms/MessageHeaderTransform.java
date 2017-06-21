@@ -6,6 +6,7 @@ import org.endeavourhealth.hl7parser.segments.EvnSegment;
 import org.endeavourhealth.hl7transform.common.ResourceContainer;
 import org.endeavourhealth.hl7transform.common.ResourceTag;
 import org.endeavourhealth.hl7transform.common.ResourceTransformBase;
+import org.endeavourhealth.hl7transform.common.transform.MessageHeaderCommon;
 import org.endeavourhealth.hl7transform.mapper.exceptions.MapperException;
 import org.endeavourhealth.hl7transform.mapper.Mapper;
 import org.endeavourhealth.hl7parser.Helpers;
@@ -45,19 +46,17 @@ public class MessageHeaderTransform extends ResourceTransformBase {
         setEvent(mshSegment, target);
         setSource(mshSegment, target);
         setDestination(mshSegment, target);
-        setResponsible(mshSegment, target);
+        setResponsible(target);
         setMessageControlId(mshSegment, target);
         setSequenceNumber(mshSegment, target);
         setEnterer(evnSegment, target);
+        setData(target);
 
         return target;
     }
 
     private void setTimestamp(MshSegment source, MessageHeader target) {
-        LocalDateTime sourceMessageDateTime = source.getDateTimeOfMessage().getLocalDateTime();
-
-        if (sourceMessageDateTime != null)
-            target.setTimestamp(Helpers.toDate(sourceMessageDateTime));
+        MessageHeaderCommon.setTimestamp(target, source.getDateTimeOfMessage().getLocalDateTime());
     }
 
     private void setEvent(MshSegment source, MessageHeader target) throws MapperException, TransformException {
@@ -77,31 +76,23 @@ public class MessageHeaderTransform extends ResourceTransformBase {
     }
 
     private void setSource(MshSegment mshSegment, MessageHeader target) {
-        target.setSource(new MessageHeader.MessageSourceComponent()
-                .setName(mshSegment.getSendingFacility())
-                .setSoftware(mshSegment.getSendingApplication()));
+        MessageHeaderCommon.setSource(target, mshSegment.getSendingFacility(), mshSegment.getSendingApplication());
     }
 
     private void setDestination(MshSegment mshSegment, MessageHeader target) {
-        target.addDestination()
-                .setName(mshSegment.getReceivingFacility())
-                .addExtension(ExtensionConverter.createStringExtension(FhirExtensionUri.EXTENSION_HL7V2_DESTINATION_SOFTWARE, mshSegment.getReceivingApplication()));
+        MessageHeaderCommon.setDestination(target, mshSegment.getReceivingFacility(), mshSegment.getReceivingApplication());
     }
 
-    private void setResponsible(MshSegment mshSegment, MessageHeader target) throws TransformException {
+    private void setResponsible(MessageHeader target) throws TransformException {
         target.setResponsible(this.targetResources.getResourceReference(ResourceTag.MainHospitalOrganisation, Organization.class));
-
     }
 
     private void setMessageControlId(MshSegment source, MessageHeader target) {
-        target.addExtension(ExtensionConverter.createStringExtension(FhirExtensionUri.EXTENSION_HL7V2_MESSAGE_CONTROL_ID, source.getMessageControlId()));
+        MessageHeaderCommon.setMessageControlId(target, source.getMessageControlId());
     }
 
     private void setSequenceNumber(MshSegment source, MessageHeader target) throws ParseException {
-        Integer sequenceNumber = source.getSequenceNumber();
-
-        if (sequenceNumber != null)
-            target.addExtension(ExtensionConverter.createIntegerExtension(FhirExtensionUri.EXTENSION_HL7V2_SEQUENCE_NUMBER, sequenceNumber));
+        MessageHeaderCommon.setSequenceNumber(target, source.getSequenceNumber());
     }
 
     private void setEnterer(EvnSegment evnSegment, MessageHeader target) throws TransformException, MapperException, ParseException {
@@ -117,6 +108,10 @@ public class MessageHeaderTransform extends ResourceTransformBase {
 
         if (references.size() == 1)
             target.setEnterer(references.get(0));
+    }
+
+    private void setData(MessageHeader target) {
+        MessageHeaderCommon.setData(target, this.targetResources.getAllReferences());
     }
 
     private void setId(AdtMessage source, MessageHeader target) throws MapperException {

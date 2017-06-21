@@ -85,13 +85,6 @@ public class HomertonAdtTransform extends Transform {
             targetResources.addResource(mainGPPractitioner, ResourceTag.MainPrimaryCareProviderPractitioner);
 
         ///////////////////////////////////////////////////////////////////////////
-        // create message header
-        //
-        MessageHeaderTransform messageHeaderTransform = new MessageHeaderTransform(mapper, targetResources);
-        MessageHeader messageHeader = messageHeaderTransform.transform(sourceMessage);
-        targetResources.addResource(messageHeader);
-
-        ///////////////////////////////////////////////////////////////////////////
         // create patient
         //
         PatientTransform patientTransform = new PatientTransform(mapper, targetResources);
@@ -117,6 +110,13 @@ public class HomertonAdtTransform extends Transform {
 
         if (encounter != null)
             targetResources.addResource(encounter);
+
+        ///////////////////////////////////////////////////////////////////////////
+        // create message header
+        //
+        MessageHeaderTransform messageHeaderTransform = new MessageHeaderTransform(mapper, targetResources);
+        MessageHeader messageHeader = messageHeaderTransform.transform(sourceMessage);
+        targetResources.addResource(messageHeader);
 
         ///////////////////////////////////////////////////////////////////////////
         // create bundle
