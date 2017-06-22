@@ -36,10 +36,8 @@ public class BartsMessageHeaderTransform extends ResourceTransformBase {
     public MessageHeader transform(AdtMessage sourceMessage) throws ParseException, MapperException, TransformException {
         Validate.notNull(sourceMessage);
         Validate.notNull(sourceMessage.getMshSegment());
-        Validate.notNull(sourceMessage.getEvnSegment());
 
         MshSegment mshSegment = sourceMessage.getMshSegment();
-        EvnSegment evnSegment = sourceMessage.getEvnSegment();
 
         MessageHeader target = new MessageHeader();
 
@@ -51,35 +49,21 @@ public class BartsMessageHeaderTransform extends ResourceTransformBase {
         setResponsible(target);
         setMessageControlId(mshSegment, target);
         setSequenceNumber(mshSegment, target);
-        //setEnterer(evnSegment, target);
         setData(target);
 
         return target;
     }
 
     private void setId(AdtMessage source, MessageHeader target) throws MapperException {
-        UUID id = mapper.getResourceMapper().mapMessageHeaderUuid(source.getMshSegment().getMessageControlId());
-        target.setId(id.toString());
+        MessageHeaderCommon.setId(target, source.getMshSegment().getMessageControlId(), mapper);
     }
 
     private void setTimestamp(MshSegment source, MessageHeader target) {
         MessageHeaderCommon.setTimestamp(target, source.getDateTimeOfMessage().getLocalDateTime());
     }
 
-    private void setEvent(MshSegment source, MessageHeader target) throws MapperException, TransformException {
-
-        CodeableConcept messageType = mapper.getCodeMapper().mapMessageType(source.getMessageType());
-
-        Coding messageTypeCoding = CodeableConceptHelper.getFirstCoding(messageType);
-
-        if (messageTypeCoding == null)
-            throw new TransformException("Could not map message type");
-
-        target.setEvent(new Coding()
-                .setCode(messageTypeCoding.getCode())
-                .setDisplay(messageTypeCoding.getDisplay())
-                .setVersion(source.getVersionId())
-                .setSystem(messageTypeCoding.getSystem()));
+    private void setEvent(MshSegment source, MessageHeader target) throws TransformException, MapperException {
+        MessageHeaderCommon.setEvent(target, source.getMessageType(), source.getVersionId(), mapper);
     }
 
     private void setSource(MshSegment mshSegment, MessageHeader target) {
@@ -101,21 +85,6 @@ public class BartsMessageHeaderTransform extends ResourceTransformBase {
     private void setSequenceNumber(MshSegment source, MessageHeader target) throws ParseException {
         MessageHeaderCommon.setSequenceNumber(target, source.getSequenceNumber());
     }
-
-//    private void setEnterer(EvnSegment evnSegment, MessageHeader target) throws TransformException, MapperException, ParseException {
-//
-//        if (evnSegment.getOperators() == null)
-//            return;
-//
-//        PractitionerTransform practitionerTransform = new PractitionerTransform(mapper, targetResources);
-//        List<Reference> references = practitionerTransform.createPractitioners(evnSegment.getOperators());
-//
-//        if (references.size() > 1)
-//            throw new TransformException("More than one entering user found");
-//
-//        if (references.size() == 1)
-//            target.setEnterer(references.get(0));
-//    }
 
     private void setData(MessageHeader target) {
         MessageHeaderCommon.setData(target, this.targetResources.getAllReferences());

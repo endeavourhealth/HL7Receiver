@@ -53,24 +53,16 @@ public class HomertonMessageHeaderTransform extends ResourceTransformBase {
         return target;
     }
 
+    private void setId(AdtMessage source, MessageHeader target) throws MapperException {
+        MessageHeaderCommon.setId(target, source.getMshSegment().getMessageControlId(), mapper);
+    }
+
     private void setTimestamp(MshSegment source, MessageHeader target) {
         MessageHeaderCommon.setTimestamp(target, source.getDateTimeOfMessage().getLocalDateTime());
     }
 
-    private void setEvent(MshSegment source, MessageHeader target) throws MapperException, TransformException {
-
-        CodeableConcept messageType = mapper.getCodeMapper().mapMessageType(source.getMessageType());
-
-        Coding messageTypeCoding = CodeableConceptHelper.getFirstCoding(messageType);
-
-        if (messageTypeCoding == null)
-            throw new TransformException("Could not map message type");
-
-        target.setEvent(new Coding()
-                .setCode(messageTypeCoding.getCode())
-                .setDisplay(messageTypeCoding.getDisplay())
-                .setVersion(source.getVersionId())
-                .setSystem(messageTypeCoding.getSystem()));
+    private void setEvent(MshSegment source, MessageHeader target) throws TransformException, MapperException {
+        MessageHeaderCommon.setEvent(target, source.getMessageType(), source.getVersionId(), mapper);
     }
 
     private void setSource(MshSegment mshSegment, MessageHeader target) {
@@ -110,11 +102,5 @@ public class HomertonMessageHeaderTransform extends ResourceTransformBase {
 
     private void setData(MessageHeader target) {
         MessageHeaderCommon.setData(target, this.targetResources.getAllReferences());
-    }
-
-    private void setId(AdtMessage source, MessageHeader target) throws MapperException {
-
-        UUID id = mapper.getResourceMapper().mapMessageHeaderUuid(source.getMshSegment().getMessageControlId());
-        target.setId(id.toString());
     }
 }

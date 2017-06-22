@@ -108,32 +108,32 @@ public class CodeMapper extends CodeMapperBase {
                         term);
     }
 
-    public CodeableConcept mapAdmissionType(String admissionType) throws MapperException {
+    public CodeableConcept mapAdmissionType(String code, String term) throws MapperException {
         return this
                 .mapToCodeableConcept(CodeContext.HL7_ADMISSION_TYPE,
-                        "",
-                        admissionType);
+                        code,
+                        term);
     }
 
-    public CodeableConcept mapDischargeDisposition(String dischargeDisposition) throws MapperException {
+    public CodeableConcept mapDischargeDisposition(String code, String term) throws MapperException {
         return this
                 .mapToCodeableConcept(CodeContext.HL7_DISCHARGE_DISPOSITION,
-                        "",
-                        dischargeDisposition);
+                        code,
+                        term);
     }
 
-    public CodeableConcept mapDischargeDestination(String dischargeDestination) throws MapperException {
+    public CodeableConcept mapDischargeDestination(String code, String term) throws MapperException {
         return this
                 .mapToCodeableConcept(CodeContext.HL7_DISCHARGED_TO_LOCATION,
-                        "",
-                        dischargeDestination);
+                        code,
+                        term);
     }
 
-    public CodeableConcept mapMessageType(String messageType) throws MapperException {
+    public CodeableConcept mapMessageType(String code) throws MapperException {
         return this
                 .mapToCodeableConcept(CodeContext.HL7_MESSAGE_TYPE,
-                        messageType,
-                        "");
+                        code,
+                        null);
     }
 
     public String mapPatientDeathIndicator(String patientDeathIndicator) throws MapperException {

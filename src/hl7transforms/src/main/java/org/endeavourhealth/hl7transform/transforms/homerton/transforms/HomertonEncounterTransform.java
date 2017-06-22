@@ -178,7 +178,7 @@ public class HomertonEncounterTransform extends ResourceTransformBase {
     private void setAdmissionType(AdtMessage source, Encounter target) throws MapperException {
         Pv1Segment pv1Segment = source.getPv1Segment();
 
-        CodeableConcept admissionType = this.mapper.getCodeMapper().mapAdmissionType(pv1Segment.getAdmissionType());
+        CodeableConcept admissionType = this.mapper.getCodeMapper().mapAdmissionType(null, pv1Segment.getAdmissionType());
 
         if (admissionType != null) {
             target.addExtension(new Extension()
@@ -279,7 +279,7 @@ public class HomertonEncounterTransform extends ResourceTransformBase {
     private void setDischargeDisposition(AdtMessage source, Encounter target) throws TransformException, MapperException {
         Pv1Segment pv1Segment = source.getPv1Segment();
 
-        CodeableConcept dischargeDisposition = this.mapper.getCodeMapper().mapDischargeDisposition(pv1Segment.getDischargeDisposition());
+        CodeableConcept dischargeDisposition = this.mapper.getCodeMapper().mapDischargeDisposition(null, pv1Segment.getDischargeDisposition());
 
         if (dischargeDisposition != null) {
             Encounter.EncounterHospitalizationComponent hospitalizationComponent = getHospitalisationComponent(target);
@@ -305,7 +305,7 @@ public class HomertonEncounterTransform extends ResourceTransformBase {
 
     public Reference getDischargeLocation(String dischargeLocation) throws MapperException {
 
-        CodeableConcept codeableConcept = mapper.getCodeMapper().mapDischargeDestination(dischargeLocation);
+        CodeableConcept codeableConcept = mapper.getCodeMapper().mapDischargeDestination(null, dischargeLocation);
         String locationTypeName = CodeableConceptHelper.getFirstDisplayTerm(codeableConcept);
 
         if (StringUtils.isEmpty(locationTypeName))
