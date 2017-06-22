@@ -131,8 +131,7 @@ public class HomertonPractitionerTransform extends ResourceTransformBase {
 
         // add to resources collection
 
-        if (!targetResources.hasResource(practitioner.getId()))
-            targetResources.addResource(practitioner);
+        saveToTargetResources(practitioner);
 
         return practitioner;
     }

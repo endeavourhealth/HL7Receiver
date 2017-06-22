@@ -4,8 +4,10 @@ import org.apache.commons.lang3.StringUtils;
 import org.endeavourhealth.common.fhir.CodeableConceptHelper;
 import org.endeavourhealth.common.fhir.FhirExtensionUri;
 import org.endeavourhealth.common.fhir.ReferenceHelper;
+import org.endeavourhealth.common.fhir.schema.EncounterParticipantType;
 import org.endeavourhealth.hl7parser.ParseException;
 import org.endeavourhealth.hl7parser.datatypes.Pl;
+import org.endeavourhealth.hl7parser.datatypes.Xcn;
 import org.endeavourhealth.hl7parser.messages.AdtMessage;
 import org.endeavourhealth.hl7parser.segments.EvnSegment;
 import org.endeavourhealth.hl7parser.segments.Pv1Segment;
@@ -24,6 +26,7 @@ import org.hl7.fhir.instance.model.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.List;
 import java.util.UUID;
 
 public class BartsEncounterTransform extends ResourceTransformBase {
@@ -56,14 +59,13 @@ public class BartsEncounterTransform extends ResourceTransformBase {
         setStatusHistory(source, target);
         setClass(source, target);
         setType(source, target);
-//        setAdmissionType(source, target);
 
         // patient, episodeofcare, serviceprovider, locations, practitioners
         setPatient(target);
         setEpisodeOfCare(target);
         setServiceProvider(source, target);
         setLocations(source, target);
-//        setParticipants(source, target);
+        setParticipants(source, target);
 
         // hospitalisation component
         setReason(source, target);
@@ -187,38 +189,36 @@ public class BartsEncounterTransform extends ResourceTransformBase {
         target.addEpisodeOfCare(ReferenceHelper.createReferenceExternal(episodeOfCare));
     }
 
-//    private void setParticipants(AdtMessage source, Encounter target) throws TransformException, ParseException, MapperException {
-//
-//        Pv1Segment pv1Segment = source.getPv1Segment();
-//
-//        addParticipantComponent(pv1Segment.getAttendingDoctor(), EncounterParticipantType.ATTENDER, target);
-//        addParticipantComponent(pv1Segment.getReferringDoctor(), EncounterParticipantType.REFERRER, target);
-//        addParticipantComponent(pv1Segment.getConsultingDoctor(), EncounterParticipantType.CONSULTANT, target);
-//        addParticipantComponent(pv1Segment.getAdmittingDoctor(), EncounterParticipantType.ADMITTER, target);
-//        addParticipantComponent(pv1Segment.getOtherHealthcareProvider(), EncounterParticipantType.SECONDARY_PERFORMER, target);
-//    }
+    private void setParticipants(AdtMessage source, Encounter target) throws TransformException, ParseException, MapperException {
 
-//    private void addParticipantComponent(
-//            List<Xcn> xcns,
-//            EncounterParticipantType type,
-//            Encounter target) throws TransformException, MapperException, ParseException {
-//
-//        if (xcns == null)
-//            return;
-//
-//        PractitionerTransform practitionerTransform = new PractitionerTransform(mapper, targetResources);
-//        List<Reference> references = practitionerTransform.createPractitioners(xcns);
-//
-//        for (Reference reference : references) {
-//            target.addParticipant(new Encounter.EncounterParticipantComponent()
-//                    .addType(new CodeableConcept()
-//                            .addCoding(new Coding()
-//                                    .setCode(type.getCode())
-//                                    .setDisplay(type.getDescription())
-//                                    .setSystem(type.getSystem())))
-//                    .setIndividual(reference));
-//        }
-//    }
+        Pv1Segment pv1Segment = source.getPv1Segment();
+
+        addParticipantComponent(pv1Segment.getAttendingDoctor(), EncounterParticipantType.ATTENDER, target);
+        addParticipantComponent(pv1Segment.getReferringDoctor(), EncounterParticipantType.REFERRER, target);
+    }
+
+    private void addParticipantComponent(
+            List<Xcn> xcns,
+            EncounterParticipantType type,
+            Encounter target) throws TransformException, MapperException, ParseException {
+
+        if (xcns == null)
+            return;
+
+        BartsPractitionerTransform practitionerTransform = new BartsPractitionerTransform(mapper, targetResources);
+
+        for (Xcn xcn : xcns) {
+            Practitioner practitioner = practitionerTransform.createPractitioner(xcn);
+
+            target.addParticipant(new Encounter.EncounterParticipantComponent()
+                    .addType(new CodeableConcept()
+                            .addCoding(new Coding()
+                                    .setCode(type.getCode())
+                                    .setDisplay(type.getDescription())
+                                    .setSystem(type.getSystem())))
+                    .setIndividual(ReferenceHelper.createReference(ResourceType.Practitioner, practitioner.getId())));
+        }
+    }
 
     private void setLocations(AdtMessage source, Encounter target) throws TransformException, MapperException, ParseException {
 

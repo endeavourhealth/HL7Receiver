@@ -1,6 +1,7 @@
 package org.endeavourhealth.hl7transform.transforms.barts.transforms;
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Validate;
 import org.endeavourhealth.common.fhir.FhirUri;
 import org.endeavourhealth.common.fhir.ReferenceHelper;
 import org.endeavourhealth.common.utility.StreamExtension;
@@ -12,6 +13,8 @@ import org.endeavourhealth.hl7transform.common.ResourceContainer;
 import org.endeavourhealth.hl7transform.common.ResourceTag;
 import org.endeavourhealth.hl7transform.common.ResourceTransformBase;
 import org.endeavourhealth.hl7transform.common.TransformException;
+import org.endeavourhealth.hl7transform.common.converters.AddressConverter;
+import org.endeavourhealth.hl7transform.common.converters.IdentifierConverter;
 import org.endeavourhealth.hl7transform.common.converters.NameConverter;
 import org.endeavourhealth.hl7transform.mapper.Mapper;
 import org.endeavourhealth.hl7transform.mapper.exceptions.MapperException;
@@ -30,6 +33,74 @@ public class BartsPractitionerTransform extends ResourceTransformBase {
     @Override
     public ResourceType getResourceType() {
         return ResourceType.Practitioner;
+    }
+
+    public Practitioner createPractitioner(Xcn xcn) throws TransformException, MapperException, ParseException {
+        if (xcn == null)
+            return null;
+
+        Practitioner practitioner = new Practitioner();
+
+        // name
+        if (StringUtils.isBlank(xcn.getFamilyName()))
+            throw new TransformException("Family name is blank");
+
+        practitioner.setName(NameConverter.convert(xcn, mapper));
+
+        // identifiers
+        Identifier identifier = IdentifierConverter.createIdentifier(xcn, getResourceType(), mapper);
+
+        if (identifier != null)
+            practitioner.addIdentifier(identifier);
+
+        // role - determine and set role
+        Organization roleOrganisation = calculcatePractitionerRoleOrganisation(xcn, practitioner);
+
+        if (roleOrganisation != null) {
+            practitioner
+                    .addPractitionerRole(new Practitioner.PractitionerPractitionerRoleComponent()
+                            .setManagingOrganization(ReferenceHelper.createReferenceExternal(roleOrganisation)));
+        }
+
+        // id
+        UUID id = getId(practitioner, roleOrganisation);
+        practitioner.setId(id.toString());
+
+        // add to resources collection
+        saveToTargetResources(practitioner);
+
+        return practitioner;
+    }
+
+    private Organization calculcatePractitionerRoleOrganisation(Xcn xcn, Practitioner target) throws TransformException {
+
+//        // role - collect identifiers to help determine role
+//        String gmcCode = getIdentifierValue(practitioner.getIdentifier(), FhirUri.IDENTIFIER_SYSTEM_GMC_NUMBER);
+//        String primaryPersonnelId = getIdentifierValue(practitioner.getIdentifier(), FhirUri.IDENTIFIER_SYSTEM_HOMERTON_PRIMARY_PRACTITIONER_ID);
+//
+//        if (StringUtils.isNotEmpty(gmcCode)) {
+//            // looks like a gp practitioner
+//
+//            Organization primaryCareProviderOrganisation = targetResources.getResourceSingleOrNull(ResourceTag.MainPrimaryCareProviderOrganisation, Organization.class);
+//            Practitioner primaryCareProviderPractitioner = targetResources.getResourceSingleOrNull(ResourceTag.MainPrimaryCareProviderPractitioner, Practitioner.class);
+//
+//            // attempt match on primary care provider practitioner GMC code
+//            if (primaryCareProviderPractitioner != null) {
+//                String primaryCarePractitionerGmcCode = getIdentifierValue(primaryCareProviderPractitioner.getIdentifier(), FhirUri.IDENTIFIER_SYSTEM_GMC_NUMBER);
+//
+//                if (StringUtils.isNotEmpty(primaryCarePractitionerGmcCode))
+//                    if (gmcCode.equalsIgnoreCase(primaryCarePractitionerGmcCode))
+//                        return primaryCareProviderOrganisation;
+//            }
+//
+//        } else if (StringUtils.isNotEmpty(primaryPersonnelId)) {
+//
+//            return this.targetResources.getResourceSingle(ResourceTag.MainHospitalOrganisation, Organization.class);
+//        }
+//
+//        // else could not match
+
+        return null;
     }
 
     public Practitioner createMainPrimaryCareProviderPractitioner(AdtMessage adtMessage) throws MapperException, TransformException, ParseException {
