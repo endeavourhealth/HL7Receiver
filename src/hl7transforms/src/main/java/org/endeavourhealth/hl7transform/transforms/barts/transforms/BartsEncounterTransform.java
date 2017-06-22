@@ -165,6 +165,8 @@ public class BartsEncounterTransform extends ResourceTransformBase {
         otherPatientClass = StringUtils.defaultString(otherPatientClass).trim().toUpperCase();
 
         switch (otherPatientClass) {
+            case "RECURRING": return "recurring";
+
             default: throw new TransformException(otherPatientClass + " other patient class not recognised");
         }
     }
