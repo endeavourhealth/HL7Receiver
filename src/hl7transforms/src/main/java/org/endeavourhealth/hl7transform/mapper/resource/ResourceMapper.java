@@ -138,14 +138,12 @@ public class ResourceMapper {
         return this.mapper.mapScopedResourceUuid(ResourceType.Encounter, identifier);
     }
 
-    public UUID mapOrganisationUuid(String parentOdsCode, String parentName, String serviceName) throws MapperException {
+    public UUID mapOrganisationUuidForHospitalService(String parentOdsCode, String serviceName) throws MapperException {
         Validate.notBlank(parentOdsCode, "parentOdsCode");
-        Validate.notBlank(parentName, "parentName");
         Validate.notBlank(serviceName, "serviceName");
 
         String identifier = ResourceMapParameters.create()
                 .put("ParentOdsCode", parentOdsCode)
-                .put("ParentName", parentName)
                 .put("ServiceName", serviceName)
                 .createIdentifyingString();
 
@@ -239,7 +237,7 @@ public class ResourceMapper {
             resourceMapParameters.put("PatientIdentifierTypeCode", patientIdentifierTypeCode);
 
         if (StringUtils.isNotEmpty(patientIdentifierAssigningAuthority))
-            resourceMapParameters.put("PatientIdentifierAssigningAuthority", patientIdentifierTypeCode);
+            resourceMapParameters.put("PatientIdentifierAssigningAuthority", patientIdentifierAssigningAuthority);
 
         resourceMapParameters.put("PatientIdentifierValue", patientIdentifierValue);
 

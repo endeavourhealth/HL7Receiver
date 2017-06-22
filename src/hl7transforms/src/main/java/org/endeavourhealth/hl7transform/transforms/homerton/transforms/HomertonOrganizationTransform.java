@@ -74,7 +74,7 @@ public class HomertonOrganizationTransform extends ResourceTransformBase {
             organization.addAddress(hospitalServiceAddress);
         }
 
-        UUID id = mapper.getResourceMapper().mapOrganisationUuid(HomertonConstants.odsCode, managingOrganisation.getName(), hospitalServiceName);
+        UUID id = mapper.getResourceMapper().mapOrganisationUuidForHospitalService(HomertonConstants.odsCode, hospitalServiceName);
         organization.setId(id.toString());
 
         targetResources.addResource(organization);

@@ -61,7 +61,7 @@ public class BartsEncounterTransform extends ResourceTransformBase {
         // patient, episodeofcare, serviceprovider, locations, practitioners
         setPatient(target);
         setEpisodeOfCare(target);
-//        setServiceProvider(source, target);
+        setServiceProvider(source, target);
         setLocations(source, target);
 //        setParticipants(source, target);
 
@@ -321,14 +321,14 @@ public class BartsEncounterTransform extends ResourceTransformBase {
         hospitalizationComponent.setAdmitSource(new CodeableConcept().setText(source.getAdmitSource()));
     }
 
-//    private void setServiceProvider(AdtMessage sourceMessage, Encounter target) throws TransformException, MapperException, ParseException {
-//
-//        Pv1Segment pv1Segment = sourceMessage.getPv1Segment();
-//
-//        OrganizationTransform organizationTransform = new OrganizationTransform(mapper, targetResources);
-//        Reference reference = organizationTransform.createHomertonHospitalServiceOrganisation(pv1Segment);
-//
-//        if (reference != null)
-//            target.setServiceProvider(reference);
-//    }
+    private void setServiceProvider(AdtMessage sourceMessage, Encounter target) throws TransformException, MapperException, ParseException {
+
+        Pv1Segment pv1Segment = sourceMessage.getPv1Segment();
+
+        BartsOrganizationTransform organizationTransform = new BartsOrganizationTransform(mapper, targetResources);
+        Reference reference = organizationTransform.createBartsHospitalServiceOrganisation(pv1Segment);
+
+        if (reference != null)
+            target.setServiceProvider(reference);
+    }
 }
