@@ -5,6 +5,7 @@ import org.endeavourhealth.common.fhir.CodeableConceptHelper;
 import org.endeavourhealth.common.fhir.FhirExtensionUri;
 import org.endeavourhealth.common.fhir.ReferenceHelper;
 import org.endeavourhealth.hl7parser.ParseException;
+import org.endeavourhealth.hl7parser.datatypes.Pl;
 import org.endeavourhealth.hl7parser.messages.AdtMessage;
 import org.endeavourhealth.hl7parser.segments.EvnSegment;
 import org.endeavourhealth.hl7parser.segments.Pv1Segment;
@@ -15,6 +16,7 @@ import org.endeavourhealth.hl7transform.common.ResourceTransformBase;
 import org.endeavourhealth.hl7transform.common.TransformException;
 import org.endeavourhealth.hl7transform.common.converters.DateTimeHelper;
 import org.endeavourhealth.hl7transform.common.transform.EpisodeOfCareCommon;
+import org.endeavourhealth.hl7transform.common.transform.LocationCommon;
 import org.endeavourhealth.hl7transform.mapper.Mapper;
 import org.endeavourhealth.hl7transform.mapper.exceptions.MapperException;
 import org.endeavourhealth.hl7transform.transforms.barts.constants.BartsConstants;
@@ -60,7 +62,7 @@ public class BartsEncounterTransform extends ResourceTransformBase {
         setPatient(target);
         setEpisodeOfCare(target);
 //        setServiceProvider(source, target);
-//        setLocations(source, target);
+        setLocations(source, target);
 //        setParticipants(source, target);
 
         // hospitalisation component
@@ -233,28 +235,25 @@ public class BartsEncounterTransform extends ResourceTransformBase {
 //        }
 //    }
 
-//    private void setLocations(AdtMessage source, Encounter target) throws TransformException, MapperException, ParseException {
-//
-//        Pv1Segment pv1Segment = source.getPv1Segment();
-//
-//        if (pv1Segment.getAssignedPatientLocation() != null)
-//            addLocation(pv1Segment.getAssignedPatientLocation(), Encounter.EncounterLocationStatus.ACTIVE, target);
-//
-//        if (pv1Segment.getPriorPatientLocation() != null)
-//            addLocation(pv1Segment.getPriorPatientLocation(), Encounter.EncounterLocationStatus.COMPLETED, target);
-//    }
+    private void setLocations(AdtMessage source, Encounter target) throws TransformException, MapperException, ParseException {
 
-//    private void addLocation(Pl location, Encounter.EncounterLocationStatus encounterLocationStatus, Encounter target) throws MapperException, TransformException, ParseException {
-//
-//        Reference assignedLocationReference = new LocationTransform(mapper, targetResources)
-//                .createHomertonConstituentLocation(location);
-//
-//        if (assignedLocationReference != null) {
-//            target.addLocation(new Encounter.EncounterLocationComponent()
-//                    .setLocation(assignedLocationReference)
-//                    .setStatus(encounterLocationStatus));
-//        }
-//    }
+        Pv1Segment pv1Segment = source.getPv1Segment();
+
+        if (pv1Segment.getAssignedPatientLocation() != null)
+            addLocation(pv1Segment.getAssignedPatientLocation(), Encounter.EncounterLocationStatus.ACTIVE, target);
+    }
+
+    private void addLocation(Pl location, Encounter.EncounterLocationStatus encounterLocationStatus, Encounter target) throws MapperException, TransformException, ParseException {
+
+        Reference assignedLocationReference = new BartsLocationTransform(mapper, targetResources)
+                .createBartsConstituentLocation(location);
+
+        if (assignedLocationReference != null) {
+            target.addLocation(new Encounter.EncounterLocationComponent()
+                    .setLocation(assignedLocationReference)
+                    .setStatus(encounterLocationStatus));
+        }
+    }
 
     private static void setReason(AdtMessage sourceMessage, Encounter target) throws TransformException {
 
@@ -304,8 +303,7 @@ public class BartsEncounterTransform extends ResourceTransformBase {
         if (StringUtils.isEmpty(locationTypeName))
             return null;
 
-        BartsLocationTransform bartsLocationTransform = new BartsLocationTransform(mapper, targetResources);
-        return bartsLocationTransform.createClassOfLocation(locationTypeName);
+        return LocationCommon.createClassOfLocation(locationTypeName, mapper);
     }
 
     private static Encounter.EncounterHospitalizationComponent getHospitalisationComponent(Encounter target) {

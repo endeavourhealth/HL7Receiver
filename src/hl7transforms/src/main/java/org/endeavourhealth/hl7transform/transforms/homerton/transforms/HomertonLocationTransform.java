@@ -86,9 +86,7 @@ public class HomertonLocationTransform extends ResourceTransformBase {
 
             Location fhirLocation = createLocationFromPl(locationName, locationPhysicalType, locationParentNames, directParentLocation, topParentBuildingLocation, managingOrganisationReference);
 
-            if (fhirLocation != null)
-                if (!targetResources.hasResource(fhirLocation.getId()))
-                    targetResources.addResource(fhirLocation, null);
+            saveToTargetResources(fhirLocation);
 
             directParentLocation = fhirLocation;
             locationParentNames.add(0, locationName);
@@ -107,27 +105,12 @@ public class HomertonLocationTransform extends ResourceTransformBase {
         if (HomertonConstants.locationBuildingStLeonards.equalsIgnoreCase(StringUtils.trim(source.getBuilding()))) {
             Location stLeonardsHospitalLocation = createStLeonardsHospitalLocation();
 
-            if (stLeonardsHospitalLocation != null)
-                if (!targetResources.hasResource(stLeonardsHospitalLocation.getId()))
-                    targetResources.addResource(stLeonardsHospitalLocation, null);
+            saveToTargetResources(stLeonardsHospitalLocation);
 
             return stLeonardsHospitalLocation;
         }
 
         throw new TransformException("Building of " + source.getBuilding() + " not recognised");
-    }
-
-    public Reference createClassOfLocation(String classOfLocationName) throws MapperException {
-        Validate.notEmpty(classOfLocationName, "classOfLocationName");
-
-        Location location = new Location()
-                .setName(classOfLocationName)
-                .setMode(Location.LocationMode.KIND);
-
-        UUID id = mapper.getResourceMapper().mapClassOfLocationUuid(classOfLocationName);
-        location.setId(id.toString());
-
-        return ReferenceHelper.createReference(ResourceType.Location, classOfLocationName);
     }
 
     private Location createLocationFromPl(String locationName,
@@ -152,7 +135,7 @@ public class HomertonLocationTransform extends ResourceTransformBase {
                 .addAll(locationParentNames)
                 .build();
 
-        UUID id = getId(getOdsSiteCode(topParentBuildingLocation), topParentBuildingLocation.getName(), locationHierarchy);
+        UUID id = LocationCommon.getId(mapper, LocationCommon.getOdsSiteCode(topParentBuildingLocation), topParentBuildingLocation.getName(), locationHierarchy);
         location.setId(id.toString());
 
         location.setName(locationName);
@@ -169,25 +152,8 @@ public class HomertonLocationTransform extends ResourceTransformBase {
         if (managingOrganisation != null)
             location.setManagingOrganization(managingOrganisation);
 
-        setPartOf(location, directParentLocation);
+        LocationCommon.setPartOf(location, directParentLocation);
 
         return location;
-    }
-
-    public UUID getId(String parentOdsSiteCode, String parentLocationName, List<String> locationNames) throws MapperException {
-        return mapper.getResourceMapper().mapLocationUuid(parentOdsSiteCode, parentLocationName, locationNames);
-    }
-
-    private static String getOdsSiteCode(Location location) {
-        return location
-                .getIdentifier()
-                .stream()
-                .filter(t -> FhirUri.IDENTIFIER_SYSTEM_ODS_CODE.equals(t.getSystem()))
-                .map(t -> t.getValue())
-                .collect(StreamExtension.firstOrNullCollector());
-    }
-
-    private static void setPartOf(Location location, Location partOfLocation) {
-        location.setPartOf(ReferenceHelper.createReference(ResourceType.Location, partOfLocation.getId()));
     }
 }

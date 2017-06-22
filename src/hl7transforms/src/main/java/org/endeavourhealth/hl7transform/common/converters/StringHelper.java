@@ -2,7 +2,7 @@ package org.endeavourhealth.hl7transform.common.converters;
 
 public class StringHelper {
 
-    private static String[] acronyms = new String[] { "NHS", "GP" };
+    private static String[] acronyms = new String[] { "NHS", "GP", "BLT" };
 
     public static String formatName(String name) {
 

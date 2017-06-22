@@ -78,12 +78,4 @@ public class BartsOrganizationTransform extends ResourceTransformBase {
 
         return result;
     }
-
-    private CodeableConcept getOrganisationType(OrganisationType organisationType) {
-        return new CodeableConcept()
-                .addCoding(new Coding()
-                        .setSystem(organisationType.getSystem())
-                        .setDisplay(organisationType.getDescription())
-                        .setCode(organisationType.getCode()));
-    }
 }

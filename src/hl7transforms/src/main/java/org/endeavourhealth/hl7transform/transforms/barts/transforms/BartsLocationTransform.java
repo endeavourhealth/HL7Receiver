@@ -14,8 +14,10 @@ import org.endeavourhealth.hl7transform.common.ResourceTag;
 import org.endeavourhealth.hl7transform.common.ResourceTransformBase;
 import org.endeavourhealth.hl7transform.common.TransformException;
 import org.endeavourhealth.hl7transform.common.transform.LocationCommon;
+import org.endeavourhealth.hl7transform.common.transform.OrganisationCommon;
 import org.endeavourhealth.hl7transform.mapper.Mapper;
 import org.endeavourhealth.hl7transform.mapper.exceptions.MapperException;
+import org.endeavourhealth.hl7transform.mapper.organisation.MappedOrganisation;
 import org.endeavourhealth.hl7transform.transforms.barts.constants.BartsConstants;
 import org.hl7.fhir.instance.model.Location;
 import org.hl7.fhir.instance.model.Organization;
@@ -38,115 +40,85 @@ public class BartsLocationTransform extends ResourceTransformBase {
         return ResourceType.Location;
     }
 
-//    public Location createHomertonHospitalLocation() throws MapperException, TransformException, ParseException {
-//        Reference mainHospitalOrganisationReference = this.targetResources.getResourceReference(ResourceTag.MainHospitalOrganisation, Organization.class);
-//        return LocationCommon.createMainHospitalLocation(BartsConstants.odsSiteCodeHomerton, mainHospitalOrganisationReference, mapper);
-//    }
-//
-//    public Location createStLeonardsHospitalLocation() throws MapperException, TransformException, ParseException {
-//        Reference mainHospitalOrganisationReference = this.targetResources.getResourceReference(ResourceTag.MainHospitalOrganisation, Organization.class);
-//        return LocationCommon.createMainHospitalLocation(HomertonConstants.odsSiteCodeStLeonards, mainHospitalOrganisationReference, mapper);
-//    }
+    public Location createBartsFacility(String facility, Reference managingOrganisationReference) throws MapperException, TransformException {
+        String odsSiteCode = mapper.getCodeMapper().mapLocationFacility(facility);
 
-//    public Reference createHomertonConstituentLocation(Pl source) throws MapperException, TransformException, ParseException {
-//
-//        if (StringUtils.isBlank(source.getFacility())
-//                && StringUtils.isBlank(source.getBuilding())
-//                && StringUtils.isBlank(source.getPointOfCare())
-//                && StringUtils.isBlank(source.getRoom())
-//                && StringUtils.isBlank(source.getBed()))
-//            return null;
-//
-//        if (!HomertonConstants.locationFacility.equalsIgnoreCase(StringUtils.trim(source.getFacility())))
-//            throw new TransformException("Location facility of " + source.getFacility() + " not recognised");
-//
-//        if (StringUtils.isBlank(source.getBuilding())
-//                && StringUtils.isBlank(source.getPointOfCare())
-//                && StringUtils.isBlank(source.getRoom())
-//                && StringUtils.isBlank(source.getBed()))
-//            return null;
-//
-//        Reference managingOrganisationReference = targetResources.getResourceReference(ResourceTag.MainHospitalOrganisation, Organization.class);
-//        Location topParentBuildingLocation = getHospitalBuildingLocation(source);
-//
-//        List<Pair<LocationPhysicalType, String>> locations = new ArrayList<>();
-//
-//        if (StringUtils.isNotBlank(source.getPointOfCare()))
-//            locations.add(new Pair<>(LocationPhysicalType.WI, source.getPointOfCare()));
-//
-//        if (StringUtils.isNotBlank(source.getRoom()))
-//            locations.add(new Pair<>(LocationPhysicalType.RO, source.getRoom()));
-//
-//        if (StringUtils.isNotBlank(source.getBed()))
-//            locations.add(new Pair<>(LocationPhysicalType.BD, source.getBed()));
-//
-//        Location directParentLocation = topParentBuildingLocation;
-//
-//        List<String> locationParentNames = new ArrayList<>();
-//
-//        for (int i = 0; i < locations.size(); i++) {
-//
-//            String locationName = locations.get(i).getValue();
-//            LocationPhysicalType locationPhysicalType = locations.get(i).getKey();
-//
-//            Location fhirLocation = createLocationFromPl(locationName, locationPhysicalType, locationParentNames, directParentLocation, topParentBuildingLocation, managingOrganisationReference);
-//
-//            if (fhirLocation != null)
-//                if (!targetResources.hasResource(fhirLocation.getId()))
-//                    targetResources.addResource(fhirLocation, null);
-//
-//            directParentLocation = fhirLocation;
-//            locationParentNames.add(0, locationName);
-//        }
-//
-//        return ReferenceHelper.createReference(ResourceType.Location, directParentLocation.getId());
-//    }
+        if (StringUtils.isBlank(odsSiteCode))
+            throw new TransformException("odsSiteCode not found for location facility " + facility);
 
-//    public Location getHospitalBuildingLocation(Pl source) throws TransformException, ParseException, MapperException {
-//        if (StringUtils.isBlank(source.getBuilding()))
-//            return targetResources.getResourceSingle(ResourceTag.MainHospitalLocation, Location.class);
-//
-//        if (HomertonConstants.locationBuildingHomerton.equalsIgnoreCase(StringUtils.trim(source.getBuilding())))
-//            return targetResources.getResourceSingle(ResourceTag.MainHospitalLocation, Location.class);
-//
-//        if (HomertonConstants.locationBuildingStLeonards.equalsIgnoreCase(StringUtils.trim(source.getBuilding()))) {
-//            Location stLeonardsHospitalLocation = createStLeonardsHospitalLocation();
-//
-//            if (stLeonardsHospitalLocation != null)
-//                if (!targetResources.hasResource(stLeonardsHospitalLocation.getId()))
-//                    targetResources.addResource(stLeonardsHospitalLocation, null);
-//
-//            return stLeonardsHospitalLocation;
-//        }
-//
-//        throw new TransformException("Building of " + source.getBuilding() + " not recognised");
-//    }
+        Location location = LocationCommon.createMainHospitalLocation(odsSiteCode, managingOrganisationReference, mapper);
 
-    public Reference createClassOfLocation(String classOfLocationName) throws MapperException {
-        Validate.notEmpty(classOfLocationName, "classOfLocationName");
+        if (location == null)
+            throw new TransformException("Could not create location facility " + facility);
 
-        Location location = new Location()
-                .setName(classOfLocationName)
-                .setMode(Location.LocationMode.KIND);
+        saveToTargetResources(location);
 
-        UUID id = mapper.getResourceMapper().mapClassOfLocationUuid(classOfLocationName);
-        location.setId(id.toString());
+        return location;
+    }
 
-        return ReferenceHelper.createReference(ResourceType.Location, classOfLocationName);
+    public Reference createBartsConstituentLocation(Pl source) throws MapperException, TransformException, ParseException {
+        if (StringUtils.isBlank(source.getFacility())
+                && StringUtils.isBlank(source.getBuilding())
+                && StringUtils.isBlank(source.getPointOfCare())
+                && StringUtils.isBlank(source.getRoom())
+                && StringUtils.isBlank(source.getBed()))
+            return null;
+
+        Reference managingOrganisationReference = targetResources.getResourceReference(ResourceTag.MainHospitalOrganisation, Organization.class);
+        Location locationFacility = createBartsFacility(source.getFacility(), managingOrganisationReference);
+
+        if (StringUtils.isBlank(source.getBuilding())
+                && StringUtils.isBlank(source.getPointOfCare())
+                && StringUtils.isBlank(source.getRoom())
+                && StringUtils.isBlank(source.getBed()))
+            return ReferenceHelper.createReference(ResourceType.Location, locationFacility.getId());
+
+        List<Pair<LocationPhysicalType, String>> locations = new ArrayList<>();
+
+        if (StringUtils.isNotBlank(source.getBuilding()))
+            locations.add(new Pair<>(LocationPhysicalType.BU, source.getBuilding()));
+
+        if (StringUtils.isNotBlank(source.getPointOfCare()))
+            locations.add(new Pair<>(LocationPhysicalType.WI, source.getPointOfCare()));
+
+        if (StringUtils.isNotBlank(source.getRoom()))
+            locations.add(new Pair<>(LocationPhysicalType.RO, source.getRoom()));
+
+        if (StringUtils.isNotBlank(source.getBed()))
+            locations.add(new Pair<>(LocationPhysicalType.BD, source.getBed()));
+
+        Location directParentLocation = locationFacility;
+
+        List<String> locationParentNames = new ArrayList<>();
+
+        for (int i = 0; i < locations.size(); i++) {
+
+            String locationName = locations.get(i).getValue();
+            LocationPhysicalType locationPhysicalType = locations.get(i).getKey();
+
+            Location fhirLocation = createLocationFromPl(locationName, locationPhysicalType, locationParentNames, directParentLocation, locationFacility, managingOrganisationReference);
+
+            saveToTargetResources(fhirLocation);
+
+            directParentLocation = fhirLocation;
+            locationParentNames.add(0, locationName);
+        }
+
+        return ReferenceHelper.createReference(ResourceType.Location, directParentLocation.getId());
     }
 
     private Location createLocationFromPl(String locationName,
                                           LocationPhysicalType locationPhysicalType,
                                           List<String> locationParentNames,
                                           Location directParentLocation,
-                                          Location topParentBuildingLocation,
+                                          Location topParentFacilityLocation,
                                           Reference managingOrganisation) throws MapperException, TransformException, ParseException {
 
         Validate.notNull(locationName, "locationName");
         Validate.notNull(locationPhysicalType, "locationPhysicalType");
         Validate.notNull(locationParentNames, "locationParentNames");
         Validate.notNull(directParentLocation, "directParentLocation");
-        Validate.notNull(topParentBuildingLocation, "topParentBuildingLocation");
+        Validate.notNull(topParentFacilityLocation, "topParentFacilityLocation");
         Validate.notNull(managingOrganisation, "managingOrganisation");
 
         Location location = new Location();
@@ -157,7 +129,7 @@ public class BartsLocationTransform extends ResourceTransformBase {
                 .addAll(locationParentNames)
                 .build();
 
-        UUID id = getId(getOdsSiteCode(topParentBuildingLocation), topParentBuildingLocation.getName(), locationHierarchy);
+        UUID id = LocationCommon.getId(mapper, LocationCommon.getOdsSiteCode(topParentFacilityLocation), topParentFacilityLocation.getName(), locationHierarchy);
         location.setId(id.toString());
 
         location.setName(locationName);
@@ -165,7 +137,7 @@ public class BartsLocationTransform extends ResourceTransformBase {
         location.setDescription(String.join(", ", ImmutableList
                 .<String>builder()
                 .addAll(locationHierarchy)
-                .add(topParentBuildingLocation.getName())
+                .add(topParentFacilityLocation.getName())
                 .build()));
 
         location.setMode(Location.LocationMode.INSTANCE);
@@ -174,25 +146,8 @@ public class BartsLocationTransform extends ResourceTransformBase {
         if (managingOrganisation != null)
             location.setManagingOrganization(managingOrganisation);
 
-        setPartOf(location, directParentLocation);
+        LocationCommon.setPartOf(location, directParentLocation);
 
         return location;
-    }
-
-    public UUID getId(String parentOdsSiteCode, String parentLocationName, List<String> locationNames) throws MapperException {
-        return mapper.getResourceMapper().mapLocationUuid(parentOdsSiteCode, parentLocationName, locationNames);
-    }
-
-    private static String getOdsSiteCode(Location location) {
-        return location
-                .getIdentifier()
-                .stream()
-                .filter(t -> FhirUri.IDENTIFIER_SYSTEM_ODS_CODE.equals(t.getSystem()))
-                .map(t -> t.getValue())
-                .collect(StreamExtension.firstOrNullCollector());
-    }
-
-    private static void setPartOf(Location location, Location partOfLocation) {
-        location.setPartOf(ReferenceHelper.createReference(ResourceType.Location, partOfLocation.getId()));
     }
 }

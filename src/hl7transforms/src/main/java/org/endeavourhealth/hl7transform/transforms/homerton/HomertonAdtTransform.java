@@ -8,6 +8,7 @@ import org.endeavourhealth.hl7parser.segments.SegmentName;
 import org.endeavourhealth.hl7transform.Transform;
 import org.endeavourhealth.hl7transform.common.ResourceTag;
 import org.endeavourhealth.hl7transform.common.TransformException;
+import org.endeavourhealth.hl7transform.common.converters.StringHelper;
 import org.endeavourhealth.hl7transform.transforms.homerton.parser.zsegments.*;
 import org.endeavourhealth.hl7transform.transforms.homerton.pretransform.HomertonPreTransform;
 import org.endeavourhealth.hl7transform.transforms.homerton.transforms.*;

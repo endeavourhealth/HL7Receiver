@@ -159,4 +159,10 @@ public class CodeMapper extends CodeMapperBase {
                 .mapToCode(CodeContext.HL7_ENCOUNTER_ID_TYPE_AND_ASSIGNING_AUTH,
                         assigningAuth + "^" + encounterIdentifierType);
     }
+
+    public String mapLocationFacility(String locationFacility) throws MapperException {
+        return this
+                .mapToCode(CodeContext.HL7_LOCATION_FACILITY,
+                        locationFacility);
+    }
 }

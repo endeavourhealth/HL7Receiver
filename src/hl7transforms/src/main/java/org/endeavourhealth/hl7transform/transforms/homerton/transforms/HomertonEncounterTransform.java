@@ -10,6 +10,7 @@ import org.endeavourhealth.hl7transform.common.ResourceContainer;
 import org.endeavourhealth.hl7transform.common.ResourceTag;
 import org.endeavourhealth.hl7transform.common.ResourceTransformBase;
 import org.endeavourhealth.hl7transform.common.transform.EpisodeOfCareCommon;
+import org.endeavourhealth.hl7transform.common.transform.LocationCommon;
 import org.endeavourhealth.hl7transform.transforms.homerton.transforms.constants.HomertonConstants;
 import org.endeavourhealth.hl7transform.common.converters.DateTimeHelper;
 import org.endeavourhealth.hl7transform.mapper.exceptions.MapperException;
@@ -310,8 +311,7 @@ public class HomertonEncounterTransform extends ResourceTransformBase {
         if (StringUtils.isEmpty(locationTypeName))
             return null;
 
-        HomertonLocationTransform homertonLocationTransform = new HomertonLocationTransform(mapper, targetResources);
-        return homertonLocationTransform.createClassOfLocation(locationTypeName);
+        return LocationCommon.createClassOfLocation(locationTypeName, mapper);
     }
 
     private static Encounter.EncounterHospitalizationComponent getHospitalisationComponent(Encounter target) {
