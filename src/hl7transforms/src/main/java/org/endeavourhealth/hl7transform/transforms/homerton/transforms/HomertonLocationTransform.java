@@ -135,7 +135,7 @@ public class HomertonLocationTransform extends ResourceTransformBase {
                 .addAll(locationParentNames)
                 .build();
 
-        UUID id = LocationCommon.getId(mapper, LocationCommon.getOdsSiteCode(topParentBuildingLocation), topParentBuildingLocation.getName(), locationHierarchy);
+        UUID id = LocationCommon.getId(mapper, LocationCommon.getOdsSiteCode(topParentBuildingLocation), locationHierarchy);
         location.setId(id.toString());
 
         location.setName(locationName);

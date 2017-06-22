@@ -129,7 +129,7 @@ public class BartsLocationTransform extends ResourceTransformBase {
                 .addAll(locationParentNames)
                 .build();
 
-        UUID id = LocationCommon.getId(mapper, LocationCommon.getOdsSiteCode(topParentFacilityLocation), topParentFacilityLocation.getName(), locationHierarchy);
+        UUID id = LocationCommon.getId(mapper, LocationCommon.getOdsSiteCode(topParentFacilityLocation), locationHierarchy);
         location.setId(id.toString());
 
         location.setName(locationName);

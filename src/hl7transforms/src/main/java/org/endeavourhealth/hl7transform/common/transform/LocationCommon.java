@@ -60,8 +60,8 @@ public class LocationCommon {
         return ReferenceHelper.createReference(ResourceType.Location, classOfLocationName);
     }
 
-    public static UUID getId(Mapper mapper, String parentOdsSiteCode, String parentLocationName, List<String> locationNames) throws MapperException {
-        return mapper.getResourceMapper().mapLocationUuid(parentOdsSiteCode, parentLocationName, locationNames);
+    public static UUID getId(Mapper mapper, String parentOdsSiteCode, List<String> locationNames) throws MapperException {
+        return mapper.getResourceMapper().mapLocationUuid(parentOdsSiteCode, locationNames);
     }
 
     public static void setPartOf(Location location, Location partOfLocation) {

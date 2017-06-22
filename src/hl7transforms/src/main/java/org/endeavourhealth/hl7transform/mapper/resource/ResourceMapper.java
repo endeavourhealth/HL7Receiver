@@ -152,14 +152,12 @@ public class ResourceMapper {
         return this.mapper.mapScopedResourceUuid(ResourceType.Organization, identifier);
     }
 
-    public UUID mapLocationUuid(String parentOdsSiteCode, String parentLocationName, List<String> locationNames) throws MapperException {
+    public UUID mapLocationUuid(String parentOdsSiteCode, List<String> locationNames) throws MapperException {
         Validate.notBlank(parentOdsSiteCode, "parentOdsSiteCode");
-        Validate.notBlank(parentLocationName, "parentLocationName");
         Validate.notBlank(StringUtils.join(locationNames, ""), "locationNames");
 
         String identifier = ResourceMapParameters.create()
                 .put("ParentOdsSiteCode", parentOdsSiteCode)
-                .put("ParentLocationName", parentLocationName.replace(".", ""))
                 .put("LocationNameHierarchy", locationNames)
                 .createIdentifyingString();
 
