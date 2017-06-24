@@ -71,7 +71,6 @@ public class BartsEncounterTransform extends ResourceTransformBase {
         setReason(source, target);
         setDischargeDisposition(source, target);
         setDischargeDestination(source, target);
-        setAdmitSource(source.getPv1Segment(), target);
 
         return target;
     }
@@ -298,14 +297,6 @@ public class BartsEncounterTransform extends ResourceTransformBase {
             target.setHospitalization(new Encounter.EncounterHospitalizationComponent());
 
         return target.getHospitalization();
-    }
-
-    private static void setAdmitSource(Pv1Segment source, Encounter target) throws TransformException {
-        if (StringUtils.isBlank(source.getAdmitSource()))
-            return;
-
-        Encounter.EncounterHospitalizationComponent hospitalizationComponent = getHospitalisationComponent(target);
-        hospitalizationComponent.setAdmitSource(new CodeableConcept().setText(source.getAdmitSource()));
     }
 
     private void setServiceProvider(AdtMessage sourceMessage, Encounter target) throws TransformException, MapperException, ParseException {
