@@ -34,7 +34,7 @@ public abstract class MessageHeaderCommon {
         Coding messageTypeCoding = CodeableConceptHelper.getFirstCoding(messageTypeCode);
 
         if (messageTypeCoding == null)
-            throw new TransformException("Could not map message type");
+            throw new TransformException("Could not map message type '" + messageType + "'");
 
         target.setEvent(new Coding()
                 .setCode(messageTypeCoding.getCode())

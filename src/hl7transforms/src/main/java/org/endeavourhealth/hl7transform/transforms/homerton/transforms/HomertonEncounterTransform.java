@@ -6,9 +6,11 @@ import org.endeavourhealth.common.fhir.FhirExtensionUri;
 import org.endeavourhealth.common.fhir.ReferenceHelper;
 import org.endeavourhealth.common.fhir.schema.EncounterParticipantType;
 import org.endeavourhealth.hl7parser.segments.EvnSegment;
+import org.endeavourhealth.hl7parser.segments.MshSegment;
 import org.endeavourhealth.hl7transform.common.ResourceContainer;
 import org.endeavourhealth.hl7transform.common.ResourceTag;
 import org.endeavourhealth.hl7transform.common.ResourceTransformBase;
+import org.endeavourhealth.hl7transform.common.transform.EncounterCommon;
 import org.endeavourhealth.hl7transform.common.transform.EpisodeOfCareCommon;
 import org.endeavourhealth.hl7transform.common.transform.LocationCommon;
 import org.endeavourhealth.hl7transform.transforms.homerton.transforms.constants.HomertonConstants;
@@ -74,6 +76,9 @@ public class HomertonEncounterTransform extends ResourceTransformBase {
         setDischargeDisposition(source, target);
         setDischargeDestination(source, target);
         setAdmitSource(source.getPv1Segment(), target);
+
+        // messagetype extension
+        addMessageTypeExtension(source, target);
 
         return target;
     }
@@ -338,5 +343,12 @@ public class HomertonEncounterTransform extends ResourceTransformBase {
 
         if (reference != null)
             target.setServiceProvider(reference);
+    }
+
+    private void addMessageTypeExtension(AdtMessage sourceMessage, Encounter target) throws MapperException, TransformException {
+
+        MshSegment mshSegment = sourceMessage.getMshSegment();
+
+        target.addExtension(EncounterCommon.createMessageTypeExtension(mshSegment.getMessageType(), mshSegment.getVersionId(), mapper));
     }
 }

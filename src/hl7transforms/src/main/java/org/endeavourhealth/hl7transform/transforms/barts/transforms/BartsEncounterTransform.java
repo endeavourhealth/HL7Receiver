@@ -2,6 +2,7 @@ package org.endeavourhealth.hl7transform.transforms.barts.transforms;
 
 import org.apache.commons.lang3.StringUtils;
 import org.endeavourhealth.common.fhir.CodeableConceptHelper;
+import org.endeavourhealth.common.fhir.ExtensionConverter;
 import org.endeavourhealth.common.fhir.FhirExtensionUri;
 import org.endeavourhealth.common.fhir.ReferenceHelper;
 import org.endeavourhealth.common.fhir.schema.EncounterParticipantType;
@@ -10,6 +11,7 @@ import org.endeavourhealth.hl7parser.datatypes.Pl;
 import org.endeavourhealth.hl7parser.datatypes.Xcn;
 import org.endeavourhealth.hl7parser.messages.AdtMessage;
 import org.endeavourhealth.hl7parser.segments.EvnSegment;
+import org.endeavourhealth.hl7parser.segments.MshSegment;
 import org.endeavourhealth.hl7parser.segments.Pv1Segment;
 import org.endeavourhealth.hl7parser.segments.Pv2Segment;
 import org.endeavourhealth.hl7transform.common.ResourceContainer;
@@ -17,6 +19,7 @@ import org.endeavourhealth.hl7transform.common.ResourceTag;
 import org.endeavourhealth.hl7transform.common.ResourceTransformBase;
 import org.endeavourhealth.hl7transform.common.TransformException;
 import org.endeavourhealth.hl7transform.common.converters.DateTimeHelper;
+import org.endeavourhealth.hl7transform.common.transform.EncounterCommon;
 import org.endeavourhealth.hl7transform.common.transform.EpisodeOfCareCommon;
 import org.endeavourhealth.hl7transform.common.transform.LocationCommon;
 import org.endeavourhealth.hl7transform.mapper.Mapper;
@@ -71,6 +74,9 @@ public class BartsEncounterTransform extends ResourceTransformBase {
         setReason(source, target);
         setDischargeDisposition(source, target);
         setDischargeDestination(source, target);
+
+        // messagetype
+        addMessageTypeExtension(source, target);
 
         return target;
     }
@@ -308,5 +314,12 @@ public class BartsEncounterTransform extends ResourceTransformBase {
 
         if (reference != null)
             target.setServiceProvider(reference);
+    }
+
+    private void addMessageTypeExtension(AdtMessage sourceMessage, Encounter target) throws MapperException, TransformException {
+
+        MshSegment mshSegment = sourceMessage.getMshSegment();
+
+        target.addExtension(EncounterCommon.createMessageTypeExtension(mshSegment.getMessageType(), mshSegment.getVersionId(), mapper));
     }
 }
