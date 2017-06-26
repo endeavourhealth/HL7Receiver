@@ -10,6 +10,7 @@ import org.endeavourhealth.hl7parser.messages.AdtMessage;
 import org.endeavourhealth.hl7transform.common.ResourceContainer;
 import org.endeavourhealth.hl7transform.common.ResourceTag;
 import org.endeavourhealth.hl7transform.common.ResourceTransformBase;
+import org.endeavourhealth.hl7transform.common.transform.PractitionerCommon;
 import org.endeavourhealth.hl7transform.transforms.homerton.parser.zdatatypes.Zpd;
 import org.endeavourhealth.hl7transform.transforms.homerton.transforms.constants.HomertonConstants;
 import org.endeavourhealth.hl7transform.common.converters.AddressConverter;
@@ -110,7 +111,7 @@ public class HomertonPractitionerTransform extends ResourceTransformBase {
             Identifier identifier = IdentifierConverter.createIdentifier(source, getResourceType(), mapper);
 
             if (identifier != null)
-                if (!hasIdentifierWithSystem(practitioner.getIdentifier(), identifier.getSystem()))
+                if (!PractitionerCommon.hasIdentifierWithSystem(practitioner.getIdentifier(), identifier.getSystem()))
                     practitioner.addIdentifier(identifier);
         }
 
@@ -139,8 +140,8 @@ public class HomertonPractitionerTransform extends ResourceTransformBase {
     private Organization calculcatePractitionerRoleOrganisationFromDuplicates(Practitioner practitioner, List<Xcn> sources) throws TransformException {
 
         // role - collect identifiers to help determine role
-        String gmcCode = getIdentifierValue(practitioner.getIdentifier(), FhirUri.IDENTIFIER_SYSTEM_GMC_NUMBER);
-        String primaryPersonnelId = getIdentifierValue(practitioner.getIdentifier(), FhirUri.IDENTIFIER_SYSTEM_HOMERTON_PRIMARY_PRACTITIONER_ID);
+        String gmcCode = PractitionerCommon.getIdentifierValue(practitioner.getIdentifier(), FhirUri.IDENTIFIER_SYSTEM_GMC_NUMBER);
+        String primaryPersonnelId = PractitionerCommon.getIdentifierValue(practitioner.getIdentifier(), FhirUri.IDENTIFIER_SYSTEM_HOMERTON_PRIMARY_PRACTITIONER_ID);
         String postcode = sources  // practitioner's organisation postcode is stored as a identifier
                 .stream()
                 .filter(t -> StringUtils.isNotEmpty(t.getId()))
@@ -156,7 +157,7 @@ public class HomertonPractitionerTransform extends ResourceTransformBase {
 
             // attempt match on primary care provider practitioner GMC code
             if (primaryCareProviderPractitioner != null) {
-                String primaryCarePractitionerGmcCode = getIdentifierValue(primaryCareProviderPractitioner.getIdentifier(), FhirUri.IDENTIFIER_SYSTEM_GMC_NUMBER);
+                String primaryCarePractitionerGmcCode = PractitionerCommon.getIdentifierValue(primaryCareProviderPractitioner.getIdentifier(), FhirUri.IDENTIFIER_SYSTEM_GMC_NUMBER);
 
                 if (StringUtils.isNotEmpty(primaryCarePractitionerGmcCode))
                     if (gmcCode.equalsIgnoreCase(primaryCarePractitionerGmcCode))
@@ -188,44 +189,17 @@ public class HomertonPractitionerTransform extends ResourceTransformBase {
         return null;
     }
 
-    private boolean hasIdentifierWithSystem(List<Identifier> identifiers, String system) {
-        return (getIdentifierWithSystem(identifiers, system) != null);
-    }
-
-    private String getIdentifierValue(List<Identifier> identifiers, String system) {
-        Identifier identifier = getIdentifierWithSystem(identifiers, system);
-
-        if (identifier == null)
-            return null;
-
-        return identifier.getValue();
-    }
-
-    private String getGmcCode(Practitioner practitioner) {
-        return getIdentifierValue(practitioner.getIdentifier(), FhirUri.IDENTIFIER_SYSTEM_GMC_NUMBER);
-    }
-
-    private Identifier getIdentifierWithSystem(List<Identifier> identifiers, String system) {
-        if (identifiers == null)
-            return null;
-
-        return identifiers
-                .stream()
-                .filter(t -> t.getSystem().equalsIgnoreCase(system))
-                .collect(StreamExtension.firstOrNullCollector());
-    }
-
     private UUID getId(Practitioner source, Organization sourceRoleOrganisation) throws MapperException, TransformException {
 
         String forename = NameConverter.getFirstGivenName(source.getName());
         String surname = NameConverter.getFirstSurname(source.getName());
-        String primaryIdentifier = getIdentifierValue(source.getIdentifier(), FhirUri.IDENTIFIER_SYSTEM_HOMERTON_PRIMARY_PRACTITIONER_ID);
-        String consultantCode = getIdentifierValue(source.getIdentifier(), FhirUri.IDENTIFIER_SYSTEM_CONSULTANT_CODE);
-        String gmcCode = getIdentifierValue(source.getIdentifier(), FhirUri.IDENTIFIER_SYSTEM_GMC_NUMBER);
+        String primaryIdentifier = PractitionerCommon.getIdentifierValue(source.getIdentifier(), FhirUri.IDENTIFIER_SYSTEM_HOMERTON_PRIMARY_PRACTITIONER_ID);
+        String consultantCode = PractitionerCommon.getIdentifierValue(source.getIdentifier(), FhirUri.IDENTIFIER_SYSTEM_CONSULTANT_CODE);
+        String gmcCode = PractitionerCommon.getIdentifierValue(source.getIdentifier(), FhirUri.IDENTIFIER_SYSTEM_GMC_NUMBER);
         String odsCode = "";
 
         if (sourceRoleOrganisation != null)
-            odsCode = getIdentifierValue(sourceRoleOrganisation.getIdentifier(), FhirUri.IDENTIFIER_SYSTEM_ODS_CODE);
+            odsCode = PractitionerCommon.getIdentifierValue(sourceRoleOrganisation.getIdentifier(), FhirUri.IDENTIFIER_SYSTEM_ODS_CODE);
 
         if (StringUtils.isBlank(primaryIdentifier)
             && StringUtils.isBlank(consultantCode)

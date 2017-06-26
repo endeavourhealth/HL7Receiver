@@ -1,10 +1,8 @@
 package org.endeavourhealth.hl7transform.transforms.barts.transforms;
 
 import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.Validate;
 import org.endeavourhealth.common.fhir.FhirUri;
 import org.endeavourhealth.common.fhir.ReferenceHelper;
-import org.endeavourhealth.common.utility.StreamExtension;
 import org.endeavourhealth.hl7parser.ParseException;
 import org.endeavourhealth.hl7parser.datatypes.Xcn;
 import org.endeavourhealth.hl7parser.messages.AdtMessage;
@@ -13,9 +11,9 @@ import org.endeavourhealth.hl7transform.common.ResourceContainer;
 import org.endeavourhealth.hl7transform.common.ResourceTag;
 import org.endeavourhealth.hl7transform.common.ResourceTransformBase;
 import org.endeavourhealth.hl7transform.common.TransformException;
-import org.endeavourhealth.hl7transform.common.converters.AddressConverter;
 import org.endeavourhealth.hl7transform.common.converters.IdentifierConverter;
 import org.endeavourhealth.hl7transform.common.converters.NameConverter;
+import org.endeavourhealth.hl7transform.common.transform.PractitionerCommon;
 import org.endeavourhealth.hl7transform.mapper.Mapper;
 import org.endeavourhealth.hl7transform.mapper.exceptions.MapperException;
 import org.endeavourhealth.hl7transform.transforms.barts.constants.BartsConstants;
@@ -54,7 +52,7 @@ public class BartsPractitionerTransform extends ResourceTransformBase {
             practitioner.addIdentifier(identifier);
 
         // role - determine and set role
-        Organization roleOrganisation = calculcatePractitionerRoleOrganisation(xcn, practitioner);
+        Organization roleOrganisation = calculcatePractitionerRoleOrganisation(practitioner);
 
         if (roleOrganisation != null) {
             practitioner
@@ -72,33 +70,36 @@ public class BartsPractitionerTransform extends ResourceTransformBase {
         return practitioner;
     }
 
-    private Organization calculcatePractitionerRoleOrganisation(Xcn xcn, Practitioner target) throws TransformException {
+    private Organization calculcatePractitionerRoleOrganisation(Practitioner target) throws TransformException {
 
-//        // role - collect identifiers to help determine role
-//        String gmcCode = getIdentifierValue(practitioner.getIdentifier(), FhirUri.IDENTIFIER_SYSTEM_GMC_NUMBER);
-//        String primaryPersonnelId = getIdentifierValue(practitioner.getIdentifier(), FhirUri.IDENTIFIER_SYSTEM_HOMERTON_PRIMARY_PRACTITIONER_ID);
-//
-//        if (StringUtils.isNotEmpty(gmcCode)) {
-//            // looks like a gp practitioner
-//
-//            Organization primaryCareProviderOrganisation = targetResources.getResourceSingleOrNull(ResourceTag.MainPrimaryCareProviderOrganisation, Organization.class);
-//            Practitioner primaryCareProviderPractitioner = targetResources.getResourceSingleOrNull(ResourceTag.MainPrimaryCareProviderPractitioner, Practitioner.class);
-//
-//            // attempt match on primary care provider practitioner GMC code
-//            if (primaryCareProviderPractitioner != null) {
-//                String primaryCarePractitionerGmcCode = getIdentifierValue(primaryCareProviderPractitioner.getIdentifier(), FhirUri.IDENTIFIER_SYSTEM_GMC_NUMBER);
-//
-//                if (StringUtils.isNotEmpty(primaryCarePractitionerGmcCode))
-//                    if (gmcCode.equalsIgnoreCase(primaryCarePractitionerGmcCode))
-//                        return primaryCareProviderOrganisation;
-//            }
-//
-//        } else if (StringUtils.isNotEmpty(primaryPersonnelId)) {
-//
-//            return this.targetResources.getResourceSingle(ResourceTag.MainHospitalOrganisation, Organization.class);
-//        }
-//
-//        // else could not match
+        // role - collect identifiers to help determine role
+        String bartsOrgNumber = PractitionerCommon.getIdentifierValue(target.getIdentifier(), FhirUri.IDENTIFIER_SYSTEM_BARTS_ORG_DR_NUMBER);
+        String bartsPersonnelId = PractitionerCommon.getIdentifierValue(target.getIdentifier(), FhirUri.IDENTIFIER_SYSTEM_BARTS_PERSONNEL_ID);
+        String consultantCode = PractitionerCommon.getIdentifierValue(target.getIdentifier(), FhirUri.IDENTIFIER_SYSTEM_CONSULTANT_CODE);
+
+        if (StringUtils.isNotEmpty(bartsOrgNumber) || StringUtils.isNotEmpty(bartsPersonnelId) || StringUtils.isNotEmpty(consultantCode)) {
+            return targetResources.getResourceSingleOrNull(ResourceTag.MainHospitalOrganisation, Organization.class);
+        }
+
+        String gmcCode = PractitionerCommon.getIdentifierValue(target.getIdentifier(), FhirUri.IDENTIFIER_SYSTEM_GMC_NUMBER);
+
+        if (StringUtils.isNotEmpty(gmcCode)) {
+            // looks like a gp practitioner
+
+            Organization primaryCareProviderOrganisation = targetResources.getResourceSingleOrNull(ResourceTag.MainPrimaryCareProviderOrganisation, Organization.class);
+            Practitioner primaryCareProviderPractitioner = targetResources.getResourceSingleOrNull(ResourceTag.MainPrimaryCareProviderPractitioner, Practitioner.class);
+
+            // attempt match on primary care provider practitioner GMC code
+            if (primaryCareProviderPractitioner != null) {
+                String primaryCarePractitionerGmcCode = PractitionerCommon.getIdentifierValue(primaryCareProviderPractitioner.getIdentifier(), FhirUri.IDENTIFIER_SYSTEM_GMC_NUMBER);
+
+                if (StringUtils.isNotEmpty(primaryCarePractitionerGmcCode))
+                    if (gmcCode.equalsIgnoreCase(primaryCarePractitionerGmcCode))
+                        return primaryCareProviderOrganisation;
+            }
+
+            return null;
+        }
 
         return null;
     }
@@ -149,44 +150,43 @@ public class BartsPractitionerTransform extends ResourceTransformBase {
         return practitioner;
     }
 
-    private String getIdentifierValue(List<Identifier> identifiers, String system) {
-        Identifier identifier = getIdentifierWithSystem(identifiers, system);
-
-        if (identifier == null)
-            return null;
-
-        return identifier.getValue();
-    }
-
-    private Identifier getIdentifierWithSystem(List<Identifier> identifiers, String system) {
-        if (identifiers == null)
-            return null;
-
-        return identifiers
-                .stream()
-                .filter(t -> t.getSystem().equalsIgnoreCase(system))
-                .collect(StreamExtension.firstOrNullCollector());
-    }
-
     private UUID getId(Practitioner source, Organization sourceRoleOrganisation) throws MapperException, TransformException {
 
         String forename = NameConverter.getFirstGivenName(source.getName());
         String surname = NameConverter.getFirstSurname(source.getName());
-        String primaryIdentifier = getIdentifierValue(source.getIdentifier(), FhirUri.IDENTIFIER_SYSTEM_HOMERTON_PRIMARY_PRACTITIONER_ID);
-        String consultantCode = getIdentifierValue(source.getIdentifier(), FhirUri.IDENTIFIER_SYSTEM_CONSULTANT_CODE);
-        String gmcCode = getIdentifierValue(source.getIdentifier(), FhirUri.IDENTIFIER_SYSTEM_GMC_NUMBER);
-        String odsCode = "";
+        String bartsOrgDoctorNumber = PractitionerCommon.getIdentifierValue(source.getIdentifier(), FhirUri.IDENTIFIER_SYSTEM_BARTS_ORG_DR_NUMBER);
+        String bartsPersonnelNumber = PractitionerCommon.getIdentifierValue(source.getIdentifier(), FhirUri.IDENTIFIER_SYSTEM_BARTS_PERSONNEL_ID);
+        String consultantCode = PractitionerCommon.getIdentifierValue(source.getIdentifier(), FhirUri.IDENTIFIER_SYSTEM_CONSULTANT_CODE);
+        String gmcCode = PractitionerCommon.getIdentifierValue(source.getIdentifier(), FhirUri.IDENTIFIER_SYSTEM_GMC_NUMBER);
+        String gdpCode = PractitionerCommon.getIdentifierValue(source.getIdentifier(), FhirUri.IDENTIFIER_SYSTEM_GDP_NUMBER);
+        String odsCode = (sourceRoleOrganisation != null) ? PractitionerCommon.getIdentifierValue(sourceRoleOrganisation.getIdentifier(), FhirUri.IDENTIFIER_SYSTEM_ODS_CODE) : null;
 
-        if (sourceRoleOrganisation != null)
-            odsCode = getIdentifierValue(sourceRoleOrganisation.getIdentifier(), FhirUri.IDENTIFIER_SYSTEM_ODS_CODE);
-
-        if (StringUtils.isBlank(primaryIdentifier)
-            && StringUtils.isBlank(consultantCode)
-                && StringUtils.isBlank(gmcCode)) {
-
-            return mapper.getResourceMapper().mapPractitionerUuid(surname, forename, odsCode);
+        if (StringUtils.isNotEmpty(consultantCode)) {
+            return mapper
+                    .getResourceMapper()
+                    .mapPractitionerUuidWithConsultantCode(surname, forename, consultantCode);
+        } else if (StringUtils.isNotEmpty(gmcCode)) {
+            return mapper
+                    .getResourceMapper()
+                    .mapPractitionerUuidWithGmcCode(surname, forename, gmcCode);
+        } else if (StringUtils.isNotEmpty(gdpCode)) {
+            return mapper
+                    .getResourceMapper()
+                    .mapPractitionerUuidWithGdpCode(surname, forename, gdpCode);
+        } else if (StringUtils.isNotEmpty(bartsOrgDoctorNumber) || StringUtils.isNotEmpty(bartsPersonnelNumber)) {
+            return mapper
+                    .getResourceMapper()
+                    .mapPractitionerUuidWithLocalHospitalIdentifiers(
+                            surname,
+                            forename,
+                            BartsConstants.practitionerOrgDoctorNumberAssigningAuth,
+                            bartsOrgDoctorNumber,
+                            BartsConstants.practitionerPersonnelIdAssigningAuth,
+                            bartsPersonnelNumber);
+        } else {
+            return mapper
+                    .getResourceMapper()
+                    .mapPractitionerUuid(surname, forename, odsCode);
         }
-
-        return mapper.getResourceMapper().mapPractitionerUuid(surname, forename, BartsConstants.primaryPractitionerIdentifierTypeCode, primaryIdentifier, consultantCode, gmcCode);
     }
 }

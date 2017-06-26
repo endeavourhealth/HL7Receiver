@@ -8,5 +8,6 @@ public class BartsConstants {
 
     public static final String primaryPatientIdentifierAssigningAuthority = "2.16.840.1.113883.3.2540.1";   // PID.3
     public static final String primaryEpisodeIdentifierTypeCode = "VISITID";                                // PV1.19
-    public static final String primaryPractitionerIdentifierTypeCode = "XXXDoNotUse";                       // XCN.9
+    public static final String practitionerOrgDoctorNumberAssigningAuth = "DRNBR";                          // XCN.9
+    public static final String practitionerPersonnelIdAssigningAuth = "NHSPRSNLID";                         // XCN.9
 }

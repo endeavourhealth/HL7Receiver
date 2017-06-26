@@ -176,6 +176,62 @@ public class ResourceMapper {
         return this.mapper.mapScopedResourceUuid(ResourceType.Practitioner, identifier);
     }
 
+    public UUID mapPractitionerUuidWithConsultantCode(String surname, String forename, String consultantCode) throws MapperException {
+        Validate.notBlank(surname);
+        Validate.notBlank(consultantCode);
+
+        String identifier = ResourceMapParameters.create()
+                .put("Surname", surname)
+                .put("Forename", forename)
+                .put("ConsultantCode", consultantCode)
+                .createIdentifyingString();
+
+        return this.mapper.mapScopedResourceUuid(ResourceType.Practitioner, identifier);
+    }
+
+    public UUID mapPractitionerUuidWithGmcCode(String surname, String forename, String gmcCode) throws MapperException {
+        Validate.notBlank(surname);
+        Validate.notBlank(gmcCode);
+
+        String identifier = ResourceMapParameters.create()
+                .put("Surname", surname)
+                .put("Forename", forename)
+                .put("GmcCode", gmcCode)
+                .createIdentifyingString();
+
+        return this.mapper.mapScopedResourceUuid(ResourceType.Practitioner, identifier);
+    }
+
+    public UUID mapPractitionerUuidWithGdpCode(String surname, String forename, String gdpCode) throws MapperException {
+        Validate.notBlank(surname);
+        Validate.notBlank(gdpCode);
+
+        String identifier = ResourceMapParameters.create()
+                .put("Surname", surname)
+                .put("Forename", forename)
+                .put("GmcCode", gdpCode)
+                .createIdentifyingString();
+
+        return this.mapper.mapScopedResourceUuid(ResourceType.Practitioner, identifier);
+    }
+
+    public UUID mapPractitionerUuidWithLocalHospitalIdentifiers(String surname, String forename, String localIdAssAuth1, String localIdValue1, String localIdAssAuth2, String localIdValue2) throws MapperException {
+        Validate.notBlank(surname);
+        Validate.isTrue((StringUtils.isNotBlank(localIdAssAuth1) && StringUtils.isNotBlank(localIdValue1))
+                || (StringUtils.isNotBlank(localIdAssAuth2) && StringUtils.isNotBlank(localIdValue2)), "Not enough identifiers to proceed");
+
+        String identifier = ResourceMapParameters.create()
+                .put("Surname", surname)
+                .put("Forename", forename)
+                .put("LocalIdAssAuth1", localIdAssAuth1)
+                .put("LocalIdValue1", localIdValue1)
+                .put("LocalIdAssAuth2", localIdAssAuth2)
+                .put("LocalIdValue2", localIdValue2)
+                .createIdentifyingString();
+
+        return this.mapper.mapScopedResourceUuid(ResourceType.Practitioner, identifier);
+    }
+
     public UUID mapPractitionerUuid(String surname,
                                     String forename,
                                     String localPrimaryIdentifierType,
@@ -208,7 +264,7 @@ public class ResourceMapper {
                                                        String episodeIdentifierValue) {
 
         Validate.isTrue(StringUtils.isNotBlank(episodeIdentifierTypeCode) || StringUtils.isNotBlank(episodeIdentifierAssigningAuthority), "episodeIdentifierTypeCode and episodeIdentifierAssigningAuthority are both blank");
-        Validate.notEmpty(episodeIdentifierValue, "episodeIdentifierValue");
+        Validate.notBlank(episodeIdentifierValue, "episodeIdentifierValue");
 
         ResourceMapParameters resourceMapParameters = ResourceMapParameters.create()
                 .putExisting(getPatientMap(patientIdentifierTypeCode, patientIdentifierAssigningAuthority, patientIdentifierValue));
@@ -229,7 +285,7 @@ public class ResourceMapper {
                                                        String patientIdentifierValue) {
 
         Validate.isTrue(StringUtils.isNotBlank(patientIdentifierTypeCode) || StringUtils.isNotBlank(patientIdentifierAssigningAuthority), "patientIdentifierTypeCode and patientIdentifierAssigningAuthority are both blank");
-        Validate.notEmpty(patientIdentifierValue, "patientIdentifierValue");
+        Validate.notBlank(patientIdentifierValue, "patientIdentifierValue");
 
         ResourceMapParameters resourceMapParameters = ResourceMapParameters.create();
 
