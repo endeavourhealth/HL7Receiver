@@ -71,7 +71,6 @@ public class BartsEncounterTransform extends ResourceTransformBase {
         setParticipants(source, target);
 
         // hospitalisation component
-        setReason(source, target);
         setDischargeDisposition(source, target);
         setDischargeDestination(source, target);
 
@@ -244,19 +243,6 @@ public class BartsEncounterTransform extends ResourceTransformBase {
             target.addLocation(new Encounter.EncounterLocationComponent()
                     .setLocation(assignedLocationReference)
                     .setStatus(encounterLocationStatus));
-        }
-    }
-
-    private static void setReason(AdtMessage sourceMessage, Encounter target) throws TransformException {
-
-        Pv2Segment pv2Segment = sourceMessage.getPv2Segment();
-
-        if (pv2Segment != null) {
-            if (pv2Segment.getAdmitReason() != null)
-                target.addReason(new CodeableConcept().setText(pv2Segment.getAdmitReason().getAsString()));
-
-            if (pv2Segment.getTransferReason() != null)
-                target.addReason(new CodeableConcept().setText(pv2Segment.getTransferReason().getAsString()));
         }
     }
 
