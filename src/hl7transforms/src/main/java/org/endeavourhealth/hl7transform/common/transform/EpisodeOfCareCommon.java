@@ -1,8 +1,18 @@
 package org.endeavourhealth.hl7transform.common.transform;
 
 import org.endeavourhealth.common.utility.StreamExtension;
+import org.endeavourhealth.hl7parser.Hl7DateTime;
+import org.endeavourhealth.hl7parser.ParseException;
 import org.endeavourhealth.hl7parser.datatypes.Cx;
 import org.endeavourhealth.hl7parser.messages.AdtMessage;
+import org.endeavourhealth.hl7parser.segments.Pv1Segment;
+import org.endeavourhealth.hl7transform.common.TransformException;
+import org.endeavourhealth.hl7transform.common.converters.DateTimeHelper;
+import org.endeavourhealth.hl7transform.mapper.Mapper;
+import org.endeavourhealth.hl7transform.mapper.exceptions.MapperException;
+import org.hl7.fhir.instance.model.Encounter;
+import org.hl7.fhir.instance.model.EpisodeOfCare;
+import org.hl7.fhir.instance.model.Period;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -38,5 +48,32 @@ public class EpisodeOfCareCommon {
                 .filter(t -> episodeIdentifierAssigningAuthority.equals(t.getAssigningAuthority()))
                 .map(t -> t.getId())
                 .collect(StreamExtension.firstOrNullCollector());
+    }
+
+    public static void setStatusAndPeriod(EpisodeOfCare target, String accountStatus, Hl7DateTime admitDate, Hl7DateTime dischargeDate, Hl7DateTime eventRecordedDate, Mapper mapper) throws TransformException, ParseException, MapperException {
+
+        EpisodeOfCare.EpisodeOfCareStatus episodeOfCareStatus = mapper.getCodeMapper().mapAccountStatus2(accountStatus);
+
+        if (episodeOfCareStatus != null)
+            target.setStatus(episodeOfCareStatus);
+
+        Hl7DateTime endDate = dischargeDate;
+
+        if (isClosedStatus(episodeOfCareStatus) && (endDate == null))
+            endDate = eventRecordedDate;
+
+        Period period = DateTimeHelper.createPeriod(admitDate, endDate);
+
+        if (period != null)
+            target.setPeriod(period);
+    }
+
+    public static boolean isClosedStatus(EpisodeOfCare.EpisodeOfCareStatus episodeOfCareStatus) {
+        switch (episodeOfCareStatus) {
+            case ONHOLD:
+            case FINISHED:
+            case CANCELLED: return true;
+            default: return false;
+        }
     }
 }

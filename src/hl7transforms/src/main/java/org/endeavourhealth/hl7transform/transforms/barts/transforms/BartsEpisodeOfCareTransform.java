@@ -1,8 +1,10 @@
 package org.endeavourhealth.hl7transform.transforms.barts.transforms;
 
+import org.endeavourhealth.hl7parser.Hl7DateTime;
 import org.endeavourhealth.hl7parser.ParseException;
 import org.endeavourhealth.hl7parser.datatypes.Cx;
 import org.endeavourhealth.hl7parser.messages.AdtMessage;
+import org.endeavourhealth.hl7parser.segments.EvnSegment;
 import org.endeavourhealth.hl7parser.segments.Pv1Segment;
 import org.endeavourhealth.hl7transform.common.ResourceContainer;
 import org.endeavourhealth.hl7transform.common.ResourceTag;
@@ -45,13 +47,11 @@ public class BartsEpisodeOfCareTransform extends ResourceTransformBase {
 
         setIdentifiers(source, target);
 
-        // set status
-
         setPatient(target);
 
         setManagingOrganisation(source, target);
 
-        setPeriod(source, target);
+        setStatusAndPeriod(source, target);
 
         return target;
     }
@@ -95,12 +95,15 @@ public class BartsEpisodeOfCareTransform extends ResourceTransformBase {
         target.setManagingOrganization(targetResources.getResourceReference(ResourceTag.MainHospitalOrganisation, Organization.class));
     }
 
-    private static void setPeriod(AdtMessage source, EpisodeOfCare target) throws ParseException {
+    private void setStatusAndPeriod(AdtMessage source, EpisodeOfCare target) throws TransformException, ParseException, MapperException {
+
         Pv1Segment pv1Segment = source.getPv1Segment();
 
-        Period period = DateTimeHelper.createPeriod(pv1Segment.getAdmitDateTime(), pv1Segment.getDischargeDateTime());
+        String accountStatus = pv1Segment.getAccountStatus();
+        Hl7DateTime admitDate = pv1Segment.getAdmitDateTime();
+        Hl7DateTime dischargeDate = pv1Segment.getDischargeDateTime();
+        Hl7DateTime eventRecordedDate = source.getEvnSegment().getRecordedDateTime();
 
-        if (period != null)
-            target.setPeriod(period);
+        EpisodeOfCareCommon.setStatusAndPeriod(target, accountStatus, admitDate, dischargeDate, eventRecordedDate, mapper);
     }
 }

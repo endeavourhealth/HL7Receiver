@@ -92,6 +92,15 @@ public class CodeMapper extends CodeMapperBase {
                         (r) -> r.getSystem());
     }
 
+    public EpisodeOfCare.EpisodeOfCareStatus mapAccountStatus2(String accountStatus) throws MapperException {
+        return this
+                .mapCodeToEnum(
+                        CodeContext.HL7_ACCOUNT_STATUS_2,
+                        accountStatus,
+                        (t) -> EpisodeOfCare.EpisodeOfCareStatus.fromCode(t),
+                        (r) -> r.getSystem());
+    }
+
     public Encounter.EncounterClass mapPatientClass(String patientClass) throws MapperException {
         return this
                 .mapCodeToEnum(
