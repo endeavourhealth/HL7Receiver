@@ -91,42 +91,31 @@ public class HomertonPatientTransform extends ResourceTransformBase {
     }
 
     private void addIdentifiers(AdtMessage source, Patient target) throws TransformException, MapperException {
-        List<Cx> identifiers = PatientCommon.getAllPatientIdentifiers(source);
+        List<Cx> cxs = PatientCommon.getAllPatientIdentifiers(source);
 
-        List<Identifier> targetIdentifiers = new ArrayList<>();
+        List<Identifier> identifiers = PatientCommon.convertPatientIdentifiers(cxs, mapper);
 
-        for (Cx cx : identifiers) {
-            Identifier identifier = IdentifierConverter.createIdentifier(cx, getResourceType(), mapper);
+        for (Identifier identifier : identifiers) {
 
-            if (identifier != null) {
+            if (identifier.getSystem() != null)
+                if (identifier.getSystem().equals(FhirUri.IDENTIFIER_SYSTEM_NHSNUMBER))
+                    addTraceStatus(source.getPidSegment(), identifier);
 
-                if (identifier.getSystem() != null)
-                    if (identifier.getSystem().equals(FhirUri.IDENTIFIER_SYSTEM_NHSNUMBER))
-                        addTraceStatus(source.getPidSegment(), identifier);
-
-            }
-
-            if (!targetIdentifiers.stream().anyMatch(t -> StringUtils.equals(identifier.getSystem(), t.getSystem())))
-                targetIdentifiers.add(identifier);
-            else
-                LOG.warn("More than one patient identifier exists with identifier system " + identifier.getSystem());
+            target.addIdentifier(identifier);
         }
-
-        for (Identifier targetIdentifier : targetIdentifiers)
-            target.addIdentifier(targetIdentifier);
     }
 
     private static void addTraceStatus(PidSegment sourcePid, Identifier target) {
-        if (sourcePid.getTraceStatus() == null)
+        if (sourcePid.getIdentityReliabilityCode() == null)
             return;
 
-        if (StringUtils.isBlank(sourcePid.getTraceStatus().getAsString()))
+        if (StringUtils.isBlank(sourcePid.getIdentityReliabilityCode().getAsString()))
             return;
 
         target.addExtension(new Extension()
                 .setUrl(FhirExtensionUri.PATIENT_NHS_NUMBER_VERIFICATION_STATUS)
                 .setValue(new CodeableConcept()
-                        .setText(sourcePid.getTraceStatus().getAsString())));
+                        .setText(sourcePid.getIdentityReliabilityCode().getAsString())));
     }
 
     private void setPrimaryCareProvider(AdtMessage source, Patient target) throws MapperException, TransformException, ParseException {

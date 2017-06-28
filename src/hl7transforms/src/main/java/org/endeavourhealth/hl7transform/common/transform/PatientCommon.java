@@ -1,16 +1,21 @@
 package org.endeavourhealth.hl7transform.common.transform;
 
+import org.apache.commons.lang3.StringUtils;
+import org.endeavourhealth.common.fhir.FhirUri;
 import org.endeavourhealth.common.utility.StreamExtension;
 import org.endeavourhealth.hl7parser.datatypes.Cx;
 import org.endeavourhealth.hl7parser.datatypes.XpnInterface;
 import org.endeavourhealth.hl7parser.messages.AdtMessage;
 import org.endeavourhealth.hl7parser.segments.PidSegment;
 import org.endeavourhealth.hl7transform.common.TransformException;
+import org.endeavourhealth.hl7transform.common.converters.IdentifierConverter;
 import org.endeavourhealth.hl7transform.common.converters.NameConverter;
 import org.endeavourhealth.hl7transform.mapper.Mapper;
 import org.endeavourhealth.hl7transform.mapper.exceptions.MapperException;
 import org.hl7.fhir.instance.model.HumanName;
+import org.hl7.fhir.instance.model.Identifier;
 import org.hl7.fhir.instance.model.Patient;
+import org.hl7.fhir.instance.model.ResourceType;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -47,6 +52,20 @@ public class PatientCommon {
             patientIdentifiers.addAll(source.getPidSegment().getInternalPatientId());
 
         return patientIdentifiers;
+    }
+
+    public static List<Identifier> convertPatientIdentifiers(List<Cx> cxs, Mapper mapper) throws TransformException, MapperException {
+        List<Identifier> targetIdentifiers = new ArrayList<>();
+
+        for (Cx cx : cxs) {
+            Identifier identifier = IdentifierConverter.createIdentifier(cx, ResourceType.Patient, mapper);
+
+            if (identifier != null)
+                if (!targetIdentifiers.stream().anyMatch(t -> StringUtils.equals(identifier.getSystem(), t.getSystem()) && StringUtils.equals(identifier.getValue(), t.getValue())))
+                    targetIdentifiers.add(identifier);
+        }
+
+        return targetIdentifiers;
     }
 
     public static String getPatientIdentifierValueByTypeCode(AdtMessage message, String patientIdentifierTypeCode) {

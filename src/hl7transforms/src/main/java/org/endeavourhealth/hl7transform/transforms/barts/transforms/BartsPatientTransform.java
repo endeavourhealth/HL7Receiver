@@ -67,7 +67,6 @@ public class BartsPatientTransform extends ResourceTransformBase {
         addReligion(source.getPidSegment(), target);
         addMaritalStatus(source.getPidSegment(), target);
         setPrimaryCareProvider(target);
-        addPatientContacts(source, target);
         setManagingOrganization(source, target);
 
         return target;
@@ -90,42 +89,12 @@ public class BartsPatientTransform extends ResourceTransformBase {
     }
 
     private void addIdentifiers(AdtMessage source, Patient target) throws TransformException, MapperException {
-        List<Cx> identifiers = PatientCommon.getAllPatientIdentifiers(source);
+        List<Cx> cxs = PatientCommon.getAllPatientIdentifiers(source);
 
-        List<Identifier> targetIdentifiers = new ArrayList<>();
+        List<Identifier> identifiers = PatientCommon.convertPatientIdentifiers(cxs, mapper);
 
-        for (Cx cx : identifiers) {
-            Identifier identifier = IdentifierConverter.createIdentifier(cx, getResourceType(), mapper);
-
-            if (identifier != null) {
-
-                if (identifier.getSystem() != null)
-                    if (identifier.getSystem().equals(FhirUri.IDENTIFIER_SYSTEM_NHSNUMBER))
-                        addTraceStatus(source.getPidSegment(), identifier);
-
-            }
-
-            if (!targetIdentifiers.stream().anyMatch(t -> StringUtils.equals(identifier.getSystem(), t.getSystem())))
-                targetIdentifiers.add(identifier);
-            else
-                LOG.warn("More than one patient identifier exists with identifier system " + identifier.getSystem());
-        }
-
-        for (Identifier targetIdentifier : targetIdentifiers)
-            target.addIdentifier(targetIdentifier);
-    }
-
-    private static void addTraceStatus(PidSegment sourcePid, Identifier target) {
-        if (sourcePid.getTraceStatus() == null)
-            return;
-
-        if (StringUtils.isBlank(sourcePid.getTraceStatus().getAsString()))
-            return;
-
-        target.addExtension(new Extension()
-                .setUrl(FhirExtensionUri.PATIENT_NHS_NUMBER_VERIFICATION_STATUS)
-                .setValue(new CodeableConcept()
-                        .setText(sourcePid.getTraceStatus().getAsString())));
+        for (Identifier identifier : identifiers)
+            target.addIdentifier(identifier);
     }
 
     private void setPrimaryCareProvider(Patient target) throws MapperException, TransformException, ParseException {
@@ -246,57 +215,6 @@ public class BartsPatientTransform extends ResourceTransformBase {
             return true;
 
         throw new TransformException(mappedDeathIndicator + " not recognised as a mapped death indicator code");
-    }
-
-    private void addPatientContacts(AdtMessage source, Patient target) throws TransformException, ParseException, MapperException {
-        for (Nk1Segment nk1 : source.getNk1Segments())
-            addPatientContact(nk1, target);
-    }
-
-    private void addPatientContact(Nk1Segment sourceNk1, Patient target) throws TransformException, ParseException, MapperException {
-
-        if ((sourceNk1.getNKName().size() == 0)
-            && sourceNk1.getPhoneNumber().size() == 0
-            && sourceNk1.getBusinessPhoneNumber().size() == 0
-            && sourceNk1.getAddresses().size() == 0)
-            return;
-
-        Patient.ContactComponent contactComponent = new Patient.ContactComponent();
-
-        List<HumanName> names = NameConverter.convert(sourceNk1.getNKName(), mapper);
-
-        for (HumanName name : names)
-            contactComponent.setName(name);
-
-        if (sourceNk1.getRelationship() != null)
-            contactComponent.addRelationship(new CodeableConcept().setText(sourceNk1.getRelationship().getAsString()));
-
-        for (ContactPoint cp : TelecomConverter.convert(sourceNk1.getPhoneNumber(), this.mapper))
-            contactComponent.addTelecom(cp);
-
-        for (ContactPoint cp : TelecomConverter.convert(sourceNk1.getBusinessPhoneNumber(), this.mapper))
-            contactComponent.addTelecom(cp);
-
-        //FHIR only allows 1 address but HL7v2 allows multiple addresses, this will currently only populate the last address.
-        for (Address address : AddressConverter.convert(sourceNk1.getAddresses(), mapper))
-            contactComponent.setAddress(address);
-
-        Enumerations.AdministrativeGender gender = mapper.getCodeMapper().mapSex(sourceNk1.getSex());
-
-        if (gender != null)
-            contactComponent.setGender(gender);
-
-        if (sourceNk1.getContactRole() != null)
-            contactComponent.addRelationship(new CodeableConcept().setText((sourceNk1.getContactRole().getAsString())));
-
-        if (sourceNk1.getDateTimeOfBirth() != null)
-            contactComponent.addExtension(ExtensionConverter.createExtension(FhirExtensionUri.PATIENT_CONTACT_DOB,
-                    DateConverter.getDateType(sourceNk1.getDateTimeOfBirth())));
-
-        if (sourceNk1.getPrimaryLanguage() != null)
-            contactComponent.addExtension(ExtensionConverter.createStringExtension(FhirExtensionUri.PATIENT_CONTACT_MAIN_LANGUAGE, sourceNk1.getPrimaryLanguage().getAsString()));
-
-        target.addContact(contactComponent);
     }
 
     private void setManagingOrganization(AdtMessage source, Patient target) throws MapperException, TransformException {
