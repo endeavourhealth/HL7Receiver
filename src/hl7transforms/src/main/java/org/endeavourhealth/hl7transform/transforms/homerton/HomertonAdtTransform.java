@@ -162,24 +162,4 @@ public class HomertonAdtTransform extends Transform {
             validateMinAndMaxSegmentCount(sourceMessage, SegmentName.PV2, 0, segmentCount);
         }
     }
-
-    private void validateNoSegments(AdtMessage sourceMessage, String segmentName) throws TransformException {
-        validateMinAndMaxSegmentCount(sourceMessage, segmentName, 0L, 0L);
-    }
-
-    private void validateZeroOrOneSegments(AdtMessage sourceMessage, String segmentName) throws TransformException {
-        validateMinAndMaxSegmentCount(sourceMessage, segmentName, 0L, 1L);
-    }
-
-    private void validateExactlyOneSegment(AdtMessage sourceMessage, String segmentName) throws TransformException {
-        validateMinAndMaxSegmentCount(sourceMessage, segmentName, 1L, 1L);
-    }
-
-    private void validateMinAndMaxSegmentCount(AdtMessage sourceMessage, String segmentName, long min, long max) throws TransformException {
-        if (sourceMessage.getSegmentCount(segmentName) < min)
-            throw new TransformException(segmentName + " segment exists less than " + Long.toString(min) + " time(s)");
-
-        if (sourceMessage.getSegmentCount(segmentName) > max)
-            throw new TransformException(segmentName + " exists more than " + Long.toString(max) + " time(s)");
-    }
 }

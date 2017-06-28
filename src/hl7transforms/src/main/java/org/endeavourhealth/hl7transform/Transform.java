@@ -28,4 +28,24 @@ public abstract class Transform {
                 .stream()
                 .anyMatch(t -> sendingFacility.equalsIgnoreCase(StringUtils.trim(t)));
     }
+
+    protected void validateNoSegments(AdtMessage sourceMessage, String segmentName) throws TransformException {
+        validateMinAndMaxSegmentCount(sourceMessage, segmentName, 0L, 0L);
+    }
+
+    protected void validateZeroOrOneSegments(AdtMessage sourceMessage, String segmentName) throws TransformException {
+        validateMinAndMaxSegmentCount(sourceMessage, segmentName, 0L, 1L);
+    }
+
+    protected void validateExactlyOneSegment(AdtMessage sourceMessage, String segmentName) throws TransformException {
+        validateMinAndMaxSegmentCount(sourceMessage, segmentName, 1L, 1L);
+    }
+
+    protected void validateMinAndMaxSegmentCount(AdtMessage sourceMessage, String segmentName, long min, long max) throws TransformException {
+        if (sourceMessage.getSegmentCount(segmentName) < min)
+            throw new TransformException(segmentName + " segment exists less than " + Long.toString(min) + " time(s)");
+
+        if (sourceMessage.getSegmentCount(segmentName) > max)
+            throw new TransformException(segmentName + " exists more than " + Long.toString(max) + " time(s)");
+    }
 }
