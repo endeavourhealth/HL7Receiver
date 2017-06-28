@@ -69,6 +69,9 @@ public class EpisodeOfCareCommon {
     }
 
     public static boolean isClosedStatus(EpisodeOfCare.EpisodeOfCareStatus episodeOfCareStatus) {
+        if (episodeOfCareStatus == null)
+            return false;
+
         switch (episodeOfCareStatus) {
             case ONHOLD:
             case FINISHED:
