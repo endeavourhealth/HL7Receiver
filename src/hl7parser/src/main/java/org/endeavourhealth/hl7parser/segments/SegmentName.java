@@ -15,6 +15,7 @@ public abstract class SegmentName {
     public static final String PV2 = "PV2";
     public static final String DG1 = "DG1";
     public static final String ACC = "ACC";
+    public static final String MRG = "MRG";
 
     public static Class<? extends Segment> getSegmentClass(String segmentName) {
         if (segmentName == null)
@@ -33,6 +34,7 @@ public abstract class SegmentName {
             case PV2: return Pv2Segment.class;
             case DG1: return Dg1Segment.class;
             case ACC: return AccSegment.class;
+            case MRG: return MrgSegment.class;
             default: return null;
         }
     }
