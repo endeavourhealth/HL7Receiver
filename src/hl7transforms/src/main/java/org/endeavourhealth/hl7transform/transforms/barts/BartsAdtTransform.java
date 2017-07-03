@@ -12,12 +12,7 @@ import org.endeavourhealth.hl7transform.common.TransformException;
 import org.endeavourhealth.hl7transform.mapper.Mapper;
 import org.endeavourhealth.hl7transform.transforms.barts.constants.BartsConstants;
 import org.endeavourhealth.hl7transform.transforms.barts.pretransform.BartsPreTransform;
-import org.endeavourhealth.hl7transform.transforms.barts.transforms.BartsEncounterTransform;
-import org.endeavourhealth.hl7transform.transforms.barts.transforms.BartsEpisodeOfCareTransform;
-import org.endeavourhealth.hl7transform.transforms.barts.transforms.BartsMessageHeaderTransform;
-import org.endeavourhealth.hl7transform.transforms.barts.transforms.BartsOrganizationTransform;
-import org.endeavourhealth.hl7transform.transforms.barts.transforms.BartsPatientTransform;
-import org.endeavourhealth.hl7transform.transforms.barts.transforms.BartsPractitionerTransform;
+import org.endeavourhealth.hl7transform.transforms.barts.transforms.*;
 import org.hl7.fhir.instance.model.*;
 
 import java.util.Arrays;
@@ -105,6 +100,15 @@ public class BartsAdtTransform extends Transform {
             targetResources.addResource(encounter);
 
         ///////////////////////////////////////////////////////////////////////////
+        // create merge information
+        //
+        BartsMergeTransform bartsMergeTransform = new BartsMergeTransform(mapper, targetResources);
+        Parameters parameters = bartsMergeTransform.transform(sourceMessage);
+
+        if (parameters != null)
+            targetResources.addResource(parameters);
+
+        ///////////////////////////////////////////////////////////////////////////
         // create message header
         //
         BartsMessageHeaderTransform bartsMessageHeaderTransform = new BartsMessageHeaderTransform(mapper, targetResources);
@@ -131,7 +135,6 @@ public class BartsAdtTransform extends Transform {
 
         String messageType = StringUtils.trim(sourceMessage.getMshSegment().getMessageType());
         List<String> swapMessageTypes = Arrays.asList("ADT^A17");
-        List<String> mergeMessageTypes = Arrays.asList("ADT^A17", "ADT^A34", "ADT^A35", "ADT^A44");
 
         validateExactlyOneSegment(sourceMessage, SegmentName.MSH);
         validateExactlyOneSegment(sourceMessage, SegmentName.EVN);
@@ -148,5 +151,8 @@ public class BartsAdtTransform extends Transform {
 
             validateMinAndMaxSegmentCount(sourceMessage, SegmentName.PV2, 0, segmentCount);
         }
+
+        if (BartsMergeTransform.MergeMessageTypes.contains(messageType))
+            validateExactlyOneSegment(sourceMessage, SegmentName.MRG);
     }
 }

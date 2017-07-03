@@ -34,12 +34,16 @@ public class EpisodeOfCareCommon {
         return episodeIdentifiers;
     }
 
-    public static String getEpisodeIdentifierValueByTypeCode(AdtMessage source, String episodeIdentifierTypeCode) {
-        return EpisodeOfCareCommon.getAllEpisodeIdentifiers(source)
+    public static String getEpisodeIdentifierValueByTypeCode(List<Cx> cxs, String episodeIdentifierTypeCode) {
+        return cxs
                 .stream()
                 .filter(t -> episodeIdentifierTypeCode.equals(t.getIdentifierTypeCode()))
                 .map(t -> t.getId())
                 .collect(StreamExtension.firstOrNullCollector());
+    }
+
+    public static String getEpisodeIdentifierValueByTypeCode(AdtMessage source, String episodeIdentifierTypeCode) {
+        return getEpisodeIdentifierValueByTypeCode(EpisodeOfCareCommon.getAllEpisodeIdentifiers(source), episodeIdentifierTypeCode);
     }
 
     public static String getEpisodeIdentifierValueByAssigningAuthority(AdtMessage source, String episodeIdentifierAssigningAuthority) {

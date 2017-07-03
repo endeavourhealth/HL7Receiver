@@ -76,11 +76,15 @@ public class PatientCommon {
                 .collect(StreamExtension.firstOrNullCollector());
     }
 
-    public static String getPatientIdentifierValueByAssigningAuth(AdtMessage message, String patientIdentifierAssigningAuthority) {
-        return PatientCommon.getAllPatientIdentifiers(message)
+    public static String getPatientIdentifierValueByAssigningAuth(List<Cx> cxs, String patientIdentifierAssigningAuthority) {
+        return cxs
                 .stream()
                 .filter(t -> patientIdentifierAssigningAuthority.equals(t.getAssigningAuthority()))
                 .map(t -> t.getId())
                 .collect(StreamExtension.firstOrNullCollector());
+    }
+
+    public static String getPatientIdentifierValueByAssigningAuth(AdtMessage message, String patientIdentifierAssigningAuthority) {
+        return getPatientIdentifierValueByAssigningAuth(PatientCommon.getAllPatientIdentifiers(message), patientIdentifierAssigningAuthority);
     }
 }

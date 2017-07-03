@@ -80,6 +80,18 @@ public class ResourceMapper {
         return this.mapper.mapScopedResourceUuid(ResourceType.MessageHeader, identifier);
     }
 
+    public UUID mapParametersUuid(String messageControlId, String parametersType) throws MapperException {
+        Validate.notBlank(messageControlId);
+        Validate.notBlank(parametersType);
+
+        String identifier = ResourceMapParameters.create()
+                .put("MessageControlId", messageControlId)
+                .put("ParametersType", parametersType)
+                .createIdentifyingString();
+
+        return this.mapper.mapScopedResourceUuid(ResourceType.Parameters, identifier);
+    }
+
     public UUID mapPatientUuid(String patientIdentifierTypeCode, String patientIdentifierAssigningAuthority, String patientIdentifierValue) throws MapperException {
         String identifier;
 

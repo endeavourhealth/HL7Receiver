@@ -5,6 +5,7 @@ import org.endeavourhealth.hl7parser.ParseException;
 import org.endeavourhealth.hl7parser.datatypes.Cx;
 import org.endeavourhealth.hl7parser.messages.AdtMessage;
 import org.endeavourhealth.hl7parser.segments.EvnSegment;
+import org.endeavourhealth.hl7parser.segments.MrgSegment;
 import org.endeavourhealth.hl7parser.segments.Pv1Segment;
 import org.endeavourhealth.hl7transform.common.ResourceContainer;
 import org.endeavourhealth.hl7transform.common.ResourceTag;
@@ -20,6 +21,8 @@ import org.hl7.fhir.instance.model.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
 
@@ -57,23 +60,40 @@ public class BartsEpisodeOfCareTransform extends ResourceTransformBase {
     }
 
     protected void setId(AdtMessage source, EpisodeOfCare target) throws TransformException, MapperException {
+        UUID episodeUuid = getBartsMappedEpisodeOfCareUuid(source, mapper);
+        target.setId(episodeUuid.toString());
+    }
 
+    public static String getBartsPrimaryEpisodeIdentifierValue(AdtMessage source) {
+        return EpisodeOfCareCommon.getEpisodeIdentifierValueByTypeCode(source, BartsConstants.primaryEpisodeIdentifierTypeCode);
+    }
+
+    public static String getBartsPrimaryEpisodeIdentifierValue(MrgSegment source) {
+        return EpisodeOfCareCommon.getEpisodeIdentifierValueByTypeCode(Arrays.asList(source.getPriorVisitNumber()), BartsConstants.primaryEpisodeIdentifierTypeCode);
+    }
+
+    public static UUID getBartsMappedEpisodeOfCareUuid(AdtMessage source, Mapper mapper) throws MapperException {
         String patientIdentifierValue = BartsPatientTransform.getBartsPrimaryPatientIdentifierValue(source);
         String episodeIdentifierValue = getBartsPrimaryEpisodeIdentifierValue(source);
 
-        UUID episodeUuid = mapper.getResourceMapper().mapEpisodeUuid(
+        return getBartsMappedEpisodeOfCareUuid(patientIdentifierValue, episodeIdentifierValue, mapper);
+    }
+
+    public static UUID getBartsMappedEpisodeOfCareUuid(MrgSegment source, Mapper mapper) throws MapperException, ParseException {
+        String patientIdentifierValue = BartsPatientTransform.getBartsPrimaryPatientIdentifierValue(source);
+        String episodeIdentifierValue = getBartsPrimaryEpisodeIdentifierValue(source);
+
+        return getBartsMappedEpisodeOfCareUuid(patientIdentifierValue, episodeIdentifierValue, mapper);
+    }
+
+    private static UUID getBartsMappedEpisodeOfCareUuid(String patientIdentifierValue, String episodeIdentifierValue, Mapper mapper) throws MapperException {
+        return mapper.getResourceMapper().mapEpisodeUuid(
                 null,
                 BartsConstants.primaryPatientIdentifierAssigningAuthority,
                 patientIdentifierValue,
                 BartsConstants.primaryEpisodeIdentifierTypeCode,
                 null,
                 episodeIdentifierValue);
-
-        target.setId(episodeUuid.toString());
-    }
-
-    public static String getBartsPrimaryEpisodeIdentifierValue(AdtMessage source) {
-        return EpisodeOfCareCommon.getEpisodeIdentifierValueByTypeCode(source, BartsConstants.primaryEpisodeIdentifierTypeCode);
     }
 
     private void setIdentifiers(AdtMessage source, EpisodeOfCare target) throws TransformException, MapperException {

@@ -9,6 +9,7 @@ import org.endeavourhealth.hl7parser.ParseException;
 import org.endeavourhealth.hl7parser.datatypes.Ce;
 import org.endeavourhealth.hl7parser.datatypes.Cx;
 import org.endeavourhealth.hl7parser.messages.AdtMessage;
+import org.endeavourhealth.hl7parser.segments.MrgSegment;
 import org.endeavourhealth.hl7parser.segments.Nk1Segment;
 import org.endeavourhealth.hl7parser.segments.PidSegment;
 import org.endeavourhealth.hl7transform.common.ResourceContainer;
@@ -73,19 +74,34 @@ public class BartsPatientTransform extends ResourceTransformBase {
     }
 
     public void setId(AdtMessage source, Patient target) throws TransformException, MapperException {
+        UUID patientUuid = getBartsMappedPatientUuid(source, mapper);
+        target.setId(patientUuid.toString());
+    }
 
+    public static UUID getBartsMappedPatientUuid(AdtMessage source, Mapper mapper) throws MapperException {
         String patientIdentifierValue = getBartsPrimaryPatientIdentifierValue(source);
 
-        UUID patientUuid = mapper.getResourceMapper().mapPatientUuid(
+        return mapBartsPatientUuid(patientIdentifierValue, mapper);
+    }
+
+    public static UUID getBartsMappedPatientUuid(MrgSegment mrgSegment, Mapper mapper) throws MapperException, ParseException {
+        String patientIdentifierValue = getBartsPrimaryPatientIdentifierValue(mrgSegment);
+        return mapBartsPatientUuid(patientIdentifierValue, mapper);
+    }
+
+    private static UUID mapBartsPatientUuid(String patientIdentifierValue, Mapper mapper) throws MapperException {
+        return mapper.getResourceMapper().mapPatientUuid(
                 null,
                 BartsConstants.primaryPatientIdentifierAssigningAuthority,
                 patientIdentifierValue);
-
-        target.setId(patientUuid.toString());
     }
 
     public static String getBartsPrimaryPatientIdentifierValue(AdtMessage source) {
         return PatientCommon.getPatientIdentifierValueByAssigningAuth(source, BartsConstants.primaryPatientIdentifierAssigningAuthority);
+    }
+
+    public static String getBartsPrimaryPatientIdentifierValue(MrgSegment source) throws ParseException {
+        return PatientCommon.getPatientIdentifierValueByAssigningAuth(source.getPriorPatientIdentifierList(), BartsConstants.primaryPatientIdentifierAssigningAuthority);
     }
 
     private void addIdentifiers(AdtMessage source, Patient target) throws TransformException, MapperException {
