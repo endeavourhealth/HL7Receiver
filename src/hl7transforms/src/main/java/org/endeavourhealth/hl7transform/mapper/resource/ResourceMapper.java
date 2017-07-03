@@ -19,14 +19,36 @@ import java.util.UUID;
 
 public class ResourceMapper {
 
-    private static final String PatientIdentifierTypeCodeKey = "PatientIdentifierTypeCode";
-    private static final String PatientIdentifierAssigningAuthorityKey = "PatientIdentifierAssigningAuthority";
-    private static final String PatientIdentifierValueKey = "PatientIdentifierValue";
-    private static final String EpisodeIdentifierTypeCodeKey = "EpisodeIdentifierTypeCode";
-    private static final String EpisodeIdentifierAssigningAuthorityKey = "EpisodeIdentifierAssigningAuthority";
-    private static final String EpisodeIdentifierValueKey = "EpisodeIdentifierValue";
+    private static final String MessageControlIdKey = "MessageControlId";
+    private static final String ParametersTypeKey = "ParametersType";
+
+    private static final String PatientIdentifierTypeCodeKey = "PatIdTypeCode";
+    private static final String PatientIdentifierAssigningAuthorityKey = "PIdAssAuth";
+    private static final String PatientIdentifierValueKey = "PatIdValue";
+
+    private static final String EpisodeIdentifierTypeCodeKey = "EpIdTypeCode";
+    private static final String EpisodeIdentifierAssigningAuthorityKey = "EpIdAssAuth";
+    private static final String EpisodeIdentifierValueKey = "EpIdValue";
     private static final String EncounterDateTimeKey = "EncounterDateTime";
+
     private static final String OdsCodeKey = "OdsCode";
+    private static final String OdsSiteCodeKey = "OdsSiteCode";
+    private static final String ClassOfLocationNameKey = "ClassOfLocName";
+    private static final String ParentOdsCodeKey = "ParentOdsCode";
+    private static final String ServiceNameKey = "ServiceName";
+    private static final String ParentOdsSiteCodeKey = "ParentOdsSiteCode";
+    private static final String LocationNameHierarchyKey = "LocNameHierarchy";
+    private static final String NameKey = "Name";
+
+    private static final String SurnameKey = "Surname";
+    private static final String ForenameKey = "Forename";
+    private static final String GmcCodeKey = "GmcCode";
+    private static final String GdpCodeKey = "GdpCode";
+    private static final String ConsultantCodeKey = "ConsultantCode";
+    private static final String PractitionerIdentifierTypeCodeKey = "PracIdTypeCode";
+    private static final String PractitionerIdentifierAssigningAuthorityCodeKey = "PracIdAssAuth";
+    private static final String PractitionerIdentifierValueKey = "PracIdValue";
+
 
     private Mapper mapper;
 
@@ -41,7 +63,7 @@ public class ResourceMapper {
         Validate.notBlank(classOfLocationName, "classOfLocationName");
 
         String identifier = ResourceMapParameters.create()
-                .put("ClassOfLocationName", classOfLocationName)
+                .put(ClassOfLocationNameKey, classOfLocationName)
                 .createIdentifyingString();
 
         return this.mapper.mapGlobalResourceUuid(ResourceType.Location, identifier);
@@ -51,7 +73,7 @@ public class ResourceMapper {
         Validate.notBlank(odsSiteCode, "odsSiteCode");
 
         String identifier = ResourceMapParameters.create()
-                .put("OdsSiteCode", odsSiteCode)
+                .put(OdsSiteCodeKey, odsSiteCode)
                 .createIdentifyingString();
 
         return this.mapper.mapGlobalResourceUuid(ResourceType.Location, identifier);
@@ -68,7 +90,7 @@ public class ResourceMapper {
         if (StringUtils.isBlank(odsCode)) {
             identifier = ResourceMapParameters.create()
                     .put(OdsCodeKey, odsCode)
-                    .put("Name", name)
+                    .put(NameKey, name)
                     .createIdentifyingString();
 
             return this.mapper.mapScopedResourceUuid(ResourceType.Organization, identifier);
@@ -88,7 +110,7 @@ public class ResourceMapper {
         Validate.notBlank(messageControlId);
 
         String identifier = ResourceMapParameters.create()
-                .put("MessageControlId", messageControlId)
+                .put(MessageControlIdKey, messageControlId)
                 .createIdentifyingString();
 
         return this.mapper.mapScopedResourceUuid(ResourceType.MessageHeader, identifier);
@@ -99,8 +121,8 @@ public class ResourceMapper {
         Validate.notBlank(parametersType);
 
         String identifier = ResourceMapParameters.create()
-                .put("MessageControlId", messageControlId)
-                .put("ParametersType", parametersType)
+                .put(MessageControlIdKey, messageControlId)
+                .put(ParametersTypeKey, parametersType)
                 .createIdentifyingString();
 
         return this.mapper.mapScopedResourceUuid(ResourceType.Parameters, identifier);
@@ -167,8 +189,8 @@ public class ResourceMapper {
         Validate.notBlank(serviceName, "serviceName");
 
         String identifier = ResourceMapParameters.create()
-                .put("ParentOdsCode", parentOdsCode)
-                .put("ServiceName", serviceName)
+                .put(ParentOdsCodeKey, parentOdsCode)
+                .put(ServiceNameKey, serviceName)
                 .createIdentifyingString();
 
         return this.mapper.mapScopedResourceUuid(ResourceType.Organization, identifier);
@@ -179,8 +201,8 @@ public class ResourceMapper {
         Validate.notBlank(StringUtils.join(locationNames, ""), "locationNames");
 
         String identifier = ResourceMapParameters.create()
-                .put("ParentOdsSiteCode", parentOdsSiteCode)
-                .put("LocationNameHierarchy", locationNames)
+                .put(ParentOdsSiteCodeKey, parentOdsSiteCode)
+                .put(LocationNameHierarchyKey, locationNames)
                 .createIdentifyingString();
 
         return this.mapper.mapScopedResourceUuid(ResourceType.Location, identifier);
@@ -192,8 +214,8 @@ public class ResourceMapper {
         Validate.notBlank(surname);
 
         String identifier = ResourceMapParameters.create()
-                .put("Surname", surname)
-                .put("Forename", forename)
+                .put(SurnameKey, surname)
+                .put(ForenameKey, forename)
                 .put(OdsCodeKey, odsCode)
                 .createIdentifyingString();
 
@@ -205,9 +227,9 @@ public class ResourceMapper {
         Validate.notBlank(consultantCode);
 
         String identifier = ResourceMapParameters.create()
-                .put("Surname", surname)
-                .put("Forename", forename)
-                .put("ConsultantCode", consultantCode)
+                .put(SurnameKey, surname)
+                .put(ForenameKey, forename)
+                .put(ConsultantCodeKey, consultantCode)
                 .createIdentifyingString();
 
         return this.mapper.mapScopedResourceUuid(ResourceType.Practitioner, identifier);
@@ -218,9 +240,9 @@ public class ResourceMapper {
         Validate.notBlank(gmcCode);
 
         String identifier = ResourceMapParameters.create()
-                .put("Surname", surname)
-                .put("Forename", forename)
-                .put("GmcCode", gmcCode)
+                .put(SurnameKey, surname)
+                .put(ForenameKey, forename)
+                .put(GmcCodeKey, gmcCode)
                 .createIdentifyingString();
 
         return this.mapper.mapScopedResourceUuid(ResourceType.Practitioner, identifier);
@@ -231,26 +253,24 @@ public class ResourceMapper {
         Validate.notBlank(gdpCode);
 
         String identifier = ResourceMapParameters.create()
-                .put("Surname", surname)
-                .put("Forename", forename)
-                .put("GmcCode", gdpCode)
+                .put(SurnameKey, surname)
+                .put(ForenameKey, forename)
+                .put(GdpCodeKey, gdpCode)
                 .createIdentifyingString();
 
         return this.mapper.mapScopedResourceUuid(ResourceType.Practitioner, identifier);
     }
 
-    public UUID mapPractitionerUuidWithLocalHospitalIdentifiers(String surname, String forename, String localIdAssAuth1, String localIdValue1, String localIdAssAuth2, String localIdValue2) throws MapperException {
+    public UUID mapPractitionerUuidWithLocalHospitalIdentifiers(String surname, String forename, String localPrimaryAssigningAuthority, String localPrimaryIdentifierValue) throws MapperException {
         Validate.notBlank(surname);
-        Validate.isTrue((StringUtils.isNotBlank(localIdAssAuth1) && StringUtils.isNotBlank(localIdValue1))
-                || (StringUtils.isNotBlank(localIdAssAuth2) && StringUtils.isNotBlank(localIdValue2)), "Not enough identifiers to proceed");
+        Validate.notBlank(localPrimaryAssigningAuthority);
+        Validate.notBlank(localPrimaryIdentifierValue);
 
         String identifier = ResourceMapParameters.create()
-                .put("Surname", surname)
-                .put("Forename", forename)
-                .put("LocalIdAssAuth1", localIdAssAuth1)
-                .put("LocalIdValue1", localIdValue1)
-                .put("LocalIdAssAuth2", localIdAssAuth2)
-                .put("LocalIdValue2", localIdValue2)
+                .put(SurnameKey, surname)
+                .put(ForenameKey, forename)
+                .put(PractitionerIdentifierAssigningAuthorityCodeKey, localPrimaryAssigningAuthority)
+                .put(PractitionerIdentifierValueKey, localPrimaryIdentifierValue)
                 .createIdentifyingString();
 
         return this.mapper.mapScopedResourceUuid(ResourceType.Practitioner, identifier);
@@ -269,12 +289,12 @@ public class ResourceMapper {
                 || StringUtils.isNotBlank(gmcCode), "Not enough identifiers to proceed");
 
         String identifier = ResourceMapParameters.create()
-                .put("Surname", surname)
-                .put("Forename", forename)
-                .put("LocalPrimaryIdentifierType", localPrimaryIdentifierType)
-                .put("LocalPrimaryIdentifierValue", localPrimaryIdentifierValue)
-                .put("ConsultantCode", consultantCode)
-                .put("GmcCode", gmcCode)
+                .put(SurnameKey, surname)
+                .put(ForenameKey, forename)
+                .put(PractitionerIdentifierTypeCodeKey, localPrimaryIdentifierType)
+                .put(PractitionerIdentifierValueKey, localPrimaryIdentifierValue)
+                .put(ConsultantCodeKey, consultantCode)
+                .put(GmcCodeKey, gmcCode)
                 .createIdentifyingString();
 
         return this.mapper.mapScopedResourceUuid(ResourceType.Practitioner, identifier);

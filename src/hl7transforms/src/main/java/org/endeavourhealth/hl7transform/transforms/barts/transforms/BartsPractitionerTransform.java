@@ -173,14 +173,20 @@ public class BartsPractitionerTransform extends ResourceTransformBase {
             return mapper
                     .getResourceMapper()
                     .mapPractitionerUuidWithGdpCode(surname, forename, gdpCode);
-        } else if (StringUtils.isNotEmpty(bartsOrgDoctorNumber) || StringUtils.isNotEmpty(bartsPersonnelNumber)) {
+        } else if (StringUtils.isNotEmpty(bartsOrgDoctorNumber)) {
             return mapper
                     .getResourceMapper()
                     .mapPractitionerUuidWithLocalHospitalIdentifiers(
                             surname,
                             forename,
                             BartsConstants.practitionerOrgDoctorNumberAssigningAuth,
-                            bartsOrgDoctorNumber,
+                            bartsOrgDoctorNumber);
+        } else if (StringUtils.isNotEmpty(bartsPersonnelNumber)) {
+            return mapper
+                    .getResourceMapper()
+                    .mapPractitionerUuidWithLocalHospitalIdentifiers(
+                            surname,
+                            forename,
                             BartsConstants.practitionerPersonnelIdAssigningAuth,
                             bartsPersonnelNumber);
         } else {
