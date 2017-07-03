@@ -1,8 +1,12 @@
 package org.endeavourhealth.hl7transform.transforms.barts.transforms;
 
+import org.apache.commons.lang3.StringUtils;
+import org.endeavourhealth.hl7parser.Hl7DateTime;
 import org.endeavourhealth.hl7parser.ParseException;
 import org.endeavourhealth.hl7parser.messages.AdtMessage;
+import org.endeavourhealth.hl7parser.segments.MrgSegment;
 import org.endeavourhealth.hl7transform.common.ResourceContainer;
+import org.endeavourhealth.hl7transform.common.ResourceTag;
 import org.endeavourhealth.hl7transform.common.ResourceTransformBase;
 import org.endeavourhealth.hl7transform.common.TransformException;
 import org.endeavourhealth.hl7transform.common.transform.EpisodeOfCareCommon;
@@ -112,21 +116,29 @@ public class BartsMergeTransform extends ResourceTransformBase {
     }
 
     private HashMap<MappedResourceUuid, UUID> remapPatientResources(AdtMessage sourceMessage) throws MapperException, ParseException {
-        List<MappedResourceUuid> mappedResourceUuids = BartsPatientTransform.getBartsPatientResourceUuidMappings(sourceMessage.getMrgSegment(), mapper);
+        String majorPatientIdentifierValue = BartsPatientTransform.getBartsPrimaryPatientIdentifierValue(sourceMessage);
+        String minorPatientIdentifierValue = BartsPatientTransform.getBartsPrimaryPatientIdentifierValue(sourceMessage.getMrgSegment());
 
-        HashMap<MappedResourceUuid, UUID> map = new HashMap<>();
-
-
-        return map;
+        return mapper.getResourceMapper().remapPatientResourceUuids(
+                null,
+                BartsConstants.primaryPatientIdentifierAssigningAuthority,
+                majorPatientIdentifierValue,
+                minorPatientIdentifierValue);
     }
 
     private HashMap<MappedResourceUuid, UUID> remapEpisodeResources(AdtMessage sourceMessage) throws MapperException, ParseException {
-        List<MappedResourceUuid> mappedResourceUuids = BartsEpisodeOfCareTransform.getBartsPatientResourceUuidMappings(sourceMessage.getMrgSegment(), mapper);
+        String majorPatientIdentifierValue = BartsPatientTransform.getBartsPrimaryPatientIdentifierValue(sourceMessage);
+        String minorPatientIdentifierValue = BartsPatientTransform.getBartsPrimaryPatientIdentifierValue(sourceMessage.getMrgSegment());
+        String episodeOfCareIdentifierValue = BartsEpisodeOfCareTransform.getBartsPrimaryEpisodeIdentifierValue(sourceMessage.getMrgSegment());
 
-        HashMap<MappedResourceUuid, UUID> map = new HashMap<>();
-
-
-        return map;
+        return mapper.getResourceMapper().remapEpisodeResourceUuids(
+                null,
+                BartsConstants.primaryPatientIdentifierAssigningAuthority,
+                majorPatientIdentifierValue,
+                minorPatientIdentifierValue,
+                BartsConstants.primaryEpisodeIdentifierTypeCode,
+                null,
+                episodeOfCareIdentifierValue);
     }
 
     private static Parameters.ParametersParameterComponent createStringParameter(String name, String value) {

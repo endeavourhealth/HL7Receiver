@@ -92,7 +92,7 @@ public class BartsEncounterTransform extends ResourceTransformBase {
                 BartsConstants.primaryEpisodeIdentifierTypeCode,
                 null,
                 episodeIdentifierValue,
-                source.getEvnSegment().getRecordedDateTime());
+                source.getEvnSegment().getRecordedDateTime().getLocalDateTime());
 
         target.setId(encounterUuid.toString());
     }

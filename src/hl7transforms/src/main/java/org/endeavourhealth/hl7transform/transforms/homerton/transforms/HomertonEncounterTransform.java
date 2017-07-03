@@ -95,7 +95,7 @@ public class HomertonEncounterTransform extends ResourceTransformBase {
                 null,
                 HomertonConstants.primaryEpisodeIdentifierAssigningAuthority,
                 episodeIdentifierValue,
-                source.getEvnSegment().getRecordedDateTime());
+                source.getEvnSegment().getRecordedDateTime().getLocalDateTime());
 
         target.setId(encounterUuid.toString());
     }

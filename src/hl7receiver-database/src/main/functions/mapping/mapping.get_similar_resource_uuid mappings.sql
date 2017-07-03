@@ -43,7 +43,11 @@ begin
 		r.resource_uuid
 	from mapping.resource_uuid r
 	where r.scope_id = _scope_id
-	and r.unique_identifier like _unique_identifier_prefix || '%';
+	and
+	(
+		r.unique_identifier = _unique_identifier_prefix
+		or r.unique_identifier like _unique_identifier_prefix || '-%'
+	);
 	
 end;
 $$ language plpgsql;

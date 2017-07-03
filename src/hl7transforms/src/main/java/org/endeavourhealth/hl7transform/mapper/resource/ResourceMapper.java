@@ -3,16 +3,30 @@ package org.endeavourhealth.hl7transform.mapper.resource;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Validate;
 import org.endeavourhealth.hl7parser.Hl7DateTime;
+import org.endeavourhealth.hl7parser.ParseException;
+import org.endeavourhealth.hl7parser.messages.AdtMessage;
 import org.endeavourhealth.hl7transform.common.TransformException;
 import org.endeavourhealth.hl7transform.mapper.Mapper;
 import org.endeavourhealth.hl7transform.mapper.exceptions.MapperException;
+import org.endeavourhealth.hl7transform.transforms.barts.transforms.BartsPatientTransform;
 import org.hl7.fhir.instance.model.ResourceType;
 
+import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.HashMap;
 import java.util.List;
 import java.util.UUID;
 
 public class ResourceMapper {
+
+    private static final String PatientIdentifierTypeCodeKey = "PatientIdentifierTypeCode";
+    private static final String PatientIdentifierAssigningAuthorityKey = "PatientIdentifierAssigningAuthority";
+    private static final String PatientIdentifierValueKey = "PatientIdentifierValue";
+    private static final String EpisodeIdentifierTypeCodeKey = "EpisodeIdentifierTypeCode";
+    private static final String EpisodeIdentifierAssigningAuthorityKey = "EpisodeIdentifierAssigningAuthority";
+    private static final String EpisodeIdentifierValueKey = "EpisodeIdentifierValue";
+    private static final String EncounterDateTimeKey = "EncounterDateTime";
+    private static final String OdsCodeKey = "OdsCode";
 
     private Mapper mapper;
 
@@ -21,7 +35,7 @@ public class ResourceMapper {
     }
 
     ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-    // Global UUIDs
+    // Mapping - Global UUIDs
     ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     public UUID mapClassOfLocationUuid(String classOfLocationName) throws MapperException {
         Validate.notBlank(classOfLocationName, "classOfLocationName");
@@ -44,7 +58,7 @@ public class ResourceMapper {
     }
 
     ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-    // Conditionally global/scoped UUIDs
+    // Mapping - Conditionally global/scoped UUIDs
     ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     public UUID mapOrganisationUuid(String odsCode, String name) throws MapperException {
         Validate.notBlank(name, "name");
@@ -53,7 +67,7 @@ public class ResourceMapper {
 
         if (StringUtils.isBlank(odsCode)) {
             identifier = ResourceMapParameters.create()
-                    .put("OdsCode", odsCode)
+                    .put(OdsCodeKey, odsCode)
                     .put("Name", name)
                     .createIdentifyingString();
 
@@ -61,14 +75,14 @@ public class ResourceMapper {
         }
 
         identifier = ResourceMapParameters.create()
-                .put("OdsCode", odsCode)
+                .put(OdsCodeKey, odsCode)
                 .createIdentifyingString();
 
         return this.mapper.mapGlobalResourceUuid(ResourceType.Organization, identifier);
     }
 
     ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-    // Scoped UUIDs
+    // Mapping - Scoped UUIDs
     ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     public UUID mapMessageHeaderUuid(String messageControlId) throws MapperException {
         Validate.notBlank(messageControlId);
@@ -92,18 +106,6 @@ public class ResourceMapper {
         return this.mapper.mapScopedResourceUuid(ResourceType.Parameters, identifier);
     }
 
-    public List<MappedResourceUuid> getPatientResourceUuidMappings(String patientIdentifierTypeCode, String patientIdentifierAssigningAuthority, String patientIdentifierValue) throws MapperException {
-
-        String identifier =
-                getPatientMap(
-                        patientIdentifierTypeCode,
-                        patientIdentifierAssigningAuthority,
-                        patientIdentifierValue)
-                        .createIdentifyingString();
-
-        return this.mapper.getScopedResourceUuidMappings(identifier);
-    }
-
     public UUID mapPatientUuid(String patientIdentifierTypeCode, String patientIdentifierAssigningAuthority, String patientIdentifierValue) throws MapperException {
 
         String identifier =
@@ -114,26 +116,6 @@ public class ResourceMapper {
                             .createIdentifyingString();
 
         return this.mapper.mapScopedResourceUuid(ResourceType.Patient, identifier);
-    }
-
-    public List<MappedResourceUuid> getEpisodeResourceUuidMappings(String patientIdentifierTypeCode,
-                               String patientIdentifierAssigningAuthority,
-                               String patientIdentifierValue,
-                               String episodeIdentifierTypeCode,
-                               String episodeIdentifierAssigningAuthority,
-                               String episodeIdentifierValue) throws MapperException {
-
-        String identifier =
-                getEpisodeMap(
-                        patientIdentifierTypeCode,
-                        patientIdentifierAssigningAuthority,
-                        patientIdentifierValue,
-                        episodeIdentifierTypeCode,
-                        episodeIdentifierAssigningAuthority,
-                        episodeIdentifierValue)
-                        .createIdentifyingString();
-
-        return this.mapper.getScopedResourceUuidMappings(identifier);
     }
 
     public UUID mapEpisodeUuid(String patientIdentifierTypeCode,
@@ -162,10 +144,9 @@ public class ResourceMapper {
                                  String episodeIdentifierTypeCode,
                                  String episodeIdentifierAssigningAuthority,
                                  String episodeIdentifierValue,
-                                 Hl7DateTime encounterDateTime) throws MapperException {
+                                 LocalDateTime encounterDateTime) throws MapperException {
 
         Validate.notNull(encounterDateTime, "encounterDateTime");
-        Validate.notNull(encounterDateTime.getLocalDateTime(), "encounterDateTime.getLocalDateTime()");
 
         String identifier = ResourceMapParameters.create()
                 .putExisting(getEpisodeMap(
@@ -175,7 +156,7 @@ public class ResourceMapper {
                         episodeIdentifierTypeCode,
                         episodeIdentifierAssigningAuthority,
                         episodeIdentifierValue))
-                .put("EncounterDateTime", encounterDateTime.getLocalDateTime().format(DateTimeFormatter.ISO_LOCAL_DATE_TIME))
+                .put(EncounterDateTimeKey, encounterDateTime.format(DateTimeFormatter.ISO_LOCAL_DATE_TIME))
                 .createIdentifyingString();
 
         return this.mapper.mapScopedResourceUuid(ResourceType.Encounter, identifier);
@@ -213,7 +194,7 @@ public class ResourceMapper {
         String identifier = ResourceMapParameters.create()
                 .put("Surname", surname)
                 .put("Forename", forename)
-                .put("OdsCode", odsCode)
+                .put(OdsCodeKey, odsCode)
                 .createIdentifyingString();
 
         return this.mapper.mapScopedResourceUuid(ResourceType.Practitioner, identifier);
@@ -299,6 +280,9 @@ public class ResourceMapper {
         return this.mapper.mapScopedResourceUuid(ResourceType.Practitioner, identifier);
     }
 
+    ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    // Helpers
+    ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     private static ResourceMapParameters getEpisodeMap(String patientIdentifierTypeCode,
                                                        String patientIdentifierAssigningAuthority,
                                                        String patientIdentifierValue,
@@ -313,12 +297,12 @@ public class ResourceMapper {
                 .putExisting(getPatientMap(patientIdentifierTypeCode, patientIdentifierAssigningAuthority, patientIdentifierValue));
 
         if (StringUtils.isNotEmpty(episodeIdentifierTypeCode))
-            resourceMapParameters.put("EpisodeIdentifierTypeCode", episodeIdentifierTypeCode);
+            resourceMapParameters.put(EpisodeIdentifierTypeCodeKey, episodeIdentifierTypeCode);
 
         if (StringUtils.isNotEmpty(episodeIdentifierAssigningAuthority))
-            resourceMapParameters.put("EpisodeIdentifierAssigningAuthority", episodeIdentifierAssigningAuthority);
+            resourceMapParameters.put(EpisodeIdentifierAssigningAuthorityKey, episodeIdentifierAssigningAuthority);
 
-        resourceMapParameters.put("EpisodeIdentifierValue", episodeIdentifierValue);
+        resourceMapParameters.put(EpisodeIdentifierValueKey, episodeIdentifierValue);
 
         return resourceMapParameters;
     }
@@ -333,13 +317,159 @@ public class ResourceMapper {
         ResourceMapParameters resourceMapParameters = ResourceMapParameters.create();
 
         if (StringUtils.isNotEmpty(patientIdentifierTypeCode))
-            resourceMapParameters.put("PatientIdentifierTypeCode", patientIdentifierTypeCode);
+            resourceMapParameters.put(PatientIdentifierTypeCodeKey, patientIdentifierTypeCode);
 
         if (StringUtils.isNotEmpty(patientIdentifierAssigningAuthority))
-            resourceMapParameters.put("PatientIdentifierAssigningAuthority", patientIdentifierAssigningAuthority);
+            resourceMapParameters.put(PatientIdentifierAssigningAuthorityKey, patientIdentifierAssigningAuthority);
 
-        resourceMapParameters.put("PatientIdentifierValue", patientIdentifierValue);
+        resourceMapParameters.put(PatientIdentifierValueKey, patientIdentifierValue);
 
         return resourceMapParameters;
+    }
+
+    ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    // Remapping
+    ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    private List<MappedResourceUuid> getPatientResourceUuidMappings(String patientIdentifierTypeCode,
+                                                                    String patientIdentifierAssigningAuthority,
+                                                                    String patientIdentifierValue) throws MapperException {
+
+        String identifier =
+                getPatientMap(
+                        patientIdentifierTypeCode,
+                        patientIdentifierAssigningAuthority,
+                        patientIdentifierValue)
+                        .createIdentifyingString();
+
+        return this.mapper.getScopedResourceUuidMappings(identifier);
+    }
+
+    public List<MappedResourceUuid> getEpisodeResourceUuidMappings(String patientIdentifierTypeCode,
+                                                                   String patientIdentifierAssigningAuthority,
+                                                                   String patientIdentifierValue,
+                                                                   String episodeIdentifierTypeCode,
+                                                                   String episodeIdentifierAssigningAuthority,
+                                                                   String episodeIdentifierValue) throws MapperException {
+
+        String identifier =
+                getEpisodeMap(
+                        patientIdentifierTypeCode,
+                        patientIdentifierAssigningAuthority,
+                        patientIdentifierValue,
+                        episodeIdentifierTypeCode,
+                        episodeIdentifierAssigningAuthority,
+                        episodeIdentifierValue)
+                        .createIdentifyingString();
+
+        return this.mapper.getScopedResourceUuidMappings(identifier);
+    }
+
+    public HashMap<MappedResourceUuid, UUID> remapPatientResourceUuids(String patientIdentifierTypeCode,
+                                                                       String patientIdentifierAssigningAuthority,
+                                                                       String majorPatientIdentifierValue,
+                                                                       String minorPatientIdentifierValue) throws MapperException, ParseException {
+
+        List<MappedResourceUuid> mappedResourceUuids = getPatientResourceUuidMappings(
+                patientIdentifierTypeCode,
+                patientIdentifierAssigningAuthority,
+                minorPatientIdentifierValue);
+
+        HashMap<MappedResourceUuid, UUID> result = new HashMap<>();
+
+        for (MappedResourceUuid mappedResourceUuid : mappedResourceUuids) {
+
+            UUID newResourceUuid;
+
+            switch (ResourceType.valueOf(mappedResourceUuid.getResourceType())) {
+                case Patient: continue;
+                case EpisodeOfCare: newResourceUuid = remapEpisodeOfCareUuid(mappedResourceUuid.getUniqueIdentifier(), majorPatientIdentifierValue); break;
+                case Encounter: newResourceUuid = remapEncounterUuid(mappedResourceUuid.getUniqueIdentifier(), majorPatientIdentifierValue); break;
+                default: throw new MapperException("ResourceType " + mappedResourceUuid.getResourceType() + " not expected when re-mapping resource UUIDs as part of merge");
+            }
+
+            if (newResourceUuid == null)
+                throw new MapperException("Could not re-map resource UUID for resource of type " + mappedResourceUuid.getResourceType());
+
+            result.put(mappedResourceUuid, newResourceUuid);
+        }
+
+        return result;
+    }
+
+    public HashMap<MappedResourceUuid, UUID> remapEpisodeResourceUuids(String patientIdentifierTypeCode,
+                                                                       String patientIdentifierAssigningAuthority,
+                                                                       String majorPatientIdentifierValue,
+                                                                       String minorPatientIdentifierValue,
+                                                                       String episodeIdentifierTypeCode,
+                                                                       String episodeIdentifierAssigningAuthority,
+                                                                       String episodeIdentifierValue) throws MapperException, ParseException {
+
+        List<MappedResourceUuid> mappedResourceUuids = getEpisodeResourceUuidMappings(
+                patientIdentifierTypeCode,
+                patientIdentifierAssigningAuthority,
+                minorPatientIdentifierValue,
+                episodeIdentifierTypeCode,
+                episodeIdentifierAssigningAuthority,
+                episodeIdentifierValue);
+
+        HashMap<MappedResourceUuid, UUID> result = new HashMap<>();
+
+        for (MappedResourceUuid mappedResourceUuid : mappedResourceUuids) {
+
+            UUID newResourceUuid;
+
+            switch (ResourceType.valueOf(mappedResourceUuid.getResourceType())) {
+                case EpisodeOfCare: newResourceUuid = remapEpisodeOfCareUuid(mappedResourceUuid.getUniqueIdentifier(), majorPatientIdentifierValue); break;
+                case Encounter: newResourceUuid = remapEncounterUuid(mappedResourceUuid.getUniqueIdentifier(), majorPatientIdentifierValue); break;
+                default: throw new MapperException("ResourceType " + mappedResourceUuid.getResourceType() + " not expected when re-mapping resource UUIDs as part of merge");
+            }
+
+            if (newResourceUuid == null)
+                throw new MapperException("Could not re-map resource UUID for resource of type " + mappedResourceUuid.getResourceType());
+
+            result.put(mappedResourceUuid, newResourceUuid);
+        }
+
+        return result;
+    }
+
+    private UUID remapEpisodeOfCareUuid(String existingUniqueIdentifier, String newPatientIdentifierValue) throws MapperException {
+
+        ResourceMapParameters resourceMapParameters = ResourceMapParameters.parse(existingUniqueIdentifier);
+
+        String patientIdentifierTypeCode = resourceMapParameters.get(PatientIdentifierTypeCodeKey);
+        String patientIdentifierAssigningAuthority = resourceMapParameters.get(PatientIdentifierAssigningAuthorityKey);
+        String episodeIdentifierTypeCode = resourceMapParameters.get(EpisodeIdentifierTypeCodeKey);
+        String episodeIdentifierAssigningAuthority = resourceMapParameters.get(EpisodeIdentifierAssigningAuthorityKey);
+        String episodeIdentifierValue = resourceMapParameters.get(EpisodeIdentifierValueKey);
+
+        return mapEpisodeUuid(
+                patientIdentifierTypeCode,
+                patientIdentifierAssigningAuthority,
+                newPatientIdentifierValue,
+                episodeIdentifierTypeCode,
+                episodeIdentifierAssigningAuthority,
+                episodeIdentifierValue);
+    }
+
+    private UUID remapEncounterUuid(String existingUniqueIdentifier, String newPatientIdentifierValue) throws MapperException {
+
+        ResourceMapParameters resourceMapParameters = ResourceMapParameters.parse(existingUniqueIdentifier);
+
+        String patientIdentifierTypeCode = resourceMapParameters.get(PatientIdentifierTypeCodeKey);
+        String patientIdentifierAssigningAuthority = resourceMapParameters.get(PatientIdentifierAssigningAuthorityKey);
+        String episodeIdentifierTypeCode = resourceMapParameters.get(EpisodeIdentifierTypeCodeKey);
+        String episodeIdentifierAssigningAuthority = resourceMapParameters.get(EpisodeIdentifierAssigningAuthorityKey);
+        String episodeIdentifierValue = resourceMapParameters.get(EpisodeIdentifierValueKey);
+        LocalDateTime encounterDateTime = LocalDateTime.parse(resourceMapParameters.get(EncounterDateTimeKey), DateTimeFormatter.ISO_LOCAL_DATE_TIME);
+
+        return mapEncounterUuid(
+                patientIdentifierTypeCode,
+                patientIdentifierAssigningAuthority,
+                newPatientIdentifierValue,
+                episodeIdentifierTypeCode,
+                episodeIdentifierAssigningAuthority,
+                episodeIdentifierValue,
+                encounterDateTime);
     }
 }
