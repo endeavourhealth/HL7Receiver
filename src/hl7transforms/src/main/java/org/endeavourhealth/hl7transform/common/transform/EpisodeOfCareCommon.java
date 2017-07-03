@@ -1,5 +1,6 @@
 package org.endeavourhealth.hl7transform.common.transform;
 
+import org.apache.commons.lang3.Validate;
 import org.endeavourhealth.common.utility.StreamExtension;
 import org.endeavourhealth.hl7parser.Hl7DateTime;
 import org.endeavourhealth.hl7parser.ParseException;
@@ -20,6 +21,9 @@ import java.util.List;
 public class EpisodeOfCareCommon {
 
     public static List<Cx> getAllEpisodeIdentifiers(AdtMessage source) {
+        Validate.notNull(source.getPidSegment());
+        Validate.notNull(source.getPv1Segment());
+
         List<Cx> episodeIdentifiers = new ArrayList<>();
 
         if (source.getPidSegment().getPatientAccountNumber() != null)

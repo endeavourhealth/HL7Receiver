@@ -41,6 +41,10 @@ public abstract class Transform {
         validateMinAndMaxSegmentCount(sourceMessage, segmentName, 1L, 1L);
     }
 
+    protected void validateExactlyTwoSegments(AdtMessage sourceMessage, String segmentName) throws TransformException {
+        validateMinAndMaxSegmentCount(sourceMessage, segmentName, 2L, 2L);
+    }
+
     protected void validateMaxSegmentCount(AdtMessage sourceMessage, String segmentName, long max) throws TransformException {
         if (sourceMessage.getSegmentCount(segmentName) > max)
             throw new TransformException(segmentName + " exists more than " + Long.toString(max) + " time(s)");

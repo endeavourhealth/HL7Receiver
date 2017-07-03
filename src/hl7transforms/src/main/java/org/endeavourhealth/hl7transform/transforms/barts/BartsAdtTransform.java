@@ -138,19 +138,21 @@ public class BartsAdtTransform extends Transform {
         validateExactlyOneSegment(sourceMessage, SegmentName.MSH);
         validateExactlyOneSegment(sourceMessage, SegmentName.EVN);
 
-        if (swapMessageType.contains(messageType)) {
-            validateMinAndMaxSegmentCount(sourceMessage, SegmentName.PID, 2, 2);
-            validateMinAndMaxSegmentCount(sourceMessage, SegmentName.PV1, 2, 2);
+        if (swapMessageType.equals(messageType)) {
+            validateExactlyTwoSegments(sourceMessage, SegmentName.PID);
+            validateExactlyTwoSegments(sourceMessage, SegmentName.PV1);
             return;
         }
 
         validateExactlyOneSegment(sourceMessage, SegmentName.PID);
-
         validateZeroOrOneSegments(sourceMessage, SegmentName.PV1);
-
         validateMaxSegmentCount(sourceMessage, SegmentName.PV2, sourceMessage.getSegmentCount(SegmentName.PV1));
 
-        if (BartsMergeTransform.MergeMessageTypes.contains(messageType))
+        if (BartsMergeTransform.MergeMessageTypes.contains(messageType)) {
             validateExactlyOneSegment(sourceMessage, SegmentName.MRG);
+
+            if (BartsMergeTransform.AdtA35MergeEncountersForSamePatient.equals(messageType))
+                validateExactlyOneSegment(sourceMessage, SegmentName.PV1);
+        }
     }
 }
