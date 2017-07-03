@@ -78,16 +78,16 @@ public class ResourceMapParameters {
     }
 
     private String escapeString(String string) {
-        string = StringUtils.replaceAll(string, equalsValueSeperator, equalsSeperatorEscape);
-        string = StringUtils.replaceAll(string, keyValuePairSeperator, keyValuePairSeperatorEscape);
-        string = StringUtils.replaceAll(string, repeatingValueSeperator, repeatingValueSeperatorEscape);
+        string = StringUtils.replace(string, equalsValueSeperator, equalsSeperatorEscape);
+        string = StringUtils.replace(string, keyValuePairSeperator, keyValuePairSeperatorEscape);
+        string = StringUtils.replace(string, repeatingValueSeperator, repeatingValueSeperatorEscape);
         return string;
     }
 
     private String unescapeString(String string) {
-        string = StringUtils.replaceAll(string, equalsSeperatorEscape, equalsValueSeperator);
-        string = StringUtils.replaceAll(string, keyValuePairSeperatorEscape, keyValuePairSeperator);
-        string = StringUtils.replaceAll(string, repeatingValueSeperatorEscape, repeatingValueSeperator);
+        string = StringUtils.replace(string, equalsSeperatorEscape, equalsValueSeperator);
+        string = StringUtils.replace(string, keyValuePairSeperatorEscape, keyValuePairSeperator);
+        string = StringUtils.replace(string, repeatingValueSeperatorEscape, repeatingValueSeperator);
         return string;
     }
 }
