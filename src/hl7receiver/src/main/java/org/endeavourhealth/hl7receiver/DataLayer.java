@@ -329,6 +329,21 @@ public class DataLayer implements IDBDigestLogger {
         return pgStoredProc.executeSingleRow((resultSet) -> UUID.fromString(resultSet.getString("get_resource_uuid")));
     }
 
+    public List<DbResourceUuidMapping> getSimilarResourceUuidMappings(String scopeName, String uniqueIdentifierPrefix) throws PgStoredProcException {
+
+        PgStoredProc pgStoredProc = new PgStoredProc(dataSource)
+                .setName("mapping.get_similar_resource_uuid_mappings")
+                .addParameter("_scope_name", scopeName)
+                .addParameter("_unique_identifier_prefix", uniqueIdentifierPrefix);
+
+        return pgStoredProc.executeQuery((resultSet) ->
+                new DbResourceUuidMapping()
+                        .setScopeId(resultSet.getString("scope_id"))
+                        .setResourceType(resultSet.getString("resource_type"))
+                        .setUniqueIdentifier(resultSet.getString("unique_identifier"))
+                        .setResourceUuid(UUID.fromString(resultSet.getString("resource_uuid"))));
+    }
+
     public DbCode getCode(String scopeName, String sourceCodeContextName, String sourceCode, String sourceCodeSystemIdentifier, String sourceTerm) throws PgStoredProcException {
 
         PgStoredProc pgStoredProc = new PgStoredProc(dataSource)

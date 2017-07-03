@@ -16,6 +16,7 @@ import org.endeavourhealth.hl7transform.common.converters.IdentifierConverter;
 import org.endeavourhealth.hl7transform.common.transform.EpisodeOfCareCommon;
 import org.endeavourhealth.hl7transform.mapper.Mapper;
 import org.endeavourhealth.hl7transform.mapper.exceptions.MapperException;
+import org.endeavourhealth.hl7transform.mapper.resource.MappedResourceUuid;
 import org.endeavourhealth.hl7transform.transforms.barts.constants.BartsConstants;
 import org.hl7.fhir.instance.model.*;
 import org.slf4j.Logger;
@@ -88,6 +89,19 @@ public class BartsEpisodeOfCareTransform extends ResourceTransformBase {
 
     private static UUID getBartsMappedEpisodeOfCareUuid(String patientIdentifierValue, String episodeIdentifierValue, Mapper mapper) throws MapperException {
         return mapper.getResourceMapper().mapEpisodeUuid(
+                null,
+                BartsConstants.primaryPatientIdentifierAssigningAuthority,
+                patientIdentifierValue,
+                BartsConstants.primaryEpisodeIdentifierTypeCode,
+                null,
+                episodeIdentifierValue);
+    }
+
+    public static List<MappedResourceUuid> getBartsPatientResourceUuidMappings(MrgSegment mrgSegment, Mapper mapper) throws MapperException, ParseException {
+        String patientIdentifierValue = BartsPatientTransform.getBartsPrimaryPatientIdentifierValue(mrgSegment);
+        String episodeIdentifierValue = getBartsPrimaryEpisodeIdentifierValue(mrgSegment);
+
+        return mapper.getResourceMapper().getEpisodeResourceUuidMappings(
                 null,
                 BartsConstants.primaryPatientIdentifierAssigningAuthority,
                 patientIdentifierValue,

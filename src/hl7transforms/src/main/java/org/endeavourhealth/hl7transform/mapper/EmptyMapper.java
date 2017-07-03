@@ -4,8 +4,10 @@ import org.endeavourhealth.hl7transform.mapper.code.MappedCode;
 import org.endeavourhealth.hl7transform.mapper.code.MappedCodeAction;
 import org.endeavourhealth.hl7transform.mapper.exceptions.MapperException;
 import org.endeavourhealth.hl7transform.mapper.organisation.MappedOrganisation;
+import org.endeavourhealth.hl7transform.mapper.resource.MappedResourceUuid;
 import org.hl7.fhir.instance.model.ResourceType;
 
+import java.util.List;
 import java.util.UUID;
 
 public class EmptyMapper extends Mapper {
@@ -23,6 +25,11 @@ public class EmptyMapper extends Mapper {
     @Override
     public UUID mapScopedResourceUuid(ResourceType resourceType, String identifier) throws MapperException {
         return UUID.randomUUID();
+    }
+
+    @Override
+    public List<MappedResourceUuid> getScopedResourceUuidMappings(String uniqueIdentifierPrefix) throws MapperException {
+        return null;
     }
 
     @Override

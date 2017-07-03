@@ -20,6 +20,7 @@ import org.endeavourhealth.hl7transform.common.converters.DateConverter;
 import org.endeavourhealth.hl7transform.common.transform.PatientCommon;
 import org.endeavourhealth.hl7transform.mapper.Mapper;
 import org.endeavourhealth.hl7transform.mapper.exceptions.MapperException;
+import org.endeavourhealth.hl7transform.mapper.resource.MappedResourceUuid;
 import org.endeavourhealth.hl7transform.transforms.barts.constants.BartsConstants;
 import org.endeavourhealth.hl7transform.common.converters.AddressConverter;
 import org.endeavourhealth.hl7transform.common.converters.IdentifierConverter;
@@ -91,6 +92,15 @@ public class BartsPatientTransform extends ResourceTransformBase {
 
     private static UUID mapBartsPatientUuid(String patientIdentifierValue, Mapper mapper) throws MapperException {
         return mapper.getResourceMapper().mapPatientUuid(
+                null,
+                BartsConstants.primaryPatientIdentifierAssigningAuthority,
+                patientIdentifierValue);
+    }
+
+    public static List<MappedResourceUuid> getBartsPatientResourceUuidMappings(MrgSegment mrgSegment, Mapper mapper) throws MapperException, ParseException {
+        String patientIdentifierValue = getBartsPrimaryPatientIdentifierValue(mrgSegment);
+
+        return mapper.getResourceMapper().getPatientResourceUuidMappings(
                 null,
                 BartsConstants.primaryPatientIdentifierAssigningAuthority,
                 patientIdentifierValue);

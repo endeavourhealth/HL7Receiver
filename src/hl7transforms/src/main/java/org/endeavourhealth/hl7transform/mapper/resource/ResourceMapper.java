@@ -92,10 +92,21 @@ public class ResourceMapper {
         return this.mapper.mapScopedResourceUuid(ResourceType.Parameters, identifier);
     }
 
-    public UUID mapPatientUuid(String patientIdentifierTypeCode, String patientIdentifierAssigningAuthority, String patientIdentifierValue) throws MapperException {
-        String identifier;
+    public List<MappedResourceUuid> getPatientResourceUuidMappings(String patientIdentifierTypeCode, String patientIdentifierAssigningAuthority, String patientIdentifierValue) throws MapperException {
 
-            identifier =
+        String identifier =
+                getPatientMap(
+                        patientIdentifierTypeCode,
+                        patientIdentifierAssigningAuthority,
+                        patientIdentifierValue)
+                        .createIdentifyingString();
+
+        return this.mapper.getScopedResourceUuidMappings(identifier);
+    }
+
+    public UUID mapPatientUuid(String patientIdentifierTypeCode, String patientIdentifierAssigningAuthority, String patientIdentifierValue) throws MapperException {
+
+        String identifier =
                     getPatientMap(
                             patientIdentifierTypeCode,
                             patientIdentifierAssigningAuthority,
@@ -103,6 +114,26 @@ public class ResourceMapper {
                             .createIdentifyingString();
 
         return this.mapper.mapScopedResourceUuid(ResourceType.Patient, identifier);
+    }
+
+    public List<MappedResourceUuid> getEpisodeResourceUuidMappings(String patientIdentifierTypeCode,
+                               String patientIdentifierAssigningAuthority,
+                               String patientIdentifierValue,
+                               String episodeIdentifierTypeCode,
+                               String episodeIdentifierAssigningAuthority,
+                               String episodeIdentifierValue) throws MapperException {
+
+        String identifier =
+                getEpisodeMap(
+                        patientIdentifierTypeCode,
+                        patientIdentifierAssigningAuthority,
+                        patientIdentifierValue,
+                        episodeIdentifierTypeCode,
+                        episodeIdentifierAssigningAuthority,
+                        episodeIdentifierValue)
+                        .createIdentifyingString();
+
+        return this.mapper.getScopedResourceUuidMappings(identifier);
     }
 
     public UUID mapEpisodeUuid(String patientIdentifierTypeCode,

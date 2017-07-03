@@ -3,13 +3,17 @@ package org.endeavourhealth.hl7receiver.mapping;
 import org.endeavourhealth.hl7receiver.DataLayer;
 import org.endeavourhealth.hl7receiver.model.db.DbCode;
 import org.endeavourhealth.hl7receiver.model.db.DbOrganisation;
+import org.endeavourhealth.hl7receiver.model.db.DbResourceUuidMapping;
 import org.endeavourhealth.hl7transform.mapper.code.MappedCode;
 import org.endeavourhealth.hl7transform.mapper.code.MappedCodeAction;
 import org.endeavourhealth.hl7transform.mapper.exceptions.MapperException;
 import org.endeavourhealth.hl7transform.mapper.organisation.MappedOrganisation;
+import org.endeavourhealth.hl7transform.mapper.resource.MappedResourceUuid;
 import org.hl7.fhir.instance.model.ResourceType;
 
+import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 public class Mapper extends org.endeavourhealth.hl7transform.mapper.Mapper {
 
@@ -75,6 +79,24 @@ public class Mapper extends org.endeavourhealth.hl7transform.mapper.Mapper {
 
         } catch (Exception e) {
             throw new MapperException("Exception while getting resource UUID, see cause", e);
+        }
+    }
+
+    @Override
+    public List<MappedResourceUuid> getScopedResourceUuidMappings(String uniqueIdentifierPrefix) throws MapperException {
+        try {
+            List<DbResourceUuidMapping> resourceUuidMappings = this.dataLayer.getSimilarResourceUuidMappings(this.sendingFacility, uniqueIdentifierPrefix);
+
+            return resourceUuidMappings
+                    .stream()
+                    .map(t -> new MappedResourceUuid()
+                            .setResourceType(t.getResourceType())
+                            .setUniqueIdentifier(t.getUniqueIdentifier())
+                            .setResourceUuid(t.getResourceUuid()))
+                    .collect(Collectors.toList());
+
+        } catch (Exception e) {
+            throw new MapperException("Exception while getting similar resource UUID mappings, see cause", e);
         }
     }
 

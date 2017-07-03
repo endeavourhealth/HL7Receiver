@@ -5,15 +5,16 @@ import org.endeavourhealth.hl7parser.messages.AdtMessage;
 import org.endeavourhealth.hl7transform.common.ResourceContainer;
 import org.endeavourhealth.hl7transform.common.ResourceTransformBase;
 import org.endeavourhealth.hl7transform.common.TransformException;
+import org.endeavourhealth.hl7transform.common.transform.EpisodeOfCareCommon;
 import org.endeavourhealth.hl7transform.common.transform.MergeCommon;
 import org.endeavourhealth.hl7transform.mapper.Mapper;
 import org.endeavourhealth.hl7transform.mapper.exceptions.MapperException;
+import org.endeavourhealth.hl7transform.mapper.resource.MappedResourceUuid;
+import org.endeavourhealth.hl7transform.transforms.barts.constants.BartsConstants;
 import org.hl7.fhir.instance.model.Parameters;
 import org.hl7.fhir.instance.model.ResourceType;
 
-import java.util.Arrays;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 
 public class BartsMergeTransform extends ResourceTransformBase {
 
@@ -54,16 +55,13 @@ public class BartsMergeTransform extends ResourceTransformBase {
         UUID majorPatientUuid = getMajorPatientUuid(sourceMessage);
         UUID minorPatientUuid = getMinorPatientUuid(sourceMessage);
 
+        HashMap<MappedResourceUuid, UUID> resourceMap = remapPatientResources(sourceMessage);
+
         Parameters parameters = new Parameters()
                 .addParameter(createStringParameter("ParametersType", parametersType))
                 .addParameter(createStringParameter("MajorPatientUuid", majorPatientUuid.toString()))
                 .addParameter(createStringParameter("MinorPatientUuid", minorPatientUuid.toString()))
-                .addParameter(new Parameters.ParametersParameterComponent()
-                    .setName("OldToNewResourceMap")
-                        .addPart(createStringParameter("EpisodeOfCare/" + UUID.randomUUID().toString(), "EpisodeOfCare/" + UUID.randomUUID().toString()))
-                        .addPart(createStringParameter("Encounter/" + UUID.randomUUID().toString(), "Encounter/" + UUID.randomUUID().toString()))
-                        .addPart(createStringParameter("Encounter/" + UUID.randomUUID().toString(), "Encounter/" + UUID.randomUUID().toString()))
-                        .addPart(createStringParameter("EpisodeOfCare/" + UUID.randomUUID().toString(), "EpisodeOfCare/" + UUID.randomUUID().toString())));
+                .addParameter(MergeCommon.createOldToNewResourceMap(resourceMap));
 
         parameters.setId(getParametersUuid(messageControlId, parametersType).toString());
 
@@ -99,20 +97,36 @@ public class BartsMergeTransform extends ResourceTransformBase {
         UUID minorPatientUuid = getMinorPatientUuid(sourceMessage);
         UUID minorPatientEpisodeOfCareUuid = getMinorEpisodeOfCareUuid(sourceMessage);
 
+        HashMap<MappedResourceUuid, UUID> resourceMap = remapEpisodeResources(sourceMessage);
+
         Parameters parameters = new Parameters()
                 .addParameter(createStringParameter("ParametersType", parametersType))
                 .addParameter(createStringParameter("MajorPatientUuid", majorPatientUuid.toString()))
                 .addParameter(createStringParameter("MinorPatientUuid", minorPatientUuid.toString()))
                 .addParameter(createStringParameter("MinorPatientEpisodeOfCareUuid", minorPatientEpisodeOfCareUuid.toString()))
-                .addParameter(new Parameters.ParametersParameterComponent()
-                        .setName("OldToNewResourceMap")
-                        .addPart(createStringParameter("EpisodeOfCare/" + UUID.randomUUID().toString(), "EpisodeOfCare/" + UUID.randomUUID().toString()))
-                        .addPart(createStringParameter("Encounter/" + UUID.randomUUID().toString(), "Encounter/" + UUID.randomUUID().toString()))
-                        .addPart(createStringParameter("Encounter/" + UUID.randomUUID().toString(), "Encounter/" + UUID.randomUUID().toString())));
+                .addParameter(MergeCommon.createOldToNewResourceMap(resourceMap));
 
         parameters.setId(getParametersUuid(messageControlId, parametersType).toString());
 
         return parameters;
+    }
+
+    private HashMap<MappedResourceUuid, UUID> remapPatientResources(AdtMessage sourceMessage) throws MapperException, ParseException {
+        List<MappedResourceUuid> mappedResourceUuids = BartsPatientTransform.getBartsPatientResourceUuidMappings(sourceMessage.getMrgSegment(), mapper);
+
+        HashMap<MappedResourceUuid, UUID> map = new HashMap<>();
+
+
+        return map;
+    }
+
+    private HashMap<MappedResourceUuid, UUID> remapEpisodeResources(AdtMessage sourceMessage) throws MapperException, ParseException {
+        List<MappedResourceUuid> mappedResourceUuids = BartsEpisodeOfCareTransform.getBartsPatientResourceUuidMappings(sourceMessage.getMrgSegment(), mapper);
+
+        HashMap<MappedResourceUuid, UUID> map = new HashMap<>();
+
+
+        return map;
     }
 
     private static Parameters.ParametersParameterComponent createStringParameter(String name, String value) {
