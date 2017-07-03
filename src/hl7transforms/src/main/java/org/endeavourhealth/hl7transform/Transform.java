@@ -41,11 +41,15 @@ public abstract class Transform {
         validateMinAndMaxSegmentCount(sourceMessage, segmentName, 1L, 1L);
     }
 
+    protected void validateMaxSegmentCount(AdtMessage sourceMessage, String segmentName, long max) throws TransformException {
+        if (sourceMessage.getSegmentCount(segmentName) > max)
+            throw new TransformException(segmentName + " exists more than " + Long.toString(max) + " time(s)");
+    }
+
     protected void validateMinAndMaxSegmentCount(AdtMessage sourceMessage, String segmentName, long min, long max) throws TransformException {
         if (sourceMessage.getSegmentCount(segmentName) < min)
             throw new TransformException(segmentName + " segment exists less than " + Long.toString(min) + " time(s)");
 
-        if (sourceMessage.getSegmentCount(segmentName) > max)
-            throw new TransformException(segmentName + " exists more than " + Long.toString(max) + " time(s)");
+        validateMaxSegmentCount(sourceMessage, segmentName, max);
     }
 }

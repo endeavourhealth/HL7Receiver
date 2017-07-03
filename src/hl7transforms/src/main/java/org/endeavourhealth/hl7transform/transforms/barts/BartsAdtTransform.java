@@ -131,26 +131,24 @@ public class BartsAdtTransform extends Transform {
     }
 
     private void validateSegmentCounts(AdtMessage sourceMessage) throws TransformException {
-        // improve segment count definitions
+        final String swapMessageType = "ADT^A17";
 
         String messageType = StringUtils.trim(sourceMessage.getMshSegment().getMessageType());
-        List<String> swapMessageTypes = Arrays.asList("ADT^A17");
 
         validateExactlyOneSegment(sourceMessage, SegmentName.MSH);
         validateExactlyOneSegment(sourceMessage, SegmentName.EVN);
 
-        if (!swapMessageTypes.contains(messageType))
-            validateExactlyOneSegment(sourceMessage, SegmentName.PID);
-        else
+        if (swapMessageType.contains(messageType)) {
             validateMinAndMaxSegmentCount(sourceMessage, SegmentName.PID, 2, 2);
-
-        if (!swapMessageTypes.contains(messageType)) {
-            validateZeroOrOneSegments(sourceMessage, SegmentName.PV1);
-
-            long segmentCount = sourceMessage.getSegmentCount(SegmentName.PV1);
-
-            validateMinAndMaxSegmentCount(sourceMessage, SegmentName.PV2, 0, segmentCount);
+            validateMinAndMaxSegmentCount(sourceMessage, SegmentName.PV1, 2, 2);
+            return;
         }
+
+        validateExactlyOneSegment(sourceMessage, SegmentName.PID);
+
+        validateZeroOrOneSegments(sourceMessage, SegmentName.PV1);
+
+        validateMaxSegmentCount(sourceMessage, SegmentName.PV2, sourceMessage.getSegmentCount(SegmentName.PV1));
 
         if (BartsMergeTransform.MergeMessageTypes.contains(messageType))
             validateExactlyOneSegment(sourceMessage, SegmentName.MRG);
