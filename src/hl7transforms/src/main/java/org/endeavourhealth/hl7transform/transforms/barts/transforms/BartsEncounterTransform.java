@@ -170,6 +170,7 @@ public class BartsEncounterTransform extends ResourceTransformBase {
 
         switch (otherPatientClass) {
             case "RECURRING": return "recurring";
+            case "WAITLIST": return "waitinglist";
 
             default: throw new TransformException(otherPatientClass + " other patient class not recognised");
         }
