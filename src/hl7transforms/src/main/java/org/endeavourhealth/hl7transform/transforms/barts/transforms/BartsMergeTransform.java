@@ -1,12 +1,16 @@
 package org.endeavourhealth.hl7transform.transforms.barts.transforms;
 
+import org.apache.commons.lang3.Validate;
 import org.endeavourhealth.hl7parser.ParseException;
+import org.endeavourhealth.hl7parser.datatypes.Cx;
 import org.endeavourhealth.hl7parser.messages.AdtMessage;
 import org.endeavourhealth.hl7parser.messages.AdtMessageType;
+import org.endeavourhealth.hl7parser.segments.SegmentName;
 import org.endeavourhealth.hl7transform.common.ResourceContainer;
 import org.endeavourhealth.hl7transform.common.ResourceTransformBase;
 import org.endeavourhealth.hl7transform.common.TransformException;
 import org.endeavourhealth.hl7transform.common.transform.MergeCommon;
+import org.endeavourhealth.hl7transform.common.transform.PatientCommon;
 import org.endeavourhealth.hl7transform.mapper.Mapper;
 import org.endeavourhealth.hl7transform.mapper.exceptions.MapperException;
 import org.endeavourhealth.hl7transform.mapper.resource.MappedResourceUuid;
@@ -50,8 +54,8 @@ public class BartsMergeTransform extends ResourceTransformBase {
         final String parametersType = "MergeTwoPatients";
 
         String messageControlId = sourceMessage.getMshSegment().getMessageControlId();
-        UUID majorPatientUuid = getMajorPatientUuid(sourceMessage);
-        UUID minorPatientUuid = getMinorPatientUuid(sourceMessage);
+        UUID majorPatientUuid = getPatientUuid(sourceMessage, SegmentName.PID);
+        UUID minorPatientUuid = getPatientUuid(sourceMessage, SegmentName.MRG);
 
         HashMap<MappedResourceUuid, UUID> resourceMap = remapPatientResources(sourceMessage);
 
@@ -71,9 +75,9 @@ public class BartsMergeTransform extends ResourceTransformBase {
         final String parametersType = "MergeEpisodesForTheSamePatient";
 
         String messageControlId = sourceMessage.getMshSegment().getMessageControlId();
-        UUID patientUuid = getMajorPatientUuid(sourceMessage);
-        UUID majorEpisodeOfCareUuid = getMajorEpisodeOfCareUuid(sourceMessage);
-        UUID minorEpisodeOfCareUuid = getMinorEpisodeOfCareUuid(sourceMessage);
+        UUID patientUuid = getPatientUuid(sourceMessage, SegmentName.PID);
+        UUID majorEpisodeOfCareUuid = getEpisodeOfCareUuid(sourceMessage, SegmentName.PID, SegmentName.PV1);
+        UUID minorEpisodeOfCareUuid = getEpisodeOfCareUuid(sourceMessage, SegmentName.PID, SegmentName.MRG);
 
         Parameters parameters = new Parameters()
                 .addParameter(createStringParameter("ParametersType", parametersType))
@@ -91,9 +95,9 @@ public class BartsMergeTransform extends ResourceTransformBase {
         final String parametersType = "MoveEpisodeBetweenPatients";
 
         String messageControlId = sourceMessage.getMshSegment().getMessageControlId();
-        UUID majorPatientUuid = getMajorPatientUuid(sourceMessage);
-        UUID minorPatientUuid = getMinorPatientUuid(sourceMessage);
-        UUID minorPatientEpisodeOfCareUuid = getMinorEpisodeOfCareUuid(sourceMessage);
+        UUID majorPatientUuid = getPatientUuid(sourceMessage, SegmentName.PID);
+        UUID minorPatientUuid = getPatientUuid(sourceMessage, SegmentName.MRG);
+        UUID minorPatientEpisodeOfCareUuid = getEpisodeOfCareUuid(sourceMessage, SegmentName.MRG, SegmentName.MRG);
 
         HashMap<MappedResourceUuid, UUID> resourceMap = remapEpisodeResources(sourceMessage);
 
@@ -109,9 +113,9 @@ public class BartsMergeTransform extends ResourceTransformBase {
         return parameters;
     }
 
-    private HashMap<MappedResourceUuid, UUID> remapPatientResources(AdtMessage sourceMessage) throws MapperException, ParseException {
-        String majorPatientIdentifierValue = BartsPatientTransform.getBartsPrimaryPatientIdentifierValue(sourceMessage);
-        String minorPatientIdentifierValue = BartsPatientTransform.getBartsPrimaryPatientIdentifierValue(sourceMessage.getMrgSegment().getPriorPatientIdentifierList());
+    private HashMap<MappedResourceUuid, UUID> remapPatientResources(AdtMessage sourceMessage) throws MapperException, ParseException, TransformException {
+        String majorPatientIdentifierValue = getPatientIdentifierValue(sourceMessage, SegmentName.PID);
+        String minorPatientIdentifierValue = getPatientIdentifierValue(sourceMessage, SegmentName.MRG);
 
         return mapper.getResourceMapper().remapPatientResourceUuids(
                 null,
@@ -120,10 +124,10 @@ public class BartsMergeTransform extends ResourceTransformBase {
                 minorPatientIdentifierValue);
     }
 
-    private HashMap<MappedResourceUuid, UUID> remapEpisodeResources(AdtMessage sourceMessage) throws MapperException, ParseException {
-        String majorPatientIdentifierValue = BartsPatientTransform.getBartsPrimaryPatientIdentifierValue(sourceMessage);
-        String minorPatientIdentifierValue = BartsPatientTransform.getBartsPrimaryPatientIdentifierValue(sourceMessage.getMrgSegment().getPriorPatientIdentifierList());
-        String episodeOfCareIdentifierValue = BartsEpisodeOfCareTransform.getBartsPrimaryEpisodeIdentifierValue(Arrays.asList(sourceMessage.getMrgSegment().getPriorVisitNumber()));
+    private HashMap<MappedResourceUuid, UUID> remapEpisodeResources(AdtMessage sourceMessage) throws MapperException, ParseException, TransformException {
+        String majorPatientIdentifierValue = getPatientIdentifierValue(sourceMessage, SegmentName.PID);
+        String minorPatientIdentifierValue = getPatientIdentifierValue(sourceMessage, SegmentName.MRG);
+        String episodeOfCareIdentifierValue = getEpisodeIdentifierValue(sourceMessage, SegmentName.MRG);
 
         return mapper.getResourceMapper().remapEpisodeResourceUuids(
                 null,
@@ -143,45 +147,55 @@ public class BartsMergeTransform extends ResourceTransformBase {
         return mapper.getResourceMapper().mapParametersUuid(messageControlId, parametersType);
     }
 
-    private UUID getMajorPatientUuid(AdtMessage sourceMessage) throws TransformException, MapperException {
-        UUID majorPatientUuid = BartsPatientTransform.getBartsMappedPatientUuid(sourceMessage, mapper);
+    private UUID getPatientUuid(AdtMessage sourceMessage, String sourceSegmentName) throws TransformException, MapperException, ParseException {
+        Validate.notEmpty(sourceSegmentName);
 
-        if (majorPatientUuid == null)
-            throw new TransformException("MajorPatientUuid is null");
+        List<Cx> patientIdentifierList = getPatientIdentifierList(sourceMessage, sourceSegmentName);
+        UUID patientUuid = BartsPatientTransform.getBartsMappedPatientUuid(patientIdentifierList, mapper);
 
-        return majorPatientUuid;
+        if (patientUuid == null)
+            throw new TransformException("PatientUuid is null");
+
+        return patientUuid;
     }
 
-    private UUID getMinorPatientUuid(AdtMessage sourceMessage) throws TransformException, ParseException, MapperException {
-        if (!sourceMessage.hasMrgSegment())
-            throw new TransformException("MRG segment is empty");
+    private UUID getEpisodeOfCareUuid(AdtMessage sourceMessage, String patientIdentifierSourceSegmentName, String episodeIdentifierSourceSegmentName) throws MapperException, TransformException, ParseException {
+        Validate.notNull(sourceMessage);
+        Validate.notEmpty(patientIdentifierSourceSegmentName);
+        Validate.notEmpty(episodeIdentifierSourceSegmentName);
 
-        UUID minorPatientUuid = BartsPatientTransform.getBartsMappedPatientUuid(sourceMessage.getMrgSegment().getPriorPatientIdentifierList(), mapper);
+        List<Cx> patientIdentifierList = getPatientIdentifierList(sourceMessage, patientIdentifierSourceSegmentName);
+        List<Cx> episodeIdentifierList = getEpisodeIdentifierList(sourceMessage, episodeIdentifierSourceSegmentName);
 
-        if (minorPatientUuid == null)
-            throw new TransformException("MinorPatientUuid is null");
+        UUID episodeOfCareUuid = BartsEpisodeOfCareTransform.getBartsMappedEpisodeOfCareUuid(patientIdentifierList, episodeIdentifierList, mapper);
 
-        return minorPatientUuid;
+        if (episodeOfCareUuid == null)
+            throw new TransformException("EpisodeOfCareUuid is null");
+
+        return episodeOfCareUuid;
     }
 
-    private UUID getMajorEpisodeOfCareUuid(AdtMessage sourceMessage) throws MapperException, TransformException {
-        UUID majorEpisodeOfCareUuid = BartsEpisodeOfCareTransform.getBartsMappedEpisodeOfCareUuid(sourceMessage, mapper);
-
-        if (majorEpisodeOfCareUuid == null)
-            throw new TransformException("MajorEpisodeOfCareUuid is null");
-
-        return majorEpisodeOfCareUuid;
+    private static String getPatientIdentifierValue(AdtMessage sourceMessage, String sourceSegmentName) throws TransformException, ParseException {
+        return BartsPatientTransform.getBartsPrimaryPatientIdentifierValue(getPatientIdentifierList(sourceMessage, sourceSegmentName));
     }
 
-    private UUID getMinorEpisodeOfCareUuid(AdtMessage sourceMessage) throws MapperException, TransformException, ParseException {
-        if (!sourceMessage.hasMrgSegment())
-            throw new TransformException("MRG segment is empty");
+    private static String getEpisodeIdentifierValue(AdtMessage sourceMessage, String sourceSegmentName) throws TransformException, ParseException {
+        return BartsEpisodeOfCareTransform.getBartsPrimaryEpisodeIdentifierValue(getEpisodeIdentifierList(sourceMessage, sourceSegmentName));
+    }
 
-        UUID minorEpisodeOfCareUuid = BartsEpisodeOfCareTransform.getBartsMappedEpisodeOfCareUuid(sourceMessage.getMrgSegment(), mapper);
+    private static List<Cx> getPatientIdentifierList(AdtMessage sourceMessage, String sourceSegmentName) throws TransformException, ParseException {
+        switch (sourceSegmentName) {
+            case SegmentName.PID: return PatientCommon.getAllPatientIdentifiers(sourceMessage);
+            case SegmentName.MRG: return sourceMessage.getMrgSegment().getPriorPatientIdentifierList();
+            default: throw new TransformException("Patient identifier not found in segment " + sourceSegmentName);
+        }
+    }
 
-        if (minorEpisodeOfCareUuid == null)
-            throw new TransformException("MinorEpisodeOfCareUuid is null");
-
-        return minorEpisodeOfCareUuid;
+    private static List<Cx> getEpisodeIdentifierList(AdtMessage sourceMessage, String sourceSegmentName) throws TransformException, ParseException {
+        switch (sourceSegmentName) {
+            case SegmentName.PV1: return Arrays.asList(sourceMessage.getPv1Segment().getVisitNumber());
+            case SegmentName.MRG: return Arrays.asList(sourceMessage.getMrgSegment().getPriorVisitNumber());
+            default: throw new TransformException("Patient identifier not found in segment " + sourceSegmentName);
+        }
     }
 }

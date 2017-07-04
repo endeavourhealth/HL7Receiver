@@ -4,7 +4,6 @@ import org.endeavourhealth.hl7parser.Hl7DateTime;
 import org.endeavourhealth.hl7parser.ParseException;
 import org.endeavourhealth.hl7parser.datatypes.Cx;
 import org.endeavourhealth.hl7parser.messages.AdtMessage;
-import org.endeavourhealth.hl7parser.segments.MrgSegment;
 import org.endeavourhealth.hl7parser.segments.Pv1Segment;
 import org.endeavourhealth.hl7transform.common.ResourceContainer;
 import org.endeavourhealth.hl7transform.common.ResourceTag;
@@ -19,7 +18,6 @@ import org.hl7.fhir.instance.model.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
 
@@ -69,16 +67,16 @@ public class BartsEpisodeOfCareTransform extends ResourceTransformBase {
         return EpisodeOfCareCommon.getEpisodeIdentifierValueByTypeCode(cxs, BartsConstants.primaryEpisodeIdentifierTypeCode);
     }
 
-    public static UUID getBartsMappedEpisodeOfCareUuid(AdtMessage source, Mapper mapper) throws MapperException {
+    private static UUID getBartsMappedEpisodeOfCareUuid(AdtMessage source, Mapper mapper) throws MapperException {
         String patientIdentifierValue = BartsPatientTransform.getBartsPrimaryPatientIdentifierValue(source);
         String episodeIdentifierValue = getBartsPrimaryEpisodeIdentifierValue(source);
 
         return getBartsMappedEpisodeOfCareUuid(patientIdentifierValue, episodeIdentifierValue, mapper);
     }
 
-    public static UUID getBartsMappedEpisodeOfCareUuid(MrgSegment source, Mapper mapper) throws MapperException, ParseException {
-        String patientIdentifierValue = BartsPatientTransform.getBartsPrimaryPatientIdentifierValue(source.getPriorPatientIdentifierList());
-        String episodeIdentifierValue = getBartsPrimaryEpisodeIdentifierValue(Arrays.asList(source.getPriorVisitNumber()));
+    public static UUID getBartsMappedEpisodeOfCareUuid(List<Cx> patientIdentifierList, List<Cx> episodeIdentifierList, Mapper mapper) throws MapperException, ParseException {
+        String patientIdentifierValue = BartsPatientTransform.getBartsPrimaryPatientIdentifierValue(patientIdentifierList);
+        String episodeIdentifierValue = getBartsPrimaryEpisodeIdentifierValue(episodeIdentifierList);
 
         return getBartsMappedEpisodeOfCareUuid(patientIdentifierValue, episodeIdentifierValue, mapper);
     }

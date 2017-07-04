@@ -72,7 +72,7 @@ public class BartsPatientTransform extends ResourceTransformBase {
         target.setId(patientUuid.toString());
     }
 
-    public static UUID getBartsMappedPatientUuid(AdtMessage source, Mapper mapper) throws MapperException {
+    private static UUID getBartsMappedPatientUuid(AdtMessage source, Mapper mapper) throws MapperException {
         String patientIdentifierValue = getBartsPrimaryPatientIdentifierValue(source);
 
         return mapBartsPatientUuid(patientIdentifierValue, mapper);

@@ -2,7 +2,6 @@ package org.endeavourhealth.hl7transform.transforms.barts.transforms;
 
 import org.apache.commons.lang3.StringUtils;
 import org.endeavourhealth.common.fhir.CodeableConceptHelper;
-import org.endeavourhealth.common.fhir.ExtensionConverter;
 import org.endeavourhealth.common.fhir.FhirExtensionUri;
 import org.endeavourhealth.common.fhir.ReferenceHelper;
 import org.endeavourhealth.common.fhir.schema.EncounterParticipantType;
@@ -20,7 +19,6 @@ import org.endeavourhealth.hl7transform.common.ResourceTransformBase;
 import org.endeavourhealth.hl7transform.common.TransformException;
 import org.endeavourhealth.hl7transform.common.converters.DateTimeHelper;
 import org.endeavourhealth.hl7transform.common.transform.EncounterCommon;
-import org.endeavourhealth.hl7transform.common.transform.EpisodeOfCareCommon;
 import org.endeavourhealth.hl7transform.common.transform.LocationCommon;
 import org.endeavourhealth.hl7transform.mapper.Mapper;
 import org.endeavourhealth.hl7transform.mapper.exceptions.MapperException;
