@@ -123,7 +123,7 @@ public class BartsMergeTransform extends ResourceTransformBase {
     private HashMap<MappedResourceUuid, UUID> remapEpisodeResources(AdtMessage sourceMessage) throws MapperException, ParseException {
         String majorPatientIdentifierValue = BartsPatientTransform.getBartsPrimaryPatientIdentifierValue(sourceMessage);
         String minorPatientIdentifierValue = BartsPatientTransform.getBartsPrimaryPatientIdentifierValue(sourceMessage.getMrgSegment().getPriorPatientIdentifierList());
-        String episodeOfCareIdentifierValue = BartsEpisodeOfCareTransform.getBartsPrimaryEpisodeIdentifierValue(sourceMessage.getMrgSegment());
+        String episodeOfCareIdentifierValue = BartsEpisodeOfCareTransform.getBartsPrimaryEpisodeIdentifierValue(Arrays.asList(sourceMessage.getMrgSegment().getPriorVisitNumber()));
 
         return mapper.getResourceMapper().remapEpisodeResourceUuids(
                 null,
@@ -156,7 +156,7 @@ public class BartsMergeTransform extends ResourceTransformBase {
         if (!sourceMessage.hasMrgSegment())
             throw new TransformException("MRG segment is empty");
 
-        UUID minorPatientUuid = BartsPatientTransform.getBartsMappedPatientUuid(sourceMessage.getMrgSegment(), mapper);
+        UUID minorPatientUuid = BartsPatientTransform.getBartsMappedPatientUuid(sourceMessage.getMrgSegment().getPriorPatientIdentifierList(), mapper);
 
         if (minorPatientUuid == null)
             throw new TransformException("MinorPatientUuid is null");

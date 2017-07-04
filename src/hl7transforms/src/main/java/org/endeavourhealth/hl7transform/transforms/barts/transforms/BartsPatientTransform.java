@@ -4,13 +4,10 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Validate;
 import org.endeavourhealth.common.fhir.ExtensionConverter;
 import org.endeavourhealth.common.fhir.FhirExtensionUri;
-import org.endeavourhealth.common.fhir.FhirUri;
 import org.endeavourhealth.hl7parser.ParseException;
 import org.endeavourhealth.hl7parser.datatypes.Ce;
 import org.endeavourhealth.hl7parser.datatypes.Cx;
 import org.endeavourhealth.hl7parser.messages.AdtMessage;
-import org.endeavourhealth.hl7parser.segments.MrgSegment;
-import org.endeavourhealth.hl7parser.segments.Nk1Segment;
 import org.endeavourhealth.hl7parser.segments.PidSegment;
 import org.endeavourhealth.hl7transform.common.ResourceContainer;
 import org.endeavourhealth.hl7transform.common.ResourceTag;
@@ -20,17 +17,13 @@ import org.endeavourhealth.hl7transform.common.converters.DateConverter;
 import org.endeavourhealth.hl7transform.common.transform.PatientCommon;
 import org.endeavourhealth.hl7transform.mapper.Mapper;
 import org.endeavourhealth.hl7transform.mapper.exceptions.MapperException;
-import org.endeavourhealth.hl7transform.mapper.resource.MappedResourceUuid;
 import org.endeavourhealth.hl7transform.transforms.barts.constants.BartsConstants;
 import org.endeavourhealth.hl7transform.common.converters.AddressConverter;
-import org.endeavourhealth.hl7transform.common.converters.IdentifierConverter;
-import org.endeavourhealth.hl7transform.common.converters.NameConverter;
 import org.endeavourhealth.hl7transform.common.converters.TelecomConverter;
 import org.hl7.fhir.instance.model.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
@@ -85,8 +78,8 @@ public class BartsPatientTransform extends ResourceTransformBase {
         return mapBartsPatientUuid(patientIdentifierValue, mapper);
     }
 
-    public static UUID getBartsMappedPatientUuid(MrgSegment mrgSegment, Mapper mapper) throws MapperException, ParseException {
-        String patientIdentifierValue = getBartsPrimaryPatientIdentifierValue(mrgSegment.getPriorPatientIdentifierList());
+    public static UUID getBartsMappedPatientUuid(List<Cx> cxs, Mapper mapper) throws MapperException, ParseException {
+        String patientIdentifierValue = getBartsPrimaryPatientIdentifierValue(cxs);
         return mapBartsPatientUuid(patientIdentifierValue, mapper);
     }
 
