@@ -1,15 +1,11 @@
 package org.endeavourhealth.hl7transform.transforms.barts.transforms;
 
-import org.apache.commons.lang3.StringUtils;
-import org.endeavourhealth.hl7parser.Hl7DateTime;
 import org.endeavourhealth.hl7parser.ParseException;
 import org.endeavourhealth.hl7parser.messages.AdtMessage;
-import org.endeavourhealth.hl7parser.segments.MrgSegment;
+import org.endeavourhealth.hl7parser.messages.AdtMessageType;
 import org.endeavourhealth.hl7transform.common.ResourceContainer;
-import org.endeavourhealth.hl7transform.common.ResourceTag;
 import org.endeavourhealth.hl7transform.common.ResourceTransformBase;
 import org.endeavourhealth.hl7transform.common.TransformException;
-import org.endeavourhealth.hl7transform.common.transform.EpisodeOfCareCommon;
 import org.endeavourhealth.hl7transform.common.transform.MergeCommon;
 import org.endeavourhealth.hl7transform.mapper.Mapper;
 import org.endeavourhealth.hl7transform.mapper.exceptions.MapperException;
@@ -22,11 +18,9 @@ import java.util.*;
 
 public class BartsMergeTransform extends ResourceTransformBase {
 
-    public static final String AdtA34MergeTwoPatients = "ADT^A34";
-    public static final String AdtA35MergeEncountersForSamePatient = "ADT^A35";
-    public static final String AdtA44MoveEncounterBetweenPatients = "ADT^A44";
-
-    public static final List<String> MergeMessageTypes = Arrays.asList(AdtA34MergeTwoPatients, AdtA35MergeEncountersForSamePatient, AdtA44MoveEncounterBetweenPatients);
+    public static final String AdtA34MergeTwoPatients = AdtMessageType.AdtA34;
+    public static final String AdtA35MergeEncountersForSamePatient = AdtMessageType.AdtA35;
+    public static final String AdtA44MoveEncounterBetweenPatients = AdtMessageType.AdtA44;
 
     public BartsMergeTransform(Mapper mapper, ResourceContainer targetResources) {
         super(mapper, targetResources);

@@ -4,6 +4,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Validate;
 import org.endeavourhealth.hl7parser.Segment;
 import org.endeavourhealth.hl7parser.messages.AdtMessage;
+import org.endeavourhealth.hl7parser.messages.AdtMessageType;
 import org.endeavourhealth.hl7parser.segments.SegmentName;
 import org.endeavourhealth.hl7transform.Transform;
 import org.endeavourhealth.hl7transform.common.ResourceContainer;
@@ -131,14 +132,13 @@ public class BartsAdtTransform extends Transform {
     }
 
     private void validateSegmentCounts(AdtMessage sourceMessage) throws TransformException {
-        final String swapMessageType = "ADT^A17";
 
         String messageType = StringUtils.trim(sourceMessage.getMshSegment().getMessageType());
 
         validateExactlyOneSegment(sourceMessage, SegmentName.MSH);
         validateExactlyOneSegment(sourceMessage, SegmentName.EVN);
 
-        if (swapMessageType.equals(messageType)) {
+        if (AdtMessageType.A17SwapPatients.equals(messageType)) {
             validateExactlyTwoSegments(sourceMessage, SegmentName.PID);
             validateExactlyTwoSegments(sourceMessage, SegmentName.PV1);
             return;
@@ -148,7 +148,7 @@ public class BartsAdtTransform extends Transform {
         validateZeroOrOneSegments(sourceMessage, SegmentName.PV1);
         validateMaxSegmentCount(sourceMessage, SegmentName.PV2, sourceMessage.getSegmentCount(SegmentName.PV1));
 
-        if (BartsMergeTransform.MergeMessageTypes.contains(messageType)) {
+        if (AdtMessageType.MergeMessages.contains(messageType)) {
             validateExactlyOneSegment(sourceMessage, SegmentName.MRG);
 
             if (BartsMergeTransform.AdtA35MergeEncountersForSamePatient.equals(messageType))
