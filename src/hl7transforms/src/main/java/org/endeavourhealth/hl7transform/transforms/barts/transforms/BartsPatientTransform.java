@@ -86,7 +86,7 @@ public class BartsPatientTransform extends ResourceTransformBase {
     }
 
     public static UUID getBartsMappedPatientUuid(MrgSegment mrgSegment, Mapper mapper) throws MapperException, ParseException {
-        String patientIdentifierValue = getBartsPrimaryPatientIdentifierValue(mrgSegment);
+        String patientIdentifierValue = getBartsPrimaryPatientIdentifierValue(mrgSegment.getPriorPatientIdentifierList());
         return mapBartsPatientUuid(patientIdentifierValue, mapper);
     }
 
@@ -101,8 +101,8 @@ public class BartsPatientTransform extends ResourceTransformBase {
         return PatientCommon.getPatientIdentifierValueByAssigningAuth(source, BartsConstants.primaryPatientIdentifierAssigningAuthority);
     }
 
-    public static String getBartsPrimaryPatientIdentifierValue(MrgSegment source) throws ParseException {
-        return PatientCommon.getPatientIdentifierValueByAssigningAuth(source.getPriorPatientIdentifierList(), BartsConstants.primaryPatientIdentifierAssigningAuthority);
+    public static String getBartsPrimaryPatientIdentifierValue(List<Cx> cxs) throws ParseException {
+        return PatientCommon.getPatientIdentifierValueByAssigningAuth(cxs, BartsConstants.primaryPatientIdentifierAssigningAuthority);
     }
 
     private void addIdentifiers(AdtMessage source, Patient target) throws TransformException, MapperException {

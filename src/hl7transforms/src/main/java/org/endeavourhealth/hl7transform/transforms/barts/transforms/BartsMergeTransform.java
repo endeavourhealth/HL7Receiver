@@ -111,7 +111,7 @@ public class BartsMergeTransform extends ResourceTransformBase {
 
     private HashMap<MappedResourceUuid, UUID> remapPatientResources(AdtMessage sourceMessage) throws MapperException, ParseException {
         String majorPatientIdentifierValue = BartsPatientTransform.getBartsPrimaryPatientIdentifierValue(sourceMessage);
-        String minorPatientIdentifierValue = BartsPatientTransform.getBartsPrimaryPatientIdentifierValue(sourceMessage.getMrgSegment());
+        String minorPatientIdentifierValue = BartsPatientTransform.getBartsPrimaryPatientIdentifierValue(sourceMessage.getMrgSegment().getPriorPatientIdentifierList());
 
         return mapper.getResourceMapper().remapPatientResourceUuids(
                 null,
@@ -122,7 +122,7 @@ public class BartsMergeTransform extends ResourceTransformBase {
 
     private HashMap<MappedResourceUuid, UUID> remapEpisodeResources(AdtMessage sourceMessage) throws MapperException, ParseException {
         String majorPatientIdentifierValue = BartsPatientTransform.getBartsPrimaryPatientIdentifierValue(sourceMessage);
-        String minorPatientIdentifierValue = BartsPatientTransform.getBartsPrimaryPatientIdentifierValue(sourceMessage.getMrgSegment());
+        String minorPatientIdentifierValue = BartsPatientTransform.getBartsPrimaryPatientIdentifierValue(sourceMessage.getMrgSegment().getPriorPatientIdentifierList());
         String episodeOfCareIdentifierValue = BartsEpisodeOfCareTransform.getBartsPrimaryEpisodeIdentifierValue(sourceMessage.getMrgSegment());
 
         return mapper.getResourceMapper().remapEpisodeResourceUuids(

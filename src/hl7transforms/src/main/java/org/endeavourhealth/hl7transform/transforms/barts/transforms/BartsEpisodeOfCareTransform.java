@@ -81,7 +81,7 @@ public class BartsEpisodeOfCareTransform extends ResourceTransformBase {
     }
 
     public static UUID getBartsMappedEpisodeOfCareUuid(MrgSegment source, Mapper mapper) throws MapperException, ParseException {
-        String patientIdentifierValue = BartsPatientTransform.getBartsPrimaryPatientIdentifierValue(source);
+        String patientIdentifierValue = BartsPatientTransform.getBartsPrimaryPatientIdentifierValue(source.getPriorPatientIdentifierList());
         String episodeIdentifierValue = getBartsPrimaryEpisodeIdentifierValue(source);
 
         return getBartsMappedEpisodeOfCareUuid(patientIdentifierValue, episodeIdentifierValue, mapper);
@@ -89,19 +89,6 @@ public class BartsEpisodeOfCareTransform extends ResourceTransformBase {
 
     private static UUID getBartsMappedEpisodeOfCareUuid(String patientIdentifierValue, String episodeIdentifierValue, Mapper mapper) throws MapperException {
         return mapper.getResourceMapper().mapEpisodeUuid(
-                null,
-                BartsConstants.primaryPatientIdentifierAssigningAuthority,
-                patientIdentifierValue,
-                BartsConstants.primaryEpisodeIdentifierTypeCode,
-                null,
-                episodeIdentifierValue);
-    }
-
-    public static List<MappedResourceUuid> getBartsPatientResourceUuidMappings(MrgSegment mrgSegment, Mapper mapper) throws MapperException, ParseException {
-        String patientIdentifierValue = BartsPatientTransform.getBartsPrimaryPatientIdentifierValue(mrgSegment);
-        String episodeIdentifierValue = getBartsPrimaryEpisodeIdentifierValue(mrgSegment);
-
-        return mapper.getResourceMapper().getEpisodeResourceUuidMappings(
                 null,
                 BartsConstants.primaryPatientIdentifierAssigningAuthority,
                 patientIdentifierValue,
