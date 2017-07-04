@@ -7,7 +7,8 @@ public enum DbChannelOptionType {
     KEEP_ONLY_CURRENT_MESSAGE_PROCESSING_CONTENT_ATTEMPT("KeepOnlyCurrentMessageProcessingContentAttempt"),
     MAX_SKIPPABLE_PROCESSING_ERROR_MESSAGES("MaxSkippableProcessingErroredMessages"),
     SKIP_ONWARD_MESSAGE_SENDING_IN_PROCESSOR("SkipOnwardMessageSendingInProcessor"),
-    PAUSE_PROCESSOR("PauseProcessor");
+    PAUSE_PROCESSOR("PauseProcessor"),
+    SLACK_URL("SlackUrl");
 
     private String channelOptionType;
 
