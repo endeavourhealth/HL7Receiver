@@ -148,6 +148,13 @@
             <version>1.4.9</version>
         </dependency>
 
+        <!-- slack notifier -->
+        <dependency>
+            <groupId>net.gpedro.integrations.slack</groupId>
+            <artifactId>slack-webhook</artifactId>
+            <version>${slack-integration.version}</version>
+        </dependency>
+
     </dependencies>
 
     <build>
