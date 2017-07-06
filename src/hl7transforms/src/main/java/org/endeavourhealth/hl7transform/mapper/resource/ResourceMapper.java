@@ -223,7 +223,7 @@ public class ResourceMapper {
     }
 
     public UUID mapPractitionerUuidWithConsultantCode(String surname, String forename, String consultantCode) throws MapperException {
-        Validate.notBlank(surname);
+        Validate.notBlank(surname + forename);
         Validate.notBlank(consultantCode);
 
         String identifier = ResourceMapParameters.create()
@@ -236,7 +236,7 @@ public class ResourceMapper {
     }
 
     public UUID mapPractitionerUuidWithGmcCode(String surname, String forename, String gmcCode) throws MapperException {
-        Validate.notBlank(surname);
+        Validate.notBlank(surname + forename);
         Validate.notBlank(gmcCode);
 
         String identifier = ResourceMapParameters.create()
@@ -249,7 +249,7 @@ public class ResourceMapper {
     }
 
     public UUID mapPractitionerUuidWithGdpCode(String surname, String forename, String gdpCode) throws MapperException {
-        Validate.notBlank(surname);
+        Validate.notBlank(surname + forename);
         Validate.notBlank(gdpCode);
 
         String identifier = ResourceMapParameters.create()
@@ -262,7 +262,7 @@ public class ResourceMapper {
     }
 
     public UUID mapPractitionerUuidWithLocalHospitalIdentifiers(String surname, String forename, String localPrimaryAssigningAuthority, String localPrimaryIdentifierValue) throws MapperException {
-        Validate.notBlank(surname);
+        Validate.notBlank(surname + forename);
         Validate.notBlank(localPrimaryAssigningAuthority);
         Validate.notBlank(localPrimaryIdentifierValue);
 

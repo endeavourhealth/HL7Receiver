@@ -42,10 +42,6 @@ public class BartsPractitionerTransform extends ResourceTransformBase {
 
         Practitioner practitioner = new Practitioner();
 
-        // name
-        if (StringUtils.isBlank(xcn.getFamilyName()))
-            throw new TransformException("Family name is blank");
-
         practitioner.setName(NameConverter.convert(xcn, mapper));
 
         // identifiers
@@ -62,6 +58,10 @@ public class BartsPractitionerTransform extends ResourceTransformBase {
                     .addPractitionerRole(new Practitioner.PractitionerPractitionerRoleComponent()
                             .setManagingOrganization(ReferenceHelper.createReferenceExternal(roleOrganisation)));
         }
+
+        // validation check before creating id
+        if (StringUtils.isBlank(xcn.getFamilyName()) && (identifier == null))
+            throw new TransformException("Family name and identifier are both blank");
 
         // id
         UUID id = getId(practitioner, roleOrganisation);
