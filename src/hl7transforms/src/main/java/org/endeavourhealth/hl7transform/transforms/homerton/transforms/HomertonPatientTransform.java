@@ -93,7 +93,7 @@ public class HomertonPatientTransform extends ResourceTransformBase {
     private void addIdentifiers(AdtMessage source, Patient target) throws TransformException, MapperException {
         List<Cx> cxs = PatientCommon.getAllPatientIdentifiers(source);
 
-        List<Identifier> identifiers = PatientCommon.convertPatientIdentifiers(cxs, mapper);
+        List<Identifier> identifiers = PatientCommon.convertPatientIdentifiers(cxs, mapper, true);
 
         for (Identifier identifier : identifiers) {
 

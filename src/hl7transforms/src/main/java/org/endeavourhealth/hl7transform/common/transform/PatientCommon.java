@@ -54,15 +54,32 @@ public class PatientCommon {
         return patientIdentifiers;
     }
 
-    public static List<Identifier> convertPatientIdentifiers(List<Cx> cxs, Mapper mapper) throws TransformException, MapperException {
+    public static List<Identifier> convertPatientIdentifiers(List<Cx> cxs, Mapper mapper, boolean allowMultipleWithSameSystem) throws TransformException, MapperException {
         List<Identifier> targetIdentifiers = new ArrayList<>();
 
         for (Cx cx : cxs) {
             Identifier identifier = IdentifierConverter.createIdentifier(cx, ResourceType.Patient, mapper);
 
-            if (identifier != null)
-                if (!targetIdentifiers.stream().anyMatch(t -> StringUtils.equals(identifier.getSystem(), t.getSystem()) && StringUtils.equals(identifier.getValue(), t.getValue())))
-                    targetIdentifiers.add(identifier);
+            if (identifier == null)
+                continue;
+
+            if (allowMultipleWithSameSystem) {
+                if (targetIdentifiers
+                        .stream()
+                        .anyMatch(t -> StringUtils.equals(identifier.getSystem(), t.getSystem()) && StringUtils.equals(identifier.getValue(), t.getValue()))) {
+
+                    continue;
+                }
+            } else {
+                if (targetIdentifiers
+                        .stream()
+                        .anyMatch(t -> StringUtils.equals(identifier.getSystem(), t.getSystem()))) {
+
+                    continue;
+                }
+            }
+
+            targetIdentifiers.add(identifier);
         }
 
         return targetIdentifiers;

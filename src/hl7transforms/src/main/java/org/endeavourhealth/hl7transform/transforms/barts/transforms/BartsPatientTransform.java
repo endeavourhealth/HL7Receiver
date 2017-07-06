@@ -101,7 +101,7 @@ public class BartsPatientTransform extends ResourceTransformBase {
     private void addIdentifiers(AdtMessage source, Patient target) throws TransformException, MapperException {
         List<Cx> cxs = PatientCommon.getAllPatientIdentifiers(source);
 
-        List<Identifier> identifiers = PatientCommon.convertPatientIdentifiers(cxs, mapper);
+        List<Identifier> identifiers = PatientCommon.convertPatientIdentifiers(cxs, mapper, false);
 
         for (Identifier identifier : identifiers)
             target.addIdentifier(identifier);
