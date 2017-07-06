@@ -37,6 +37,9 @@ public class BartsPractitionerTransform extends ResourceTransformBase {
         if (xcn == null)
             return null;
 
+        if (xcn.allComponentsAreBlank())
+            return null;
+
         Practitioner practitioner = new Practitioner();
 
         // name
