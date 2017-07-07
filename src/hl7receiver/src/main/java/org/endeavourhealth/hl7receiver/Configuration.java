@@ -135,6 +135,7 @@ public final class Configuration {
                 hikariDataSource.setMaximumPoolSize(15);
                 hikariDataSource.setMinimumIdle(2);
                 hikariDataSource.setIdleTimeout(60000);
+                hikariDataSource.setConnectionTimeout(10000L);
                 hikariDataSource.setPoolName("HL7ReceiverDBConnectionPool");
 
                 this.dataSource = hikariDataSource;
