@@ -56,11 +56,10 @@ public class BartsEncounterTransform extends ResourceTransformBase {
         setId(source, target);
 
         // status, type, class, period
-        setCurrentStatusAndPeriod(source, target);
+        setCurrentStatus(source, target);
         setStatusHistory(source, target);
         setClass(source, target);
         setType(source, target);
-        addRecordedDateExtension(source, target);
 
         // patient, episodeofcare, serviceprovider, locations, practitioners
         setPatient(target);
@@ -96,7 +95,7 @@ public class BartsEncounterTransform extends ResourceTransformBase {
         target.setId(encounterUuid.toString());
     }
 
-    private void setCurrentStatusAndPeriod(AdtMessage source, Encounter target) throws TransformException, ParseException, MapperException {
+    private void setCurrentStatus(AdtMessage source, Encounter target) throws TransformException, ParseException, MapperException {
 
         EvnSegment evnSegment = source.getEvnSegment();
         Pv1Segment pv1Segment = source.getPv1Segment();
@@ -184,14 +183,6 @@ public class BartsEncounterTransform extends ResourceTransformBase {
         if (patientType != null)
             target.addType(patientType);
     }
-
-    private void addRecordedDateExtension(AdtMessage sourceMessage, Encounter target) throws MapperException, TransformException {
-
-        EvnSegment evnSegment = sourceMessage.getEvnSegment();
-
-        //
-    }
-
 
     private void setPatient(Encounter target) throws TransformException {
         target.setPatient(targetResources.getResourceReference(ResourceTag.PatientSubject, Patient.class));
@@ -300,6 +291,7 @@ public class BartsEncounterTransform extends ResourceTransformBase {
     }
 
     private void setServiceProvider(AdtMessage sourceMessage, Encounter target) throws TransformException, MapperException, ParseException {
+
         Pv1Segment pv1Segment = sourceMessage.getPv1Segment();
 
         BartsOrganizationTransform organizationTransform = new BartsOrganizationTransform(mapper, targetResources);
@@ -310,6 +302,7 @@ public class BartsEncounterTransform extends ResourceTransformBase {
     }
 
     private void addMessageTypeExtension(AdtMessage sourceMessage, Encounter target) throws MapperException, TransformException {
+
         MshSegment mshSegment = sourceMessage.getMshSegment();
 
         target.addExtension(EncounterCommon.createMessageTypeExtension(mshSegment.getMessageType(), mshSegment.getVersionId(), mapper));
