@@ -1,10 +1,13 @@
 package org.endeavourhealth.hl7receiver;
 
+import ch.qos.logback.core.UnsynchronizedAppenderBase;
+import ch.qos.logback.core.rolling.RollingFileAppender;
 import com.kstruct.gethostname4j.Hostname;
 import com.zaxxer.hikari.HikariDataSource;
 import org.endeavourhealth.common.config.ConfigManager;
 import org.endeavourhealth.common.config.ConfigManagerException;
 import org.endeavourhealth.common.postgres.logdigest.LogDigestAppender;
+import org.endeavourhealth.common.postgres.logdigest.LogDigestAsyncAppender;
 import org.endeavourhealth.hl7receiver.model.db.DbChannelOption;
 import org.endeavourhealth.hl7receiver.model.db.DbChannelOptionType;
 import org.endeavourhealth.hl7receiver.model.db.DbConfiguration;
@@ -73,7 +76,7 @@ public final class Configuration {
 
     private void addHL7LogAppender() throws ConfigurationException {
         try {
-            LogDigestAppender.addLogAppender(new DataLayer(getDatabaseConnection()));
+            LogDigestAsyncAppender.addLogAppender(new DataLayer(getDatabaseConnection()));
         } catch (Exception e) {
             throw new ConfigurationException("Error adding HL7 log appender", e);
         }

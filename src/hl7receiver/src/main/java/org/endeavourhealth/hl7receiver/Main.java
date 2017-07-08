@@ -1,5 +1,6 @@
 package org.endeavourhealth.hl7receiver;
 
+import ch.qos.logback.classic.LoggerContext;
 import org.endeavourhealth.common.config.ConfigManagerException;
 import org.endeavourhealth.hl7receiver.engine.HL7Service;
 import org.slf4j.Logger;
@@ -14,7 +15,9 @@ public class Main {
 
 	public static void main(String[] args) {
 		try {
-            Configuration configuration = Configuration.getInstance();
+            Runtime.getRuntime().addShutdownHook(new Thread(() -> shutdown()));
+
+		    Configuration configuration = Configuration.getInstance();
 
 		    LOG.info("--------------------------------------------------");
             LOG.info(PROGRAM_DISPLAY_NAME);
@@ -24,8 +27,6 @@ public class Main {
             hl7Service.start();
 
             LOG.info("Started succesfully...");
-
-            Runtime.getRuntime().addShutdownHook(new Thread(() -> shutdown()));
 
         } catch (ConfigManagerException cme) {
             printToErrorConsole("Fatal exception occurred initializing ConfigManager", cme);
@@ -48,6 +49,21 @@ public class Main {
 	    } catch (Exception e) {
             printToErrorConsole("Exception occurred during shutdown", e);
 	        LOG.error("Exception occurred during shutdown", e);
+        }
+
+        try {
+	        LOG.info("Flushing logging system...");
+
+	        LoggerContext loggerContext = (LoggerContext)LoggerFactory.getILoggerFactory();
+            loggerContext.stop();
+        } catch (Exception e) {
+            printToErrorConsole("Exception occurred while flushing logging", e);
+        }
+
+        try {
+            Thread.sleep(1000);
+        } catch (Exception e) {
+            printToErrorConsole("Exception occurred during shutdown", e);
         }
     }
 
