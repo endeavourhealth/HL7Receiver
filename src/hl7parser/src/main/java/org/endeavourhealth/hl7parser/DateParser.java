@@ -32,11 +32,10 @@ public abstract class DateParser {
         if (dateTime == "")
             return null;
 
-
         if (!isValidTs(dateTime))
             throw new ParseException("Invalid date/time");
 
-        String timeZone = getTimeZone(dateTime);
+//        String timeZone = getTimeZone(dateTime);
         dateTime = removeTimeZone(dateTime);
 
         if (dateTime.length() < 8)
@@ -69,6 +68,9 @@ public abstract class DateParser {
     }
 
     public static String getPattern(String dateTime) throws ParseException {
+
+        dateTime = removeTimeZone(dateTime);
+
         switch (dateTime.length()) {
             case YYYY: return "yyyy";
             case YYYYMM: return "yyyy-MM";
@@ -84,6 +86,9 @@ public abstract class DateParser {
     }
 
     private static String removeTimeZone(String dateTime) {
+        if (dateTime == null)
+            return null;
+
         if (StringUtils.contains(dateTime, "+"))
             return Helpers.split(dateTime, "+").get(0);
         else if (StringUtils.contains(dateTime, "-"))
@@ -93,6 +98,9 @@ public abstract class DateParser {
     }
 
     private static String getTimeZone(String dateTime) {
+        if (dateTime == null)
+            return null;
+
         if (StringUtils.contains(dateTime, "+"))
             return Helpers.split(dateTime, "+").get(1);
         else if (StringUtils.contains(dateTime, "-"))

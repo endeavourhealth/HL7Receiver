@@ -1,30 +1,18 @@
 package org.endeavourhealth.hl7receiver.engine;
 
-import ca.uhn.hl7v2.DefaultHapiContext;
-import ca.uhn.hl7v2.HL7Exception;
-import ca.uhn.hl7v2.model.*;
-import ca.uhn.hl7v2.model.primitive.CommonTS;
-import ca.uhn.hl7v2.util.Terser;
 import org.apache.commons.lang3.StringUtils;
+import org.endeavourhealth.hl7parser.*;
+import org.endeavourhealth.hl7parser.Message;
+import org.endeavourhealth.hl7parser.datatypes.Cx;
+import org.endeavourhealth.hl7parser.segments.MshSegment;
+import org.endeavourhealth.hl7parser.segments.PidSegment;
+import org.endeavourhealth.hl7parser.segments.SegmentName;
 import org.endeavourhealth.hl7receiver.model.db.DbChannel;
 
 import java.time.LocalDateTime;
-import java.time.ZoneId;
+import java.util.List;
 
 class HL7KeyFields {
-
-    private static final String MSH_SEGMENT_NAME = "MSH";
-    private static final String PID_SEGMENT_NAME = "PID";
-    private static final int MSH_SENDING_APPLICATION_FIELD = 3;
-    private static final int MSH_SENDING_FACILITY_FIELD = 4;
-    private static final int MSH_RECEIVING_APPLICATION_FIELD = 5;
-    private static final int MSH_RECEIVING_FACILITY_FIELD = 6;
-    private static final int MSH_MESSAGE_DATE_TIME_FIELD = 7;
-    private static final int MSH_MESSAGE_TYPE_FIELD = 9;
-    private static final int MSH_MESSAGE_CONTROL_ID_FIELD = 10;
-    private static final int MSH_SEQUENCE_NUMBER_FIELD = 13;
-    private static final int PID_ASSIGNING_AUTHORITY_COMPONENT = 3;
-    private static final int PID_VALUE_COMPONENT = 0;
 
     private String encodedMessage;
     private String sendingApplication;
@@ -32,34 +20,89 @@ class HL7KeyFields {
     private String receivingApplication;
     private String receivingFacility;
     private LocalDateTime messageDateTime;
+    private Exception messageDateTimeParseException;
     private String messageType;
     private String messageControlId;
     private String sequenceNumber;
+    private Exception sequenceNumberParseException;
     private String pid1;
     private String pid2;
 
-    public static HL7KeyFields parse(Message message, DbChannel channel) throws HL7Exception {
-
-        Terser terser = new Terser(message);
+    public static HL7KeyFields parse(String messageText, DbChannel channel) throws ParseException {
 
         HL7KeyFields hl7KeyFields = new HL7KeyFields();
+        hl7KeyFields.encodedMessage = messageText;
 
-        hl7KeyFields.encodedMessage = new DefaultHapiContext().getPipeParser().encode(message);
-        hl7KeyFields.sendingApplication = getFieldAsString(terser, MSH_SEGMENT_NAME, MSH_SENDING_APPLICATION_FIELD);
-        hl7KeyFields.sendingFacility = getFieldAsString(terser, MSH_SEGMENT_NAME, MSH_SENDING_FACILITY_FIELD);
-        hl7KeyFields.receivingApplication = getFieldAsString(terser, MSH_SEGMENT_NAME, MSH_RECEIVING_APPLICATION_FIELD);
-        hl7KeyFields.receivingFacility = getFieldAsString(terser, MSH_SEGMENT_NAME, MSH_RECEIVING_FACILITY_FIELD);
-        hl7KeyFields.messageDateTime = getFieldAsDate(terser, MSH_SEGMENT_NAME, MSH_MESSAGE_DATE_TIME_FIELD);
-        hl7KeyFields.messageType = getFieldAsString(terser, MSH_SEGMENT_NAME, MSH_MESSAGE_TYPE_FIELD);
-        hl7KeyFields.messageControlId = getFieldAsString(terser, MSH_SEGMENT_NAME, MSH_MESSAGE_CONTROL_ID_FIELD);
-        hl7KeyFields.sequenceNumber = getFieldAsString(terser, MSH_SEGMENT_NAME, MSH_SEQUENCE_NUMBER_FIELD);
+        Message message = new Message(messageText);
 
-        if (hasSegment(terser, PID_SEGMENT_NAME)) {
-            hl7KeyFields.pid1 = formatPid(getPid(terser, channel.getPid1Field(), channel.getPid1AssigningAuthority()));
-            hl7KeyFields.pid2 = formatPid(getPid(terser, channel.getPid2Field(), channel.getPid2AssigningAuthority()));
+        MshSegment mshSegment = message.getSegment(SegmentName.MSH, MshSegment.class);
+
+        if (mshSegment != null) {
+            hl7KeyFields.sendingApplication = mshSegment.getSendingApplication();
+            hl7KeyFields.sendingFacility = mshSegment.getSendingFacility();
+            hl7KeyFields.receivingApplication = mshSegment.getReceivingApplication();
+            hl7KeyFields.receivingFacility = mshSegment.getReceivingFacility();
+
+            try {
+                hl7KeyFields.messageDateTime = getLocalDateTime(mshSegment.getDateTimeOfMessage());
+            } catch (Exception e) {
+                hl7KeyFields.messageDateTimeParseException = e;
+            }
+
+            hl7KeyFields.messageType = mshSegment.getMessageType();
+            hl7KeyFields.messageControlId = mshSegment.getMessageControlId();
+
+            try {
+                hl7KeyFields.sequenceNumber = getIntegerAsString(mshSegment.getSequenceNumber());
+            } catch (Exception e) {
+                hl7KeyFields.sequenceNumberParseException = e;
+            }
+        }
+
+        PidSegment pidSegment = message.getSegment(SegmentName.PID, PidSegment.class);
+
+        if (pidSegment != null) {
+            hl7KeyFields.pid1 = formatPid(getPid2(pidSegment, channel.getPid1Field(), channel.getPid1AssigningAuthority()));
+            hl7KeyFields.pid2 = formatPid(getPid2(pidSegment, channel.getPid2Field(), channel.getPid2AssigningAuthority()));
         }
 
         return hl7KeyFields;
+    }
+
+    private static String getPid2(PidSegment pidSegment, Integer pidFieldNumber, String assigningAuthority) {
+        List<Cx> cxs = pidSegment.getFieldAsDatatypes(pidFieldNumber, Cx.class);
+
+        if (cxs == null)
+            return null;
+
+        for (Cx cx : cxs) {
+
+            if (cx == null)
+                continue;
+
+            if ((StringUtils.isBlank(assigningAuthority)) && (StringUtils.isBlank(cx.getAssigningAuthority())))
+                return cx.getId();
+
+            if (assigningAuthority.equals(cx.getAssigningAuthority()))
+                return cx.getId();
+        }
+
+        return null;
+
+    }
+
+    private static LocalDateTime getLocalDateTime(Hl7DateTime hl7DateTime) {
+        if (hl7DateTime == null)
+            return null;
+
+        return hl7DateTime.getLocalDateTime();
+    }
+
+    private static String getIntegerAsString(Integer integer) {
+        if (integer == null)
+            return null;
+
+        return integer.toString();
     }
 
     private static String formatPid(String pid) {
@@ -67,88 +110,6 @@ class HL7KeyFields {
             return null;
 
         return StringUtils.deleteWhitespace(pid);
-    }
-
-    private static String getPid(Terser terser, Integer pidFieldNumber, String assigningAuthority) throws HL7Exception {
-
-        if (pidFieldNumber == null)
-            return null;
-
-        if (!hasSegment(terser, PID_SEGMENT_NAME))
-            return null;
-
-        Type[] fieldRepeats = getField(terser, PID_SEGMENT_NAME, pidFieldNumber);
-
-        if (fieldRepeats == null)
-            return null;
-
-        for (Type field : fieldRepeats) {
-            if (field == null)
-                continue;
-
-            if (StringUtils.isNotEmpty(assigningAuthority)) {
-                if (!Composite.class.isAssignableFrom(field.getClass()))
-                    continue;
-
-                Composite compositeField = (Composite)field;
-
-                String assigningAuthorityComponent = compositeField.getComponent(PID_ASSIGNING_AUTHORITY_COMPONENT).encode();
-
-                if (!assigningAuthority.equals(assigningAuthorityComponent))
-                    continue;
-
-                return compositeField.getComponent(PID_VALUE_COMPONENT).encode();
-            } else {
-                if (!Primitive.class.isAssignableFrom(field.getClass()))
-                    continue;
-
-                return ((Primitive)field).getValue();
-            }
-        }
-
-        return null;
-    }
-
-    private static LocalDateTime getFieldAsDate(Terser terser, String segmentName, int fieldNumber) throws HL7Exception {
-        String field = getFieldAsString(terser, segmentName, fieldNumber);
-
-        CommonTS ts = new CommonTS(field);
-        return LocalDateTime.ofInstant(ts.getValueAsDate().toInstant(), ZoneId.systemDefault());
-    }
-
-    private static String getFieldAsString(Terser terser, String segmentName, int fieldNumber) throws HL7Exception {
-        Type[] types = getField(terser, segmentName, fieldNumber);
-
-        if (types == null)
-            return null;
-
-        if (types.length == 0)
-            return null;
-
-        return types[0].encode();
-    }
-
-    private static Type[] getField(Terser terser, String segmentName, int fieldNumber) throws HL7Exception {
-        Segment segment = terser.getSegment(segmentName);
-
-        if (segment == null)
-            return null;
-
-        Type[] types = segment.getField(fieldNumber);
-
-        if (types == null)
-            return null;
-
-        return types;
-    }
-
-    private static boolean hasSegment(Terser terser, String segmentName) {
-        try {
-            terser.getSegment(segmentName);
-            return true;
-        } catch (HL7Exception e) {
-            return false;
-        }
     }
 
     public String getEncodedMessage() {
@@ -175,6 +136,10 @@ class HL7KeyFields {
         return messageDateTime;
     }
 
+    public Exception getMessageDateTimeParseException() {
+        return messageDateTimeParseException;
+    }
+
     public String getMessageType() {
         return messageType;
     }
@@ -187,7 +152,11 @@ class HL7KeyFields {
         return sequenceNumber;
     }
 
-    public String getPid1() { return pid1; }
+    public String getPid1() {
+        return pid1;
+    }
 
-    public String getPid2() { return pid2; }
+    public String getPid2() {
+        return pid2;
+    }
 }

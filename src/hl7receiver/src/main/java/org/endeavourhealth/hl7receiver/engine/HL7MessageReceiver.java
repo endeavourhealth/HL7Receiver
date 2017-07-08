@@ -1,6 +1,7 @@
 package org.endeavourhealth.hl7receiver.engine;
 
 import ca.uhn.hl7v2.AcknowledgmentCode;
+import ca.uhn.hl7v2.DefaultHapiContext;
 import ca.uhn.hl7v2.HL7Exception;
 import ca.uhn.hl7v2.model.Message;
 import ca.uhn.hl7v2.protocol.ReceivingApplication;
@@ -40,16 +41,18 @@ class HL7MessageReceiver implements ReceivingApplication {
     }
 
     public Message processMessage(Message message, Map<String, Object> map) throws ReceivingApplicationException, HL7Exception {
+        String messageText = null;
         Integer connectionId = null;
         HL7KeyFields hl7KeyFields = null;
         Message response = null;
         HL7KeyFields hl7KeyFieldsResponse = null;
-        UUID errorUuid = null;
 
         try {
+            messageText = getMessageText(message);
+
             connectionId = connectionManager.getConnectionId(map);
 
-            hl7KeyFields = HL7KeyFields.parse(message, dbChannel);
+            hl7KeyFields = HL7KeyFields.parse(messageText, dbChannel);
 
             if (connectionId == null)
                 throw new TransientMessageProcessingException("Could not determine connection");
@@ -60,11 +63,15 @@ class HL7MessageReceiver implements ReceivingApplication {
             if (!areSenderAndRecipientIdentifiersMatching(hl7KeyFields))
                 throw new MessageProcessingException("Sender and/or recipient identifiers do not match");
 
+            if (!didMessageDateParseCorrectly(hl7KeyFields))
+                throw new MessageProcessingException("Could not parse message date", hl7KeyFields.getMessageDateTimeParseException());
+
             if (!isMessageTypeAllowed(hl7KeyFields))
                 throw new MessageProcessingException("Message type is not allowed");
 
             response = message.generateACK();
-            hl7KeyFieldsResponse = HL7KeyFields.parse(response, dbChannel);
+            String responseText = getMessageText(response);
+            hl7KeyFieldsResponse = HL7KeyFields.parse(responseText, dbChannel);
 
             try {
                 dataLayer.logMessage(
@@ -92,6 +99,7 @@ class HL7MessageReceiver implements ReceivingApplication {
                 LOG.error("Exception while receiving message", HL7ExceptionHandler.constructLogbackDeadLetterArgs(deadLetterUuid, e1));
 
                 Message negativeResponse = null;
+                String negativeResponseText = null;
                 HL7KeyFields negativeResponseKeyFields = null;
                 AcknowledgmentCode acknowledgmentCode = ACK_ERROR_IGNORE;
 
@@ -102,7 +110,8 @@ class HL7MessageReceiver implements ReceivingApplication {
                     LOG.error("Generating negative acknowledgement with error code " + acknowledgmentCode.getMessage());
 
                     negativeResponse = message.generateACK(acknowledgmentCode, new HL7Exception(e1.getMessage(), e1));
-                    negativeResponseKeyFields = HL7KeyFields.parse(negativeResponse, dbChannel);
+                    negativeResponseText = getMessageText(negativeResponse);
+                    negativeResponseKeyFields = HL7KeyFields.parse(negativeResponseText, dbChannel);
 
                 } catch (Exception e2) {
                     LOG.error("Error generating negative acknowledgement", e2);
@@ -118,17 +127,17 @@ class HL7MessageReceiver implements ReceivingApplication {
                             dbChannel.getPortNumber(),
                             HL7ConnectionManager.getRemoteHost(map),
                             HL7ConnectionManager.getRemotePort(map),
-                            hl7KeyFields.getSendingApplication(),
-                            hl7KeyFields.getSendingFacility(),
-                            hl7KeyFields.getReceivingApplication(),
-                            hl7KeyFields.getReceivingFacility(),
-                            hl7KeyFields.getMessageControlId(),
-                            hl7KeyFields.getSequenceNumber(),
-                            hl7KeyFields.getMessageDateTime(),
-                            hl7KeyFields.getPid1(),
-                            hl7KeyFields.getPid2(),
-                            hl7KeyFields.getMessageType(),
-                            hl7KeyFields.getEncodedMessage(),
+                            (hl7KeyFields == null ? null : hl7KeyFields.getSendingApplication()),
+                            (hl7KeyFields == null ? null : hl7KeyFields.getSendingFacility()),
+                            (hl7KeyFields == null ? null : hl7KeyFields.getReceivingApplication()),
+                            (hl7KeyFields == null ? null : hl7KeyFields.getReceivingFacility()),
+                            (hl7KeyFields == null ? null : hl7KeyFields.getMessageControlId()),
+                            (hl7KeyFields == null ? null : hl7KeyFields.getSequenceNumber()),
+                            (hl7KeyFields == null ? null : hl7KeyFields.getMessageDateTime()),
+                            (hl7KeyFields == null ? null : hl7KeyFields.getPid1()),
+                            (hl7KeyFields == null ? null : hl7KeyFields.getPid2()),
+                            (hl7KeyFields == null ? null : hl7KeyFields.getMessageType()),
+                            (hl7KeyFields == null ? messageText : hl7KeyFields.getEncodedMessage()),
                             (negativeResponseKeyFields == null ? null : negativeResponseKeyFields.getMessageType()),
                             (negativeResponseKeyFields == null ? null : negativeResponseKeyFields.getEncodedMessage()),
                             HL7ExceptionHandler.constructFormattedException(e1),
@@ -136,6 +145,7 @@ class HL7MessageReceiver implements ReceivingApplication {
                             (acknowledgmentCode == null ? null : acknowledgmentCode.name()));
                 } catch (Exception e3) {
                     LOG.error("Error logging dead letter", e3);
+                    LOG.error("Inbound payload was: " + messageText + System.lineSeparator() + "Outbound payload was: " + negativeResponseText);
 
                     if (acknowledgmentCode.equals(ACK_ERROR_IGNORE)) {
                         acknowledgmentCode = ACK_ERROR_RETRY;
@@ -164,11 +174,18 @@ class HL7MessageReceiver implements ReceivingApplication {
         return StringUtils.isNotEmpty(hl7KeyFields.getMessageControlId());
     }
 
-    private boolean areSenderAndRecipientIdentifiersMatching(HL7KeyFields message) {
-        return ((dbChannel.getSendingApplication().equals(message.getSendingApplication()))
-            && (dbChannel.getSendingFacility().equals(message.getSendingFacility()))
-            && (dbChannel.getReceivingApplication().equals(message.getReceivingApplication()))
-            && (dbChannel.getReceivingFacility().equals(message.getReceivingFacility())));
+    private boolean areSenderAndRecipientIdentifiersMatching(HL7KeyFields hl7KeyFields) {
+        return ((dbChannel.getSendingApplication().equals(hl7KeyFields.getSendingApplication()))
+            && (dbChannel.getSendingFacility().equals(hl7KeyFields.getSendingFacility()))
+            && (dbChannel.getReceivingApplication().equals(hl7KeyFields.getReceivingApplication()))
+            && (dbChannel.getReceivingFacility().equals(hl7KeyFields.getReceivingFacility())));
+    }
+
+    private boolean didMessageDateParseCorrectly(HL7KeyFields hl7KeyFields) {
+        if (hl7KeyFields.getMessageDateTimeParseException() != null)
+            return false;
+
+        return (hl7KeyFields.getMessageDateTime() != null);
     }
 
     private boolean isMessageTypeAllowed(HL7KeyFields message) {
@@ -177,6 +194,10 @@ class HL7MessageReceiver implements ReceivingApplication {
                 .stream()
                 .filter(t -> t.isAllowed())
                 .anyMatch(t -> t.getMessageType().equals(message.getMessageType()));
+    }
+
+    private static String getMessageText(Message message) throws HL7Exception {
+        return new DefaultHapiContext().getPipeParser().encode(message);
     }
 
     public boolean canProcess(Message message) {
