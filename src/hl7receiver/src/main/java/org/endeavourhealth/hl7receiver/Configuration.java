@@ -1,12 +1,9 @@
 package org.endeavourhealth.hl7receiver;
 
-import ch.qos.logback.core.UnsynchronizedAppenderBase;
-import ch.qos.logback.core.rolling.RollingFileAppender;
 import com.kstruct.gethostname4j.Hostname;
 import com.zaxxer.hikari.HikariDataSource;
 import org.endeavourhealth.common.config.ConfigManager;
 import org.endeavourhealth.common.config.ConfigManagerException;
-import org.endeavourhealth.common.postgres.logdigest.LogDigestAppender;
 import org.endeavourhealth.common.postgres.logdigest.LogDigestAsyncAppender;
 import org.endeavourhealth.hl7receiver.model.db.DbChannelOption;
 import org.endeavourhealth.hl7receiver.model.db.DbChannelOptionType;
@@ -138,7 +135,7 @@ public final class Configuration {
                 hikariDataSource.setMaximumPoolSize(15);
                 hikariDataSource.setMinimumIdle(2);
                 hikariDataSource.setIdleTimeout(60000);
-                hikariDataSource.setConnectionTimeout(10000L);
+                hikariDataSource.setConnectionTimeout(5000L);
                 hikariDataSource.setPoolName("HL7ReceiverDBConnectionPool");
 
                 this.dataSource = hikariDataSource;
