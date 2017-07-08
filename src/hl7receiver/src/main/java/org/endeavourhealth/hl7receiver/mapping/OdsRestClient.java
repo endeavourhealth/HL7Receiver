@@ -98,10 +98,8 @@ class OdsRestClient {
             }
         }
 
-        if (organisationType == null)
-            throw new MapperException("Could not determine organisation type when getting organisation " + odsCode + " from " + ORGANISATAION_REST_URL + odsCode);
-
-        mappedOrganisation.setOrganisationType(organisationType);
+        if (organisationType != null)
+            mappedOrganisation.setOrganisationType(organisationType);
 
         return mappedOrganisation;
     }

@@ -45,7 +45,8 @@ public class OrganisationCommon {
         if (address != null)
             organization.addAddress(address);
 
-        organization.setType(getOrganisationType(mappedOrganisation.getOrganisationType()));
+        if (mappedOrganisation.getOrganisationType() != null)
+            organization.setType(getOrganisationType(mappedOrganisation.getOrganisationType()));
 
         return organization;
     }

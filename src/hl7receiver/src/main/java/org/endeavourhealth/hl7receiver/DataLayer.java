@@ -388,7 +388,7 @@ public class DataLayer implements IDBDigestLogger {
                 .addParameter("_ods_code", odsCode)
                 .addParameter("_organisation_name", organisationName)
                 .addParameter("_organisation_class", organisationClass.getOrganisationClass())
-                .addParameter("_organisation_type", organisationType.getCode())
+                .addParameter("_organisation_type", (organisationType == null) ? null : organisationType.getCode())
                 .addParameter("_address_line1", addressLine1)
                 .addParameter("_address_line2", addressLine2)
                 .addParameter("_town", town)
