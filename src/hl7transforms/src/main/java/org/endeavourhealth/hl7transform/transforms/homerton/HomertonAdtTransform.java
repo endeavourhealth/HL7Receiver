@@ -10,6 +10,7 @@ import org.endeavourhealth.hl7transform.Transform;
 import org.endeavourhealth.hl7transform.common.ResourceTag;
 import org.endeavourhealth.hl7transform.common.TransformException;
 import org.endeavourhealth.hl7transform.common.converters.StringHelper;
+import org.endeavourhealth.hl7transform.transforms.barts.transforms.BartsMergeTransform;
 import org.endeavourhealth.hl7transform.transforms.homerton.parser.zsegments.*;
 import org.endeavourhealth.hl7transform.transforms.homerton.pretransform.HomertonPreTransform;
 import org.endeavourhealth.hl7transform.transforms.homerton.transforms.*;
@@ -142,20 +143,21 @@ public class HomertonAdtTransform extends Transform {
         validateExactlyOneSegment(sourceMessage, SegmentName.MSH);
         validateExactlyOneSegment(sourceMessage, SegmentName.EVN);
 
-        if (!AdtMessageType.A17SwapPatients.equals(messageType))
-            validateExactlyOneSegment(sourceMessage, SegmentName.PID);
-        else
+        if (AdtMessageType.A17SwapPatients.equals(messageType)) {
             validateExactlyTwoSegments(sourceMessage, SegmentName.PID);
+            validateExactlyTwoSegments(sourceMessage, SegmentName.PV1);
+            return;
+        }
 
-        if (!AdtMessageType.MergeMessages.contains(messageType))
-            validateExactlyOneSegment(sourceMessage, SegmentName.PD1);
-        else
-            validateNoSegments(sourceMessage, SegmentName.PD1);
+        validateExactlyOneSegment(sourceMessage, SegmentName.PID);
+        validateZeroOrOneSegments(sourceMessage, SegmentName.PV1);
+        validateMaxSegmentCount(sourceMessage, SegmentName.PV2, sourceMessage.getSegmentCount(SegmentName.PV1));
 
-        if (!AdtMessageType.A17SwapPatients.equals(messageType)) {
-            validateZeroOrOneSegments(sourceMessage, SegmentName.PV1);
+        if (AdtMessageType.MergeMessages.contains(messageType)) {
+            validateExactlyOneSegment(sourceMessage, SegmentName.MRG);
 
-            validateMaxSegmentCount(sourceMessage, SegmentName.PV2, sourceMessage.getSegmentCount(SegmentName.PV1));
+            if (BartsMergeTransform.AdtA35MergeEncountersForSamePatient.equals(messageType))
+                validateExactlyOneSegment(sourceMessage, SegmentName.PV1);
         }
     }
 }
