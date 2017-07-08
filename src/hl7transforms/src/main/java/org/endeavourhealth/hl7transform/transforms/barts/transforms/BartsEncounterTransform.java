@@ -2,6 +2,7 @@ package org.endeavourhealth.hl7transform.transforms.barts.transforms;
 
 import org.apache.commons.lang3.StringUtils;
 import org.endeavourhealth.common.fhir.CodeableConceptHelper;
+import org.endeavourhealth.common.fhir.ExtensionConverter;
 import org.endeavourhealth.common.fhir.FhirExtensionUri;
 import org.endeavourhealth.common.fhir.ReferenceHelper;
 import org.endeavourhealth.common.fhir.schema.EncounterParticipantType;
@@ -17,6 +18,7 @@ import org.endeavourhealth.hl7transform.common.ResourceContainer;
 import org.endeavourhealth.hl7transform.common.ResourceTag;
 import org.endeavourhealth.hl7transform.common.ResourceTransformBase;
 import org.endeavourhealth.hl7transform.common.TransformException;
+import org.endeavourhealth.hl7transform.common.converters.DateConverter;
 import org.endeavourhealth.hl7transform.common.converters.DateTimeHelper;
 import org.endeavourhealth.hl7transform.common.transform.EncounterCommon;
 import org.endeavourhealth.hl7transform.common.transform.LocationCommon;
@@ -56,8 +58,9 @@ public class BartsEncounterTransform extends ResourceTransformBase {
         setId(source, target);
 
         // status, type, class, period
-        setCurrentStatus(source, target);
+        setCurrentStatusAndPeriod(source, target);
         setStatusHistory(source, target);
+        setRecordedDate(source, target);
         setClass(source, target);
         setType(source, target);
 
@@ -95,7 +98,7 @@ public class BartsEncounterTransform extends ResourceTransformBase {
         target.setId(encounterUuid.toString());
     }
 
-    private void setCurrentStatus(AdtMessage source, Encounter target) throws TransformException, ParseException, MapperException {
+    private void setCurrentStatusAndPeriod(AdtMessage source, Encounter target) throws TransformException, ParseException, MapperException {
 
         EvnSegment evnSegment = source.getEvnSegment();
         Pv1Segment pv1Segment = source.getPv1Segment();
@@ -140,6 +143,17 @@ public class BartsEncounterTransform extends ResourceTransformBase {
 
             Period expectedDischargeDate = DateTimeHelper.createPeriod(null, pv2Segment.getExpectedDischargeDateTime());
             addStatusHistoryComponent(expectedDischargeDate, Encounter.EncounterState.PLANNED, target);
+        }
+    }
+
+    private static void setRecordedDate(AdtMessage source, Encounter target) throws ParseException {
+
+        EvnSegment evnSegment = source.getEvnSegment();
+
+        if (evnSegment.getRecordedDateTime() != null) {
+
+            Extension recordedDateExtension = ExtensionConverter.createExtension(FhirExtensionUri.RECORDED_DATE, DateConverter.getDateType(evnSegment.getRecordedDateTime()));
+            target.addExtension(recordedDateExtension);
         }
     }
 
