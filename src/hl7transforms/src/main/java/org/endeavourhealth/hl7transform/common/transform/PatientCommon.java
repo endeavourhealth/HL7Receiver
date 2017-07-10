@@ -88,6 +88,7 @@ public class PatientCommon {
     public static String getPatientIdentifierValueByTypeCode(List<Cx> cxs, String patientIdentifierTypeCode) {
         return cxs
                 .stream()
+                .filter(t -> t != null)
                 .filter(t -> patientIdentifierTypeCode.equals(t.getIdentifierTypeCode()))
                 .map(t -> t.getId())
                 .collect(StreamExtension.firstOrNullCollector());
@@ -100,6 +101,7 @@ public class PatientCommon {
     public static String getPatientIdentifierValueByAssigningAuth(List<Cx> cxs, String patientIdentifierAssigningAuthority) {
         return cxs
                 .stream()
+                .filter(t -> t != null)
                 .filter(t -> patientIdentifierAssigningAuthority.equals(t.getAssigningAuthority()))
                 .map(t -> t.getId())
                 .collect(StreamExtension.firstOrNullCollector());

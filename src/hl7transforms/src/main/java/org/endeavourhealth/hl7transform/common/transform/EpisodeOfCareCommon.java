@@ -41,6 +41,7 @@ public class EpisodeOfCareCommon {
     public static String getEpisodeIdentifierValueByTypeCode(List<Cx> cxs, String episodeIdentifierTypeCode) {
         return cxs
                 .stream()
+                .filter(t -> t != null)
                 .filter(t -> episodeIdentifierTypeCode.equals(t.getIdentifierTypeCode()))
                 .map(t -> t.getId())
                 .collect(StreamExtension.firstOrNullCollector());
@@ -53,6 +54,7 @@ public class EpisodeOfCareCommon {
     public static String getEpisodeIdentifierValueByAssigningAuthority(List<Cx> cxs, String episodeIdentifierAssigningAuthority) {
         return cxs
                 .stream()
+                .filter(t -> t != null)
                 .filter(t -> episodeIdentifierAssigningAuthority.equals(t.getAssigningAuthority()))
                 .map(t -> t.getId())
                 .collect(StreamExtension.firstOrNullCollector());
