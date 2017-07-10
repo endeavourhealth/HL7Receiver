@@ -32,6 +32,7 @@ import org.slf4j.LoggerFactory;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 public class HomertonPatientTransform extends ResourceTransformBase {
 
@@ -205,11 +206,21 @@ public class HomertonPatientTransform extends ResourceTransformBase {
     }
 
     private void setContactPoint(PidSegment sourcePid, Patient target) throws TransformException, MapperException {
-        for (ContactPoint cp : TelecomConverter.convert(sourcePid.getHomeTelephones(), this.mapper))
+        for (ContactPoint cp : TelecomConverter.convert(removeBlankPhoneNumberTemplate(sourcePid.getHomeTelephones()), this.mapper))
             target.addTelecom(cp);
 
-        for (ContactPoint cp : TelecomConverter.convert(sourcePid.getBusinessTelephones(), this.mapper))
+        for (ContactPoint cp : TelecomConverter.convert(removeBlankPhoneNumberTemplate(sourcePid.getBusinessTelephones()), this.mapper))
             target.addTelecom(cp);
+    }
+
+    private static List<Xtn> removeBlankPhoneNumberTemplate(List<Xtn> xtns) {
+        if (xtns == null)
+            return null;
+
+        return xtns
+                .stream()
+                .filter(t -> !HomertonConstants.homertonDefaultPhoneNumberValue.equals(StringUtils.deleteWhitespace(StringUtils.defaultString(t.getTelephoneNumber()))))
+                .collect(Collectors.toList());
     }
 
     private static void setDateOfBirth(PidSegment sourcePid, Patient target) throws ParseException, TransformException {

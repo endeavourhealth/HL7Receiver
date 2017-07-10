@@ -19,4 +19,6 @@ public class HomertonConstants {
     public static final String primaryPractitionerIdentifierTypeCode = "Personnel Primary Identifier";
 
     public static final int homertonXpdPrimaryCarePd1FieldNumber = 4;
+
+    public static final String homertonDefaultPhoneNumberValue = "(000)000-0000";
 }
