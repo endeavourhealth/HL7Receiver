@@ -20,6 +20,7 @@ import org.endeavourhealth.hl7transform.common.ResourceTransformBase;
 import org.endeavourhealth.hl7transform.common.TransformException;
 import org.endeavourhealth.hl7transform.common.converters.DateConverter;
 import org.endeavourhealth.hl7transform.common.converters.DateTimeHelper;
+import org.endeavourhealth.hl7transform.common.converters.StringHelper;
 import org.endeavourhealth.hl7transform.common.transform.EncounterCommon;
 import org.endeavourhealth.hl7transform.common.transform.LocationCommon;
 import org.endeavourhealth.hl7transform.mapper.Mapper;
@@ -31,6 +32,7 @@ import org.slf4j.LoggerFactory;
 
 import java.util.List;
 import java.util.UUID;
+import java.util.regex.Pattern;
 
 public class BartsEncounterTransform extends ResourceTransformBase {
 
@@ -137,12 +139,8 @@ public class BartsEncounterTransform extends ResourceTransformBase {
         addStatusHistoryComponent(dischargeDate, Encounter.EncounterState.FINISHED, target);
 
         if (pv2Segment != null) {
-
             Period expectedAdmitDate = DateTimeHelper.createPeriod(pv2Segment.getExpectedAdmitDateTime(), null);
             addStatusHistoryComponent(expectedAdmitDate, Encounter.EncounterState.PLANNED, target);
-
-            Period expectedDischargeDate = DateTimeHelper.createPeriod(null, pv2Segment.getExpectedDischargeDateTime());
-            addStatusHistoryComponent(expectedDischargeDate, Encounter.EncounterState.PLANNED, target);
         }
     }
 
@@ -257,6 +255,24 @@ public class BartsEncounterTransform extends ResourceTransformBase {
                     .setLocation(assignedLocationReference)
                     .setStatus(encounterLocationStatus));
         }
+    }
+
+    private static void setReason(AdtMessage sourceMessage, Encounter target) throws TransformException {
+
+        Pv2Segment pv2Segment = sourceMessage.getPv2Segment();
+
+        if (pv2Segment != null) {
+            if (pv2Segment.getAdmitReason() != null)
+                if (StringUtils.isNotEmpty(pv2Segment.getAdmitReason().getAsString()))
+                    target.addReason(new CodeableConcept().setText(formatBartsReason(pv2Segment.getAdmitReason().getAsString())));
+        }
+    }
+
+    private static String formatBartsReason(String reason) {
+        if (reason.startsWith(BartsConstants.admitReasonPrefixCharacter))
+            reason = StringUtils.replaceFirst(reason, Pattern.quote(BartsConstants.admitReasonPrefixCharacter), "");
+
+        return StringHelper.formatName(reason);
     }
 
     private void setDischargeDisposition(AdtMessage source, Encounter target) throws TransformException, MapperException {

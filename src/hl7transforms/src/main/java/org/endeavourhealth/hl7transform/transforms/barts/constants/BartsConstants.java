@@ -10,4 +10,6 @@ public class BartsConstants {
     public static final String primaryEpisodeIdentifierTypeCode = "VISITID";                                // PV1.19
     public static final String practitionerOrgDoctorNumberAssigningAuth = "DRNBR";                          // XCN.9
     public static final String practitionerPersonnelIdAssigningAuth = "NHSPRSNLID";                         // XCN.9
+
+    public static final String admitReasonPrefixCharacter = "^";                                            // PV2.3
 }
