@@ -57,7 +57,7 @@ begin
 		m.inbound_payload,
 		m.outbound_message_type,
 		m.outbound_payload,
-		'Message manually moved from log.message, old message_id = ' || cast(m.message_id as varchar(10)) || ', reason = ' || coalesce(_reason, ''),
+		'Message manually moved from log.message, old message_id = ' || cast(m.message_id as varchar(10)) || ', reason = ' || coalesce(_reason, '') || ', error message = ' || coalesce(m.error_message, ''),
 		m.message_uuid,
 		'AA'
 	from log.message m
