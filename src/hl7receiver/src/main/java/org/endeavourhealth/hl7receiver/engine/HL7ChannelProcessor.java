@@ -1,5 +1,6 @@
 package org.endeavourhealth.hl7receiver.engine;
 
+import net.gpedro.integrations.slack.SlackAttachment;
 import org.apache.commons.lang3.StringUtils;
 import org.endeavourhealth.common.postgres.PgStoredProcException;
 import org.endeavourhealth.hl7receiver.Configuration;
@@ -8,6 +9,7 @@ import org.endeavourhealth.hl7receiver.mapping.Mapper;
 import org.endeavourhealth.hl7receiver.messageprocessor.HL7MessageProcessor;
 import org.endeavourhealth.hl7receiver.model.db.*;
 import org.endeavourhealth.hl7receiver.model.exceptions.HL7MessageProcessorException;
+import org.endeavourhealth.hl7receiver.monitoring.SlackNotifier;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -142,6 +144,9 @@ public class HL7ChannelProcessor implements Runnable {
 
         } catch (HL7MessageProcessorException e) {
             setMessageProcessingFailure(message.getMessageId(), attemptId, e.getMessageStatus(), e);
+
+            if (attemptId.intValue() == 1)
+                sendSlackNotification(message, e);
         }
 
         return false;
@@ -208,6 +213,19 @@ public class HL7ChannelProcessor implements Runnable {
 
             LOG.error("Error adding message status {} for message id {} in channel processor {} for instance {}", logArgs);
         }
+    }
+
+    private void sendSlackNotification(DbMessage dbMessage, Exception exception) {
+        String messageControlId = dbMessage.getMessageControlId();
+        int messageId = dbMessage.getMessageId();
+        String channelName = dbChannel.getChannelName();
+        String instanceName = configuration.getMachineName();
+        String exceptionMessage = HL7ExceptionHandler.constructFormattedException(exception);
+
+        String message = "Error processing message " + messageControlId + " (DBID " + Integer.toString(messageId) + ") on channel " + channelName + " on instance " + instanceName;
+
+        SlackNotifier slackNotifier = new SlackNotifier(configuration, dbChannel.getChannelId());
+        slackNotifier.postMessage(message, exceptionMessage);
     }
 
     private DbMessage getNextMessage() {

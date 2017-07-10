@@ -124,6 +124,15 @@ public final class Configuration {
         return dbChannelOptions.get(0);
     }
 
+    public String getChannelOptionValue(int channelId, DbChannelOptionType dbChannelOptionType) {
+        DbChannelOption dbChannelOption = getChannelOption(channelId, dbChannelOptionType);
+
+        if (dbChannelOption == null)
+            return null;
+
+        return dbChannelOption.getChannelOptionValue();
+    }
+
     private synchronized void initialiseDBConnectionPool() throws ConfigurationException {
         try {
             if (this.dataSource == null) {
