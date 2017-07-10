@@ -75,18 +75,32 @@ public class HomertonPatientTransform extends ResourceTransformBase {
     }
 
     public void setId(AdtMessage source, Patient target) throws TransformException, MapperException {
-
-        String patientIdentifierValue = getHomertonPrimaryPatientIdentifierValue(source);
-
-        UUID patientUuid = mapper.getResourceMapper().mapPatientUuid(
-                HomertonConstants.primaryPatientIdentifierTypeCode,
-                null,
-                patientIdentifierValue);
-
+        UUID patientUuid = getHomertonMappedPatientUuid(source, mapper);
         target.setId(patientUuid.toString());
     }
 
+    private static UUID getHomertonMappedPatientUuid(AdtMessage source, Mapper mapper) throws MapperException {
+        String patientIdentifierValue = getHomertonPrimaryPatientIdentifierValue(source);
+        return mapHomertonPatientUuid(patientIdentifierValue, mapper);
+    }
+
+    public static UUID getHomertonMappedPatientUuid(List<Cx> cxs, Mapper mapper) throws MapperException, ParseException {
+        String patientIdentifierValue = getHomertonPrimaryPatientIdentifierValue(cxs);
+        return mapHomertonPatientUuid(patientIdentifierValue, mapper);
+    }
+
+    private static UUID mapHomertonPatientUuid(String patientIdentifierValue, Mapper mapper) throws MapperException {
+        return mapper.getResourceMapper().mapPatientUuid(
+                HomertonConstants.primaryPatientIdentifierTypeCode,
+                null,
+                patientIdentifierValue);
+    }
+
     public static String getHomertonPrimaryPatientIdentifierValue(AdtMessage source) {
+        return PatientCommon.getPatientIdentifierValueByTypeCode(source, HomertonConstants.primaryPatientIdentifierTypeCode);
+    }
+
+    public static String getHomertonPrimaryPatientIdentifierValue(List<Cx> source) {
         return PatientCommon.getPatientIdentifierValueByTypeCode(source, HomertonConstants.primaryPatientIdentifierTypeCode);
     }
 

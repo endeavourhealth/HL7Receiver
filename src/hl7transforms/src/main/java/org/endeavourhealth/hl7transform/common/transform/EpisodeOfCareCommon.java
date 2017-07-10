@@ -50,12 +50,16 @@ public class EpisodeOfCareCommon {
         return getEpisodeIdentifierValueByTypeCode(EpisodeOfCareCommon.getAllEpisodeIdentifiers(source), episodeIdentifierTypeCode);
     }
 
-    public static String getEpisodeIdentifierValueByAssigningAuthority(AdtMessage source, String episodeIdentifierAssigningAuthority) {
-        return getAllEpisodeIdentifiers(source)
+    public static String getEpisodeIdentifierValueByAssigningAuthority(List<Cx> cxs, String episodeIdentifierAssigningAuthority) {
+        return cxs
                 .stream()
                 .filter(t -> episodeIdentifierAssigningAuthority.equals(t.getAssigningAuthority()))
                 .map(t -> t.getId())
                 .collect(StreamExtension.firstOrNullCollector());
+    }
+
+    public static String getEpisodeIdentifierValueByAssigningAuthority(AdtMessage source, String episodeIdentifierAssigningAuthority) {
+        return getEpisodeIdentifierValueByAssigningAuthority(getAllEpisodeIdentifiers(source), episodeIdentifierAssigningAuthority);
     }
 
     public static void setStatusAndPeriod(EpisodeOfCare target, String accountStatus, Hl7DateTime admitDate, Hl7DateTime dischargeDate, Hl7DateTime eventRecordedDate, Mapper mapper) throws TransformException, ParseException, MapperException {

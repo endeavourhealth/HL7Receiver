@@ -3,6 +3,7 @@ package org.endeavourhealth.hl7transform.transforms.homerton.transforms;
 import org.apache.commons.lang3.StringUtils;
 import org.endeavourhealth.hl7parser.Hl7DateTime;
 import org.endeavourhealth.hl7parser.ParseException;
+import org.endeavourhealth.hl7parser.datatypes.Cx;
 import org.endeavourhealth.hl7parser.messages.AdtMessage;
 import org.endeavourhealth.hl7parser.segments.Pv1Segment;
 import org.endeavourhealth.hl7transform.common.ResourceContainer;
@@ -19,6 +20,7 @@ import org.hl7.fhir.instance.model.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.List;
 import java.util.UUID;
 
 public class HomertonEpisodeOfCareTransform extends ResourceTransformBase {
@@ -55,24 +57,42 @@ public class HomertonEpisodeOfCareTransform extends ResourceTransformBase {
     }
 
     protected void setId(AdtMessage source, EpisodeOfCare target) throws TransformException, MapperException {
-
-        String patientIdentifierValue = HomertonPatientTransform.getHomertonPrimaryPatientIdentifierValue(source);
-        String episodeIdentifierValue = HomertonEpisodeOfCareTransform.getHomertonPrimaryEpisodeIdentifierValue(source);
-
-        UUID episodeUuid = mapper.getResourceMapper().mapEpisodeUuid(
-                HomertonConstants.primaryPatientIdentifierTypeCode,
-                null,
-                patientIdentifierValue,
-                null,
-                HomertonConstants.primaryEpisodeIdentifierAssigningAuthority,
-                episodeIdentifierValue);
-
+        UUID episodeUuid = getHomertonMappedEpisodeOfCareUuid(source, mapper);
         target.setId(episodeUuid.toString());
     }
 
     public static String getHomertonPrimaryEpisodeIdentifierValue(AdtMessage source) {
         return EpisodeOfCareCommon.getEpisodeIdentifierValueByAssigningAuthority(source, HomertonConstants.primaryEpisodeIdentifierAssigningAuthority);
     }
+
+    public static String getHomertonPrimaryEpisodeIdentifierValue(List<Cx> cxs) {
+        return EpisodeOfCareCommon.getEpisodeIdentifierValueByAssigningAuthority(cxs, HomertonConstants.primaryEpisodeIdentifierAssigningAuthority);
+    }
+
+    private static UUID getHomertonMappedEpisodeOfCareUuid(AdtMessage source, Mapper mapper) throws MapperException {
+        String patientIdentifierValue = HomertonPatientTransform.getHomertonPrimaryPatientIdentifierValue(source);
+        String episodeIdentifierValue = getHomertonPrimaryEpisodeIdentifierValue(source);
+
+        return getHomertonMappedEpisodeOfCareUuid(patientIdentifierValue, episodeIdentifierValue, mapper);
+    }
+
+    public static UUID getHomertonMappedEpisodeOfCareUuid(List<Cx> patientIdentifierList, List<Cx> episodeIdentifierList, Mapper mapper) throws MapperException, ParseException {
+        String patientIdentifierValue = HomertonPatientTransform.getHomertonPrimaryPatientIdentifierValue(patientIdentifierList);
+        String episodeIdentifierValue = getHomertonPrimaryEpisodeIdentifierValue(episodeIdentifierList);
+
+        return getHomertonMappedEpisodeOfCareUuid(patientIdentifierValue, episodeIdentifierValue, mapper);
+    }
+
+    private static UUID getHomertonMappedEpisodeOfCareUuid(String patientIdentifierValue, String episodeIdentifierValue, Mapper mapper) throws MapperException {
+        return mapper.getResourceMapper().mapEpisodeUuid(
+                HomertonConstants.primaryPatientIdentifierTypeCode,
+                null,
+                patientIdentifierValue,
+                null,
+                HomertonConstants.primaryEpisodeIdentifierAssigningAuthority,
+                episodeIdentifierValue);
+    }
+
 
     private void setIdentifiers(AdtMessage source, EpisodeOfCare target) throws TransformException, MapperException {
 

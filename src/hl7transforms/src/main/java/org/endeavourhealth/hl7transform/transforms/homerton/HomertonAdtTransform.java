@@ -115,6 +115,15 @@ public class HomertonAdtTransform extends Transform {
             targetResources.addResource(encounter);
 
         ///////////////////////////////////////////////////////////////////////////
+        // create merge information
+        //
+        HomertonMergeTransform homertonMergeTransform = new HomertonMergeTransform(mapper, targetResources);
+        Parameters parameters = homertonMergeTransform.transform(sourceMessage);
+
+        if (parameters != null)
+            targetResources.addResource(parameters);
+
+        ///////////////////////////////////////////////////////////////////////////
         // create message header
         //
         HomertonMessageHeaderTransform homertonMessageHeaderTransform = new HomertonMessageHeaderTransform(mapper, targetResources);

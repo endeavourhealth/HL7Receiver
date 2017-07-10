@@ -85,12 +85,16 @@ public class PatientCommon {
         return targetIdentifiers;
     }
 
-    public static String getPatientIdentifierValueByTypeCode(AdtMessage message, String patientIdentifierTypeCode) {
-        return PatientCommon.getAllPatientIdentifiers(message)
+    public static String getPatientIdentifierValueByTypeCode(List<Cx> cxs, String patientIdentifierTypeCode) {
+        return cxs
                 .stream()
                 .filter(t -> patientIdentifierTypeCode.equals(t.getIdentifierTypeCode()))
                 .map(t -> t.getId())
                 .collect(StreamExtension.firstOrNullCollector());
+    }
+
+    public static String getPatientIdentifierValueByTypeCode(AdtMessage message, String patientIdentifierTypeCode) {
+        return getPatientIdentifierValueByTypeCode(PatientCommon.getAllPatientIdentifiers(message), patientIdentifierTypeCode);
     }
 
     public static String getPatientIdentifierValueByAssigningAuth(List<Cx> cxs, String patientIdentifierAssigningAuthority) {
