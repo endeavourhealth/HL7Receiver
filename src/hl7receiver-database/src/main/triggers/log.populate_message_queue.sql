@@ -7,7 +7,7 @@ begin
 	or exists
 	(
 		select *
-		from dictionary.message_status s
+		from log.message_status s
 		where s.message_status_id = new.message_status_id
 		and s.is_complete
 	))

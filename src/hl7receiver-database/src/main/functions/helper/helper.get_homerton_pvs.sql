@@ -70,7 +70,7 @@ begin
 		pv2.*,
 		zvi.*
 	from log.message m
-	inner join dictionary.message_type mt on m.inbound_message_type = mt.message_type
+	inner join configuration.message_type mt on m.inbound_message_type = mt.message_type
 	left outer join helper.get_split_segments(m.message_id) pv1 on m.message_id = pv1.message_id and pv1.segment_name = 'PV1'
 	left outer join helper.get_split_segments(m.message_id) pv2 on m.message_id = pv2.message_id and pv2.segment_name = 'PV2'
 	left outer join helper.get_split_segments(m.message_id) zvi on m.message_id = zvi.message_id and zvi.segment_name = 'ZVI'

@@ -115,7 +115,7 @@ begin
 		c.channel_id,
 		t.channel_option_type,
 		coalesce(o.channel_option_value, t.default_value) as channel_option_value	from configuration.channel c
-	cross join dictionary.channel_option_type t
+	cross join configuration.channel_option_type t
 	left outer join configuration.channel_option o on c.channel_id = o.channel_id and t.channel_option_type = o.channel_option_type;
 
 	return next configuration_channel_option;

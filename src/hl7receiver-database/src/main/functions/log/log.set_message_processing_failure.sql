@@ -18,7 +18,7 @@ begin
 		select
 			*
 		from log.message m
-		inner join dictionary.message_status s on m.message_status_id = s.message_status_id
+		inner join log.message_status s on m.message_status_id = s.message_status_id
 		where m.message_id = _message_id
 		and m.processing_attempt_id = _attempt_id
 		and s.is_complete

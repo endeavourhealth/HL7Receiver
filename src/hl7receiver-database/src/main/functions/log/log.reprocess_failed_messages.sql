@@ -33,7 +33,7 @@ begin
 			select 
 				m.message_id 
 			from log.message m
-			inner join dictionary.message_status s on m.message_status_id = s.message_status_id
+			inner join log.message_status s on m.message_status_id = s.message_status_id
 			where m.channel_id = _channel_id
 			and m.next_attempt_date is not null 
 			and (not s.is_complete)

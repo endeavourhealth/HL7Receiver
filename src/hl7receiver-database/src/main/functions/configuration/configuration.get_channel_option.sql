@@ -13,7 +13,7 @@ begin
 	if not exists
 	(
 		select *
-		from dictionary.channel_option_type
+		from configuration.channel_option_type
 		where channel_option_type = _channel_option_type
 	)
 	then
@@ -23,7 +23,7 @@ begin
 
 	select 
 		coalesce(channel_option_value, default_value) as option_value into _channel_option_value
-	from dictionary.channel_option_type ot
+	from configuration.channel_option_type ot
 	left outer join configuration.channel_option co on ot.channel_option_type = co.channel_option_type and co.channel_id = _channel_id
 	where ot.channel_option_type = _channel_option_type;
 
