@@ -61,4 +61,6 @@ alter table log.message add constraint log_messagestatus_messagestatusid_iscompl
 
 drop table dictionary.message_status;
 
+drop table dictionary.acknowledgement_code;
+
 drop schema dictionary;
