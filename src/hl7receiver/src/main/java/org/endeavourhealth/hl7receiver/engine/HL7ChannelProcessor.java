@@ -216,13 +216,14 @@ public class HL7ChannelProcessor implements Runnable {
     }
 
     private void sendSlackNotification(DbMessage dbMessage, Exception exception) {
+        String messageType = dbMessage.getInboundMessageType();
         String messageControlId = dbMessage.getMessageControlId();
         int messageId = dbMessage.getMessageId();
         String channelName = dbChannel.getChannelName();
         String instanceName = configuration.getMachineName();
         String exceptionMessage = HL7ExceptionHandler.constructFormattedException(exception);
 
-        String message = "Error processing message " + messageControlId + " (DBID " + Integer.toString(messageId) + ") on channel " + channelName + " on instance " + instanceName;
+        String message = "Error processing " + messageType + " message " + messageControlId + " (DBID " + Integer.toString(messageId) + ") on channel " + channelName + " on instance " + instanceName;
 
         SlackNotifier slackNotifier = new SlackNotifier(configuration, dbChannel.getChannelId());
         slackNotifier.postMessage(message, exceptionMessage);
