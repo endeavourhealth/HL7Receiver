@@ -8,7 +8,7 @@ public class HL7MessageProcessorException extends Hl7ReceiverException {
     private DbMessageStatus messageStatus;
 
     public HL7MessageProcessorException(DbMessageStatus messageStatus, Throwable cause) {
-        super(cause);
+        super(messageStatus.getDescription(), cause);
         this.messageStatus = messageStatus;
     }
 
