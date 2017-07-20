@@ -1,9 +1,12 @@
 package org.endeavourhealth.hl7receiver.model.db;
 
+import java.util.List;
+
 public class DbChannelMessageType {
     private int channelId;
     private String messageType;
     private boolean isAllowed;
+    private List<DbChannelMessageTypeOption> channelMessageTypeOptions;
 
     public int getChannelId() {
         return channelId;
@@ -29,6 +32,15 @@ public class DbChannelMessageType {
 
     public DbChannelMessageType setAllowed(boolean allowed) {
         isAllowed = allowed;
+        return this;
+    }
+
+    public List<DbChannelMessageTypeOption> getChannelMessageTypeOptions() {
+        return channelMessageTypeOptions;
+    }
+
+    public DbChannelMessageType setChannelMessageTypeOptions(List<DbChannelMessageTypeOption> channelMessageTypeOptions) {
+        this.channelMessageTypeOptions = channelMessageTypeOptions;
         return this;
     }
 }

@@ -13,6 +13,7 @@ declare
 	configuration_eds refcursor;
 	configuration_processing_attempt_interval refcursor;
 	configuration_channel_option refcursor;
+	configuration_channel_message_type_option refcursor;
 begin
 
 	insert into log.instance
@@ -120,6 +121,18 @@ begin
 
 	return next configuration_channel_option;
 
+	------------------------------------------------------
+	configuration_channel_message_type_option = 'configuration_channel_message_type_option';
+	
+	open configuration_channel_message_type_option for
+	select
+		o.channel_id,
+		o.message_type,
+		o.message_type_option_type,
+		o.message_type_option_value
+	from configuration.channel_message_type_option o;
+
+	return next configuration_channel_message_type_option;
 	------------------------------------------------------
 	
 end;

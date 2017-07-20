@@ -80,7 +80,20 @@ public class DataLayer implements IDBDigestLogger {
                         .setChannelOptionType(DbChannelOptionType.fromString(resultSet.getString("channel_option_type")))
                         .setChannelOptionValue(resultSet.getString("channel_option_value")));
 
+        List<DbChannelMessageTypeOption> dbChannelMessageTypeOptions = pgStoredProc.executeMultiQuery((resultSet) ->
+                new DbChannelMessageTypeOption()
+                        .setChannelId(resultSet.getInt("channel_id"))
+                        .setMessageType(resultSet.getString("message_type"))
+                        .setMessageTypeOptionType(DbMessageTypeOptionType.fromString(resultSet.getString("message_type_option_type")))
+                        .setMessageTypeOptionValue(resultSet.getString("message_type_option_value")));
+
         // assemble data
+
+        dbChannelMessageTypes.forEach(s ->
+                s.setChannelMessageTypeOptions(dbChannelMessageTypeOptions
+                        .stream()
+                        .filter(t -> t.getChannelId() == s.getChannelId() && t.getMessageType().equals(s.getMessageType()))
+                        .collect(Collectors.toList())));
 
         dbChannels.forEach(s ->
                 s.setDbChannelMessageTypes(dbChannelMessageTypes
