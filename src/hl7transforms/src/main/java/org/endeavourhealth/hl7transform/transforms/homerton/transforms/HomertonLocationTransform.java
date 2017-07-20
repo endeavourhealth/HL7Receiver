@@ -43,10 +43,10 @@ public class HomertonLocationTransform extends ResourceTransformBase {
         return LocationCommon.createMainHospitalLocation(HomertonConstants.odsSiteCodeStLeonards, mainHospitalOrganisationReference, mapper);
     }
 
-    public Location createNewhamHospitalLocation() throws MapperException, TransformException, ParseException {
-        Reference mainHospitalOrganisationReference = this.targetResources.getResourceReference(ResourceTag.MainHospitalOrganisation, Organization.class);
-        return LocationCommon.createMainHospitalLocation(HomertonConstants.odsSiteCodeNewham, mainHospitalOrganisationReference, mapper);
-    }
+//    public Location createNewhamHospitalLocation() throws MapperException, TransformException, ParseException {
+//        Reference mainHospitalOrganisationReference = this.targetResources.getResourceReference(ResourceTag.MainHospitalOrganisation, Organization.class);
+//        return LocationCommon.createMainHospitalLocation(HomertonConstants.odsSiteCodeNewham, mainHospitalOrganisationReference, mapper);
+//    }
 
     public Reference createHomertonConstituentLocation(Pl source) throws MapperException, TransformException, ParseException {
 
@@ -115,13 +115,13 @@ public class HomertonLocationTransform extends ResourceTransformBase {
             return stLeonardsHospitalLocation;
         }
 
-        if (HomertonConstants.locationBuildingNewham.equalsIgnoreCase(StringUtils.trim(source.getBuilding()))) {
-            Location newhamHospitalLocation = createNewhamHospitalLocation();
-
-            saveToTargetResources(newhamHospitalLocation);
-
-            return newhamHospitalLocation;
-        }
+//        if (HomertonConstants.locationBuildingNewham.equalsIgnoreCase(StringUtils.trim(source.getBuilding()))) {
+//            Location newhamHospitalLocation = createNewhamHospitalLocation();
+//
+//            saveToTargetResources(newhamHospitalLocation);
+//
+//            return newhamHospitalLocation;
+//        }
 
         throw new TransformException("Building of " + source.getBuilding() + " not recognised");
     }
