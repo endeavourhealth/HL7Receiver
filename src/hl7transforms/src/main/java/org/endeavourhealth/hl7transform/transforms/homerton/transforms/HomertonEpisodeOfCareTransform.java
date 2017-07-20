@@ -117,7 +117,7 @@ public class HomertonEpisodeOfCareTransform extends ResourceTransformBase {
         String servicingFacilityName = StringUtils.trim(pv1Segment.getServicingFacility()).toUpperCase();
 
         if (StringUtils.isNotBlank(servicingFacilityName))
-            if (!servicingFacilityName.equals(HomertonConstants.servicingFacility))
+            if (!HomertonConstants.servicingFacilities.stream().anyMatch(t -> t.equalsIgnoreCase(StringUtils.trim(servicingFacilityName))))
                 throw new TransformException("Hospital servicing facility of " + servicingFacilityName + " not recognised");
 
         target.setManagingOrganization(targetResources.getResourceReference(ResourceTag.MainHospitalOrganisation, Organization.class));

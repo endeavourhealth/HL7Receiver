@@ -43,6 +43,11 @@ public class HomertonLocationTransform extends ResourceTransformBase {
         return LocationCommon.createMainHospitalLocation(HomertonConstants.odsSiteCodeStLeonards, mainHospitalOrganisationReference, mapper);
     }
 
+    public Location createNewhamHospitalLocation() throws MapperException, TransformException, ParseException {
+        Reference mainHospitalOrganisationReference = this.targetResources.getResourceReference(ResourceTag.MainHospitalOrganisation, Organization.class);
+        return LocationCommon.createMainHospitalLocation(HomertonConstants.odsSiteCodeNewham, mainHospitalOrganisationReference, mapper);
+    }
+
     public Reference createHomertonConstituentLocation(Pl source) throws MapperException, TransformException, ParseException {
 
         if (StringUtils.isBlank(source.getFacility())
@@ -52,7 +57,7 @@ public class HomertonLocationTransform extends ResourceTransformBase {
                 && StringUtils.isBlank(source.getBed()))
             return null;
 
-        if (!HomertonConstants.locationFacility.equalsIgnoreCase(StringUtils.trim(source.getFacility())))
+        if (!HomertonConstants.locationFacilities.stream().anyMatch(t -> t.equalsIgnoreCase(StringUtils.trim(source.getFacility()))))
             throw new TransformException("Location facility of " + source.getFacility() + " not recognised");
 
         if (StringUtils.isBlank(source.getBuilding())
@@ -108,6 +113,14 @@ public class HomertonLocationTransform extends ResourceTransformBase {
             saveToTargetResources(stLeonardsHospitalLocation);
 
             return stLeonardsHospitalLocation;
+        }
+
+        if (HomertonConstants.locationBuildingNewham.equalsIgnoreCase(StringUtils.trim(source.getBuilding()))) {
+            Location newhamHospitalLocation = createNewhamHospitalLocation();
+
+            saveToTargetResources(newhamHospitalLocation);
+
+            return newhamHospitalLocation;
         }
 
         throw new TransformException("Building of " + source.getBuilding() + " not recognised");
