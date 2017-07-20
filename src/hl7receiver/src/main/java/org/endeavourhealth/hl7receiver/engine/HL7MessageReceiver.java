@@ -7,15 +7,20 @@ import ca.uhn.hl7v2.model.Message;
 import ca.uhn.hl7v2.protocol.ReceivingApplication;
 import ca.uhn.hl7v2.protocol.ReceivingApplicationException;
 import org.apache.commons.lang3.StringUtils;
+import org.endeavourhealth.common.utility.StreamExtension;
 import org.endeavourhealth.hl7receiver.Configuration;
 import org.endeavourhealth.hl7receiver.DataLayer;
 import org.endeavourhealth.hl7receiver.model.db.DbChannel;
+import org.endeavourhealth.hl7receiver.model.db.DbChannelMessageType;
+import org.endeavourhealth.hl7receiver.model.db.DbChannelMessageTypeOption;
+import org.endeavourhealth.hl7receiver.model.db.DbMessageTypeOptionType;
 import org.endeavourhealth.hl7receiver.model.exceptions.MessageProcessingException;
 import org.endeavourhealth.hl7receiver.model.exceptions.TransientMessageProcessingException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.sql.SQLException;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
@@ -66,8 +71,12 @@ class HL7MessageReceiver implements ReceivingApplication {
             if (!didMessageDateParseCorrectly(hl7KeyFields))
                 throw new MessageProcessingException("Could not parse message date", hl7KeyFields.getMessageDateTimeParseException());
 
-            if (!isMessageTypeAllowed(hl7KeyFields))
+            DbChannelMessageType messageTypeConfiguration = getMessageTypeConfiguration(hl7KeyFields);
+
+            if (!isMessageTypeAllowed(messageTypeConfiguration))
                 throw new MessageProcessingException("Message type is not allowed");
+
+            processMessageTypeOptions(hl7KeyFields, messageTypeConfiguration);
 
             response = message.generateACK();
             String responseText = getMessageText(response);
@@ -188,12 +197,55 @@ class HL7MessageReceiver implements ReceivingApplication {
         return (hl7KeyFields.getMessageDateTime() != null);
     }
 
-    private boolean isMessageTypeAllowed(HL7KeyFields message) {
+    private static boolean isMessageTypeAllowed(DbChannelMessageType messageTypeConfiguration) {
+        if (messageTypeConfiguration == null)
+            return false;
+
+        return (messageTypeConfiguration.isAllowed());
+    }
+
+    private void processMessageTypeOptions(HL7KeyFields hl7KeyFields, DbChannelMessageType dbChannelMessageType) throws MessageProcessingException {
+        if (dbChannelMessageType.getChannelMessageTypeOptions() != null)
+            for (DbChannelMessageTypeOption channelMessageTypeOption : dbChannelMessageType.getChannelMessageTypeOptions())
+                processMessageTypeOption(hl7KeyFields, channelMessageTypeOption);
+    }
+
+    private void processMessageTypeOption(HL7KeyFields hl7KeyFields, DbChannelMessageTypeOption channelMessageTypeOption) throws MessageProcessingException {
+
+        if (channelMessageTypeOption.getMessageTypeOptionType() == DbMessageTypeOptionType.CHECK_PID1_NOT_BLANK_AT_MESSAGE_RECEIPT) {
+
+            if (dbChannel.getPid1Field() != null) {
+                if (StringUtils.isBlank(hl7KeyFields.getPid1())) {
+                    String exceptionMessage = "Patient identifier could not be found in PID." + dbChannel.getPid1Field().toString();
+
+                    if (StringUtils.isNotBlank(dbChannel.getPid1AssigningAuthority()))
+                        exceptionMessage += " with assigning authority '" + dbChannel.getPid1AssigningAuthority() + "'";
+
+                    throw new MessageProcessingException(exceptionMessage);
+                }
+            }
+
+        } else if (channelMessageTypeOption.getMessageTypeOptionType() == DbMessageTypeOptionType.CHECK_PID2_NOT_BLANK_AT_MESSAGE_RECEIPT) {
+
+            if (dbChannel.getPid2Field() != null) {
+                if (StringUtils.isBlank(hl7KeyFields.getPid2())) {
+                    String exceptionMessage = "Patient identifier could not be found in PID." + dbChannel.getPid2Field().toString();
+
+                    if (StringUtils.isNotBlank(dbChannel.getPid2AssigningAuthority()))
+                        exceptionMessage += " with assigning authority '" + dbChannel.getPid2AssigningAuthority() + "'";
+
+                    throw new MessageProcessingException(exceptionMessage);
+                }
+            }
+        }
+    }
+
+    private DbChannelMessageType getMessageTypeConfiguration(HL7KeyFields message) {
         return dbChannel
                 .getDbChannelMessageTypes()
                 .stream()
-                .filter(t -> t.isAllowed())
-                .anyMatch(t -> t.getMessageType().equals(message.getMessageType()));
+                .filter(t -> t.getMessageType().equals(message.getMessageType()))
+                .collect(StreamExtension.singleOrNullCollector());
     }
 
     private static String getMessageText(Message message) throws HL7Exception {
