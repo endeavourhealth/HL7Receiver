@@ -36,8 +36,10 @@ create table configuration.channel_message_type_option
 	message_type_option_type varchar(100) not null,
 	message_type_option_value varchar(100) not null,
 	
-	constraint configuration_channelmessagetypeoption_channelid_messagetype_messagetypeoptiontype_pk primary key (channel_id, message_type, message_type_option_type),
+	constraint configuration_channelmessagetypeoption_chid_mt_mtoptiontype_pk primary key (channel_id, message_type, message_type_option_type),
 	constraint configuration_channelmessagetypeoption_channelid_fk foreign key (channel_id) references configuration.channel (channel_id),
 	constraint configuration_channelmessagetypeoption_channelid_messagetype_fk foreign key (channel_id, message_type) references configuration.channel_message_type (channel_id, message_type),
 	constraint configuration_channelmessagetypeoption_messagetypeoptiontype_fk foreign key (message_type_option_type) references configuration.message_type_option_type (message_type_option_type)
 );
+
+select * from configuration.channel_message_type_option;
