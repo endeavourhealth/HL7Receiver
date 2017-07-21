@@ -1,12 +1,9 @@
 package org.endeavourhealth.hl7receiver.engine;
 
-import net.gpedro.integrations.slack.SlackAttachment;
 import org.apache.commons.lang3.StringUtils;
-import org.endeavourhealth.common.postgres.PgStoredProcException;
 import org.endeavourhealth.hl7receiver.Configuration;
 import org.endeavourhealth.hl7receiver.DataLayer;
 import org.endeavourhealth.hl7receiver.mapping.Mapper;
-import org.endeavourhealth.hl7receiver.messageprocessor.HL7MessageProcessor;
 import org.endeavourhealth.hl7receiver.model.db.*;
 import org.endeavourhealth.hl7receiver.model.exceptions.HL7MessageProcessorException;
 import org.endeavourhealth.hl7receiver.monitoring.SlackNotifier;
@@ -15,8 +12,6 @@ import org.slf4j.LoggerFactory;
 
 import java.sql.SQLException;
 import java.time.LocalDateTime;
-import java.util.Arrays;
-import java.util.List;
 
 public class HL7ChannelProcessor implements Runnable {
 
