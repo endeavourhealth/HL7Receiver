@@ -1,11 +1,9 @@
 /* 
 	Schema V2.9: Create message type option tables
 */
-
 create table configuration.message_type_option_type
 (
 	message_type_option_type varchar(100) not null,
-	default_value varchar(100) not null,
 	description varchar(1000) not null,
 	
 	constraint configuration_messagetypeoptiontype_messagetypeoptiontype_pk primary key (message_type_option_type),
@@ -15,19 +13,20 @@ create table configuration.message_type_option_type
 insert into configuration.message_type_option_type
 (
 	message_type_option_type,
-	default_value,
 	description
 )
 values
 (
-	'CheckPid1NotBlankAtMessageReceipt', 
-	'DISABLED', 
+	'CheckPid1NotBlank', 
 	'At message receipt, ensures the patient identifier value is not blank for pid1 field as defined in configuration.channel.  If blank an AE message code is returned.'
 ),
 (
-	'CheckPid2NotBlankAtMessageReceipt', 
-	'DISABLED', 
+	'CheckPid2NotBlank', 
 	'At message receipt, ensures the patient identifier value is not blank for pid2 field as defined in configuration.channel.  If blank an AE message code is returned.'
+),
+(
+	'CheckMrgSegmentField5NotBlank',
+	'At message receipt, ensures MRG segment field 5 (Prior visit number) field is not blank.  If blank an AE message code is returned.'
 );
 
 create table configuration.channel_message_type_option

@@ -12,8 +12,9 @@ import org.endeavourhealth.hl7receiver.model.db.DbChannel;
 import java.time.LocalDateTime;
 import java.util.List;
 
-class HL7KeyFields {
+public class HL7KeyFields {
 
+    private Message message;
     private String encodedMessage;
     private String sendingApplication;
     private String sendingFacility;
@@ -33,9 +34,9 @@ class HL7KeyFields {
         HL7KeyFields hl7KeyFields = new HL7KeyFields();
         hl7KeyFields.encodedMessage = messageText;
 
-        Message message = new Message(messageText);
+        hl7KeyFields.message = new Message(messageText);
 
-        MshSegment mshSegment = message.getSegment(SegmentName.MSH, MshSegment.class);
+        MshSegment mshSegment = hl7KeyFields.message.getSegment(SegmentName.MSH, MshSegment.class);
 
         if (mshSegment != null) {
             hl7KeyFields.sendingApplication = mshSegment.getSendingApplication();
@@ -59,7 +60,7 @@ class HL7KeyFields {
             }
         }
 
-        PidSegment pidSegment = message.getSegment(SegmentName.PID, PidSegment.class);
+        PidSegment pidSegment = hl7KeyFields.message.getSegment(SegmentName.PID, PidSegment.class);
 
         if (pidSegment != null) {
             hl7KeyFields.pid1 = formatPid(getPid2(pidSegment, channel.getPid1Field(), channel.getPid1AssigningAuthority()));
@@ -111,6 +112,8 @@ class HL7KeyFields {
 
         return StringUtils.deleteWhitespace(pid);
     }
+
+    public Message getMessage() { return message; }
 
     public String getEncodedMessage() {
         return encodedMessage;

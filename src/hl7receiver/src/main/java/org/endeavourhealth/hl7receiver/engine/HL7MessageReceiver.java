@@ -10,6 +10,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.endeavourhealth.common.utility.StreamExtension;
 import org.endeavourhealth.hl7receiver.Configuration;
 import org.endeavourhealth.hl7receiver.DataLayer;
+import org.endeavourhealth.hl7receiver.engine.messagetypeoptionprocessor.MessageTypeOptionProcessor;
 import org.endeavourhealth.hl7receiver.model.db.DbChannel;
 import org.endeavourhealth.hl7receiver.model.db.DbChannelMessageType;
 import org.endeavourhealth.hl7receiver.model.db.DbChannelMessageTypeOption;
@@ -205,38 +206,16 @@ class HL7MessageReceiver implements ReceivingApplication {
     }
 
     private void processMessageTypeOptions(HL7KeyFields hl7KeyFields, DbChannelMessageType dbChannelMessageType) throws MessageProcessingException {
-        if (dbChannelMessageType.getChannelMessageTypeOptions() != null)
-            for (DbChannelMessageTypeOption channelMessageTypeOption : dbChannelMessageType.getChannelMessageTypeOptions())
-                processMessageTypeOption(hl7KeyFields, channelMessageTypeOption);
-    }
+        if (dbChannelMessageType.getChannelMessageTypeOptions() == null)
+            return;
 
-    private void processMessageTypeOption(HL7KeyFields hl7KeyFields, DbChannelMessageTypeOption channelMessageTypeOption) throws MessageProcessingException {
+        for (DbChannelMessageTypeOption channelMessageTypeOption : dbChannelMessageType.getChannelMessageTypeOptions()) {
+            MessageTypeOptionProcessor messageTypeOptionProcessor = MessageTypeOptionProcessor.create(channelMessageTypeOption);
 
-        if (channelMessageTypeOption.getMessageTypeOptionType() == DbMessageTypeOptionType.CHECK_PID1_NOT_BLANK_AT_MESSAGE_RECEIPT) {
+            if (messageTypeOptionProcessor == null)
+                return;
 
-            if (dbChannel.getPid1Field() != null) {
-                if (StringUtils.isBlank(hl7KeyFields.getPid1())) {
-                    String exceptionMessage = "Patient identifier could not be found in PID." + dbChannel.getPid1Field().toString();
-
-                    if (StringUtils.isNotBlank(dbChannel.getPid1AssigningAuthority()))
-                        exceptionMessage += " with assigning authority '" + dbChannel.getPid1AssigningAuthority() + "'";
-
-                    throw new MessageProcessingException(exceptionMessage);
-                }
-            }
-
-        } else if (channelMessageTypeOption.getMessageTypeOptionType() == DbMessageTypeOptionType.CHECK_PID2_NOT_BLANK_AT_MESSAGE_RECEIPT) {
-
-            if (dbChannel.getPid2Field() != null) {
-                if (StringUtils.isBlank(hl7KeyFields.getPid2())) {
-                    String exceptionMessage = "Patient identifier could not be found in PID." + dbChannel.getPid2Field().toString();
-
-                    if (StringUtils.isNotBlank(dbChannel.getPid2AssigningAuthority()))
-                        exceptionMessage += " with assigning authority '" + dbChannel.getPid2AssigningAuthority() + "'";
-
-                    throw new MessageProcessingException(exceptionMessage);
-                }
-            }
+            messageTypeOptionProcessor.process(dbChannel, channelMessageTypeOption, hl7KeyFields);
         }
     }
 
