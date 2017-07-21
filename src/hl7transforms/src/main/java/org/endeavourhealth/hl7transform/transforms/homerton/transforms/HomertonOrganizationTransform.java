@@ -58,7 +58,7 @@ public class HomertonOrganizationTransform extends ResourceTransformBase {
             return null;
 
         if (StringUtils.isNotBlank(servicingFacilityName))
-            if (!HomertonConstants.servicingFacilities.stream().anyMatch(t -> t.equalsIgnoreCase(StringUtils.trim(servicingFacilityName))))
+            if (!servicingFacilityName.equals(HomertonConstants.servicingFacility))
                 throw new TransformException("Hospital servicing facility of " + servicingFacilityName + " not recognised");
 
         Organization managingOrganisation = this.targetResources.getResourceSingle(ResourceTag.MainHospitalOrganisation, Organization.class);
