@@ -42,4 +42,3 @@ create table configuration.channel_message_type_option
 	constraint configuration_channelmessagetypeoption_messagetypeoptiontype_fk foreign key (message_type_option_type) references configuration.message_type_option_type (message_type_option_type)
 );
 
-select * from configuration.channel_message_type_option;
