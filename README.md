@@ -5,4 +5,4 @@
 A component of the Endeavour Data Service.
 
 
-<img src="https://docs.google.com/drawings/d/1J59pQQ920PHzII8Hno8bjBqgiv5lcj6e1Fevd8EZ1ZI/pub?w=1440&amp;h=1080">
+<img src="https://docs.google.com/drawings/d/1LoxFU3b6AEOC2CzNo_xEEOkwzaY0DvU-nsDf3Lj2PQo/pub?w=1440&h=1080">
