@@ -2,7 +2,7 @@
 
 ## HL7 Receiver
 
-A component of the Endeavour Data Service.
-
-
 <img src="https://docs.google.com/drawings/d/1LoxFU3b6AEOC2CzNo_xEEOkwzaY0DvU-nsDf3Lj2PQo/pub?w=1440&h=1080">
+
+
+
