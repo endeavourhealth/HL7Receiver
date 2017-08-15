@@ -2,7 +2,7 @@
 
 SERVICE_NAME=hl7receiver
 JAR_FILE=hl7receiver-1.0-SNAPSHOT-jar-with-dependencies.jar
-JENKINS_URL=https://build.endeavourhealth.net/job/hl7receiver/lastSuccessfulBuild/artifact/target/
+JENKINS_URL=https://build.endeavourhealth.net/job/Application-HL7%20Receiver/lastSuccessfulBuild/artifact/target/
 JENKINS_USER=deployuser
 JENKINS_PASS=
 DOWNLOAD_LOCATION=/home/sysadmin/hl7receiver/
