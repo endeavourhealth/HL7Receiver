@@ -88,14 +88,24 @@ public class HomertonEncounterTransform extends ResourceTransformBase {
         String patientIdentifierValue = HomertonPatientTransform.getHomertonPrimaryPatientIdentifierValue(source);
         String episodeIdentifierValue = HomertonEpisodeOfCareTransform.getHomertonPrimaryEpisodeIdentifierValue(source);
 
+        //changed to not use date as part of Encounter mapping, so each update to the same Encounter
+        //maps to the same Encounter in Discovery
         UUID encounterUuid = mapper.getResourceMapper().mapEncounterUuid(
                 HomertonConstants.primaryPatientIdentifierTypeCode,
                 null,
                 patientIdentifierValue,
                 null,
                 HomertonConstants.primaryEpisodeIdentifierAssigningAuthority,
+                episodeIdentifierValue);
+
+        /*UUID encounterUuid = mapper.getResourceMapper().mapEncounterUuid(
+                HomertonConstants.primaryPatientIdentifierTypeCode,
+                null,
+                patientIdentifierValue,
+                null,
+                HomertonConstants.primaryEpisodeIdentifierAssigningAuthority,
                 episodeIdentifierValue,
-                source.getEvnSegment().getRecordedDateTime().getLocalDateTime());
+                source.getEvnSegment().getRecordedDateTime().getLocalDateTime());*/
 
         target.setId(encounterUuid.toString());
     }

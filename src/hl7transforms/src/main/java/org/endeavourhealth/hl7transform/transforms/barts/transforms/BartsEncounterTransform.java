@@ -88,14 +88,24 @@ public class BartsEncounterTransform extends ResourceTransformBase {
         String patientIdentifierValue = BartsPatientTransform.getBartsPrimaryPatientIdentifierValue(source);
         String episodeIdentifierValue = BartsEpisodeOfCareTransform.getBartsPrimaryEpisodeIdentifierValue(source);
 
+        //changed to not use date as part of Encounter mapping, so each update to the same Encounter
+        //maps to the same Encounter in Discovery
         UUID encounterUuid = mapper.getResourceMapper().mapEncounterUuid(
                 null,
                 BartsConstants.primaryPatientIdentifierAssigningAuthority,
                 patientIdentifierValue,
                 BartsConstants.primaryEpisodeIdentifierTypeCode,
                 null,
+                episodeIdentifierValue);
+
+        /*UUID encounterUuid = mapper.getResourceMapper().mapEncounterUuid(
+                null,
+                BartsConstants.primaryPatientIdentifierAssigningAuthority,
+                patientIdentifierValue,
+                BartsConstants.primaryEpisodeIdentifierTypeCode,
+                null,
                 episodeIdentifierValue,
-                source.getEvnSegment().getRecordedDateTime().getLocalDateTime());
+                source.getEvnSegment().getRecordedDateTime().getLocalDateTime());*/
 
         target.setId(encounterUuid.toString());
     }
