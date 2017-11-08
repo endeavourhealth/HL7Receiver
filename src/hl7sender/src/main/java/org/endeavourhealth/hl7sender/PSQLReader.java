@@ -4,7 +4,10 @@ import ca.uhn.hl7v2.DefaultHapiContext;
 import ca.uhn.hl7v2.HL7Exception;
 import ca.uhn.hl7v2.model.Message;
 import ca.uhn.hl7v2.parser.PipeParser;
+import ca.uhn.hl7v2.util.Terser;
 import ca.uhn.hl7v2.validation.impl.NoValidation;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.BufferedReader;
 import java.io.FileNotFoundException;
@@ -12,6 +15,7 @@ import java.io.FileReader;
 import java.io.IOException;
 
 public class PSQLReader extends AbstractMessageReader {
+    private static final Logger LOG = LoggerFactory.getLogger(PSQLReader.class);
     static BufferedReader psqlReader;
     static Message psqlReaderNextmsg = null;
 
@@ -20,14 +24,33 @@ public class PSQLReader extends AbstractMessageReader {
         readNextPsqlMessage();
     }
 
-    public boolean hasNext() {
-        return (psqlReaderNextmsg != null);
+    @Override
+    public void prepareRestart() {
+
     }
 
     @Override
     public Message next() throws IOException, HL7Exception {
-        Message ret = psqlReaderNextmsg;
-        readNextPsqlMessage();
+        Message ret = null;
+
+        while (psqlReaderNextmsg != null && ret == null) {
+            Message nextMsg = psqlReaderNextmsg;
+            readNextPsqlMessage();
+
+            if (skipMessages) {
+                Terser nextMsgTerser = new Terser(nextMsg);
+                String currMSH10 = nextMsgTerser.get("/MSH-10");
+                if (lastSuccessSendMsgId.compareTo(currMSH10) == 0) {
+                    LOG.info("Skip message (for the last time):" + currMSH10);
+                    skipMessages = false;
+                } else {
+                    LOG.info("Skip message:" + currMSH10);
+                }
+            } else {
+                ret = nextMsg;
+            }
+        }
+
         return ret;
     }
 

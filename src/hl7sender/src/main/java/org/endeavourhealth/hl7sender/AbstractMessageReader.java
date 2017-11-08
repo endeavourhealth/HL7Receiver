@@ -13,9 +13,12 @@ public abstract class AbstractMessageReader {
     private static final Logger LOG = LoggerFactory.getLogger(AbstractMessageReader.class);
     private File inputMessages = null;
     private File archiveDir = null;
+    protected File auditFile = null;
+    protected String lastSuccessSendMsgId = null;
+    protected boolean skipMessages = false;
 
     public abstract void prepare() throws FileNotFoundException, IOException, HL7Exception;
-    public abstract boolean hasNext();
+    public abstract void prepareRestart() throws IOException;
     public abstract Message next() throws IOException, HL7Exception, FileNotFoundException;
     public abstract void postSend() throws IOException;
     public abstract void close() throws IOException;
@@ -35,5 +38,9 @@ public abstract class AbstractMessageReader {
 
     public File getArchiveDir() {
         return archiveDir;
+    }
+
+    public void setAuditFile(File auditFile) {
+        this.auditFile = auditFile;
     }
 }
