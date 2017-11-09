@@ -46,6 +46,11 @@
             <artifactId>security</artifactId>
             <version>${eds-security.version}</version>
         </dependency>
+        <dependency>
+            <groupId>org.endeavourhealth.common</groupId>
+            <artifactId>utility</artifactId>
+            <version>${eds-utility.version}</version>
+        </dependency>
 
         <!-- hapi -->
         <dependency>

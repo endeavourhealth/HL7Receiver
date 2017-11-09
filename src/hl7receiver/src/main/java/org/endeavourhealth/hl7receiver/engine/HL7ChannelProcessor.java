@@ -1,12 +1,12 @@
 package org.endeavourhealth.hl7receiver.engine;
 
 import org.apache.commons.lang3.StringUtils;
+import org.endeavourhealth.common.utility.SlackHelper;
 import org.endeavourhealth.hl7receiver.Configuration;
 import org.endeavourhealth.hl7receiver.DataLayer;
 import org.endeavourhealth.hl7receiver.mapping.Mapper;
 import org.endeavourhealth.hl7receiver.model.db.*;
 import org.endeavourhealth.hl7receiver.model.exceptions.HL7MessageProcessorException;
-import org.endeavourhealth.hl7receiver.monitoring.SlackNotifier;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -216,12 +216,26 @@ public class HL7ChannelProcessor implements Runnable {
         int messageId = dbMessage.getMessageId();
         String channelName = dbChannel.getChannelName();
         String instanceName = configuration.getMachineName();
-        String exceptionMessage = HL7ExceptionHandler.constructFormattedException(exception);
 
         String message = "Error processing " + messageType + " message " + messageControlId + " (DBID " + Integer.toString(messageId) + ") on channel " + channelName + " on instance " + instanceName;
 
+        //changing to use the standard Slack utility, so all Slack config is stored in the same place
+        /*String exceptionMessage = HL7ExceptionHandler.constructFormattedException(exception);
         SlackNotifier slackNotifier = new SlackNotifier(configuration, dbChannel.getChannelId());
-        slackNotifier.postMessage(message, exceptionMessage);
+        slackNotifier.postMessage(message, exceptionMessage);*/
+
+        SlackHelper.Channel channel = null;
+        if (dbChannel.getChannelId() == 1) {
+            channel = SlackHelper.Channel.Hl7ReceiverAlertsHomerton;
+
+        } else if (dbChannel.getChannelId() == 2) {
+            channel = SlackHelper.Channel.Hl7ReceiverAlertsBarts;
+
+        } else {
+            LOG.error("Unknown channel ID " + dbChannel.getChannelId());
+        }
+
+        SlackHelper.sendSlackMessage(channel, message, exception);
     }
 
     private DbMessage getNextMessage() {
