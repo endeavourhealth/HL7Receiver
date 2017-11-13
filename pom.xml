@@ -11,12 +11,12 @@
         <java.version>1.8</java.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 
-        <endeavour-config.version>1.08-SNAPSHOT</endeavour-config.version>
+        <endeavour-config.version>1.13-SNAPSHOT</endeavour-config.version>
         <eds-client.version>1.0-SNAPSHOT</eds-client.version>
-        <eds-fhir.version>1.11-SNAPSHOT</eds-fhir.version>
+        <eds-fhir.version>1.19-SNAPSHOT</eds-fhir.version>
         <eds-postgres.version>1.08-SNAPSHOT</eds-postgres.version>
-        <eds-security.version>1.0-SNAPSHOT</eds-security.version>
-        <eds-utility.version>1.5-SNAPSHOT</eds-utility.version>
+        <eds-security.version>1.2-SNAPSHOT</eds-security.version>
+        <eds-utility.version>1.6-SNAPSHOT</eds-utility.version>
 
         <commons-lang3.version>3.5</commons-lang3.version>
         <fhir-dstu2.version>1.0.1.7108</fhir-dstu2.version>
