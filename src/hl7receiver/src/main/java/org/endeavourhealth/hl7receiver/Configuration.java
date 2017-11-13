@@ -141,6 +141,7 @@ public final class Configuration {
                 hikariDataSource.setJdbcUrl(postgresUrl);
                 hikariDataSource.setUsername(postgresUsername);
                 hikariDataSource.setPassword(postgresPassword);
+                hikariDataSource.setDriverClassName("org.postgresql.Driver");
                 hikariDataSource.setMaximumPoolSize(15);
                 hikariDataSource.setMinimumIdle(2);
                 hikariDataSource.setIdleTimeout(60000);
