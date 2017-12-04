@@ -2,7 +2,6 @@ package org.endeavourhealth.hl7sender;
 
 import ca.uhn.hl7v2.model.Message;
 import ca.uhn.hl7v2.util.Hl7InputStreamMessageIterator;
-import ca.uhn.hl7v2.util.Terser;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -10,29 +9,41 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
+import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Comparator;
 import java.util.Date;
+import java.util.List;
 
 import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
 
 public class DirectoryReader extends AbstractMessageReader {
     private static final Logger LOG = LoggerFactory.getLogger(DirectoryReader.class);
     private static final SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.S");
-    private File currentFile = null;
-    private File[] fileList = null;
+    private Path currentFile = null;
+    List<Path> fileList = null;
     private int fileListPos = 0;
 
     /*
      *
      */
-    public void prepare() throws FileNotFoundException {
-        fileList = getInputMessages().listFiles();
+    public void prepare() throws IOException {
+        Path dir = Paths.get(getInputMessages().getAbsolutePath());
+        DirectoryStream<Path> stream = Files.newDirectoryStream(dir);
+        fileList = new ArrayList<>();
+        //stream.forEach(fileList::add);
+        stream.forEach((p) -> {
+            if (Files.isDirectory(p) == false) {
+                fileList.add(p);
+            }
+        });
         if (fileList != null) {
-            Arrays.sort(fileList);
+            fileList.sort(Comparator.comparing(Path::toString));
         }
     }
 
@@ -47,7 +58,7 @@ public class DirectoryReader extends AbstractMessageReader {
     }
 
     public boolean hasNext() {
-        if ((fileList != null) && (fileList.length > 0) && (fileListPos < fileList.length)) {
+        if ((fileList != null) && (fileList.size() > 0) && (fileListPos < fileList.size())) {
             return true;
         } else {
             return false;
@@ -59,18 +70,19 @@ public class DirectoryReader extends AbstractMessageReader {
         Message ret = null;
 
         while (hasNext() && ret == null) {
-            currentFile = fileList[fileListPos];
+            currentFile = fileList.get(fileListPos);
             fileListPos++;
+            LOG.info("Next file in list(" + currentFile.getFileName().toString() + "):" + currentFile.toString());
 
             if (skipMessages) {
-                if (lastSuccessSendMsgId.compareTo(currentFile.getName()) == 0) {
-                    LOG.info("Skip message (for the last time):" + currentFile.getName());
+                if (lastSuccessSendMsgId.compareTo(currentFile.getFileName().toString()) == 0) {
+                    LOG.info("Skip message (for the last time):" + currentFile.getFileName().toString());
                     skipMessages = false;
                 } else {
-                    LOG.info("Skip message:" + currentFile.getName());
+                    LOG.info("Skip message:" + currentFile.getFileName().toString());
                 }
             } else {
-                FileReader reader = new FileReader(currentFile);
+                FileReader reader = new FileReader(currentFile.toFile());
                 Hl7InputStreamMessageIterator hapiIter = new Hl7InputStreamMessageIterator(reader);
                 ret = hapiIter.next();
                 reader.close();
@@ -84,16 +96,16 @@ public class DirectoryReader extends AbstractMessageReader {
         //String fileAddOn = UUID.randomUUID().toString();
         //String fileAddOn = dateFormat.format(new Date()).replaceAll(":", "-");
         LOG.info("ArchiveDir:" + getArchiveDir().getAbsolutePath());
-        LOG.info("CurrFile:" + currentFile.getName());
-        File newFile = new File(getArchiveDir().getAbsolutePath() + File.separator + currentFile.getName());
+        LOG.info("CurrFile:" + currentFile.getFileName().toString());
+        File newFile = new File(getArchiveDir().getAbsolutePath() + File.separator + currentFile.getFileName().toString());
         if (newFile.exists()) {
             LOG.info("File " + newFile.getAbsolutePath() + " already in archive");
         } else {
-            LOG.info("Copying file:" + currentFile.getAbsolutePath() + " To:" + newFile.getAbsolutePath());
-            Path c = Paths.get(currentFile.getAbsolutePath());
             Path n = Paths.get(newFile.getAbsolutePath());
-            Files.copy(c, n, REPLACE_EXISTING);
+            LOG.info("Copying file:" + currentFile.toString() + " To:" + n.toString());
+            Files.copy(currentFile, n, REPLACE_EXISTING);
         }
+        LOG.info("File archived successfully");
     }
 
     @Override
