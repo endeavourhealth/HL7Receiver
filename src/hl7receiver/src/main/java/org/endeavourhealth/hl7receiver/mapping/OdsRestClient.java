@@ -21,7 +21,9 @@ import java.util.List;
 class OdsRestClient {
 
     // needs rewiring to Stu's ODS REST lookup, using openods.co.uk for now
-    private static final String ORGANISATAION_REST_URL = "http://test.openods.co.uk/api/organisations/";
+    // private static final String ORGANISATAION_REST_URL = "http://test.openods.co.uk/api/organisations/";
+    // The endpoint seems to have changed
+    private static final String ORGANISATAION_REST_URL = "http://api.openods.co.uk/api/organisations/";
 
     public static MappedOrganisation lookupOrganisationViaRest(String odsCode) throws MapperException, UnirestException {
         Validate.notEmpty(odsCode);
