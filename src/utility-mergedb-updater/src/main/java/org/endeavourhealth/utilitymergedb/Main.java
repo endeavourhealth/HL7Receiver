@@ -30,7 +30,8 @@ import java.util.UUID;
 
 public class Main {
     private static final Logger LOG = LoggerFactory.getLogger(Main.class);
-
+    private static String RESOURCETYPE_ENCOUNTER = "Encounter";
+    private static String RESOURCETYPE_PATIENT = "Patient";
     private static ResourceMergeDalI dal;
     private static HikariDataSource connectionPool = null;
     private static HapiContext context;
@@ -266,7 +267,7 @@ public class Main {
                             LOG.info("Patient merge from " + fromPatient + " (" + fromPatientResourceId + ") to " + localPatientId + "(" + toPatientResourceId + ") on date " + encounterDateTime + " for service " + globalserviceId);
                             if (!readOnly) {
                                 // Save merge db entry
-                                recordMerge(globalserviceId, UUID.fromString(fromPatientResourceId), UUID.fromString(toPatientResourceId));
+                                recordMerge(globalserviceId, RESOURCETYPE_PATIENT, UUID.fromString(fromPatientResourceId), UUID.fromString(toPatientResourceId));
                             }
                         }
                     }
@@ -353,7 +354,7 @@ public class Main {
                             LOG.info("Encounter merge for patient " + localPatientId + "(" + fromPatientResourceId + ") From visit " + fromVisitId + "(" + fromEncounterIdResourceId + ") to visit " + toVisitId + "(" + toEncounterIdResourceId + ") on date " + encounterDateTime);
                             if (!readOnly) {
                                 // Save merge db entry
-                                recordMerge(globalserviceId, UUID.fromString(fromEncounterIdResourceId), UUID.fromString(toEncounterIdResourceId));
+                                recordMerge(globalserviceId, RESOURCETYPE_ENCOUNTER, UUID.fromString(fromEncounterIdResourceId), UUID.fromString(toEncounterIdResourceId));
                             }
                         }
                     }
@@ -445,8 +446,8 @@ public class Main {
                             if (!readOnly) {
                                 // Save merge db entry
                                 // recordMerge for patient resources may cause a duplicate if the A44 is part of a patient merge (A34) so duplicate errors should be ignored
-                                recordMerge(globalserviceId, UUID.fromString(fromPatientResourceId), UUID.fromString(toPatientResourceId));
-                                recordMerge(globalserviceId, UUID.fromString(fromEncounterIdResourceId), UUID.fromString(toEncounterIdResourceId));
+                                recordMerge(globalserviceId, RESOURCETYPE_PATIENT, UUID.fromString(fromPatientResourceId), UUID.fromString(toPatientResourceId));
+                                recordMerge(globalserviceId, RESOURCETYPE_ENCOUNTER, UUID.fromString(fromEncounterIdResourceId), UUID.fromString(toEncounterIdResourceId));
                             }
                         }
                     }
@@ -556,8 +557,8 @@ public class Main {
         }
     }
 
-    public static void recordMerge(UUID globalserviceId, UUID fromEncounterIdResourceId, UUID toEncounterIdResourceId) throws Exception {
-        dal.recordMerge(globalserviceId, fromEncounterIdResourceId, toEncounterIdResourceId);
+    public static void recordMerge(UUID globalserviceId, String resourceType, UUID fromEncounterIdResourceId, UUID toEncounterIdResourceId) throws Exception {
+        dal.recordMerge(globalserviceId, resourceType, fromEncounterIdResourceId, toEncounterIdResourceId);
     }
 
     public static String createEpisodeIdUniqueKey(String channelId, String localPatientId, String visitId, String encounterDateTimeForUniqueKey) {
