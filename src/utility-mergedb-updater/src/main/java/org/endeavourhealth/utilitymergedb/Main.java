@@ -14,8 +14,9 @@ import com.zaxxer.hikari.HikariDataSource;
 import org.apache.commons.lang3.StringUtils;
 import org.endeavourhealth.common.config.ConfigManager;
 import org.endeavourhealth.core.database.dal.DalProvider;
+import org.endeavourhealth.core.database.dal.hl7receiver.Hl7ResourceIdDalI;
 import org.endeavourhealth.core.database.dal.hl7receiver.models.ResourceId;
-import org.endeavourhealth.core.database.dal.publisherTransform.PatientMergeDalI;
+import org.endeavourhealth.core.database.dal.publisherTransform.ResourceMergeDalI;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -30,11 +31,12 @@ import java.util.UUID;
 public class Main {
     private static final Logger LOG = LoggerFactory.getLogger(Main.class);
 
-    private static PatientMergeDalI dal;
+    private static ResourceMergeDalI dal;
     private static HikariDataSource connectionPool = null;
     private static HapiContext context;
     private static Parser parser;
     private static PreparedStatement resourceIdSelectStatement;
+    private static PreparedStatement resourceIdInsertStatement;
 
     /**
      * utility to check the HL7 Receiver database and save any merge inforamtion to new merge table
@@ -46,7 +48,7 @@ public class Main {
 
         ConfigManager.Initialize("UtilityMergedbUpdater");
 
-        PatientMergeDalI dal = DalProvider.factoryPatientMergeDal();
+        ResourceMergeDalI mergeDAL = DalProvider.factoryPatientMergeDal();
 
         if (args.length < 7) {
             LOG.error("Expecting four parameters:");
@@ -69,6 +71,7 @@ public class Main {
         String channelId = args[4];
         String serviceId = args[5];
         String startMessageId = args[6];
+        boolean verbose = Boolean.parseBoolean(System.getProperty("verbose", "false"));
 
         //optional seventh parameter puts it in read only mode
         boolean readOnly = false;
@@ -86,6 +89,8 @@ public class Main {
 
         LOG.info("Starting HL7 Merge Check on " + url);
 
+        UUID globalserviceId = UUID.fromString(serviceId);
+
         try {
             openConnectionPool(url, driverClass, user, pass);
 
@@ -100,6 +105,7 @@ public class Main {
             ResultSet resultSet = executeQuery(connection, primarysql);
 
             resourceIdSelectStatement = connection.prepareStatement("SELECT resource_uuid FROM mapping.resource_uuid where scope_id=? and resource_type=? and unique_identifier=?");
+            resourceIdInsertStatement = connection.prepareStatement("insert into mapping.resource_uuid (scope_id, resource_type, unique_identifier, resource_uuid) values (?, ?, ?, ?)");
 
             try {
                 while (resultSet.next()) {
@@ -115,13 +121,13 @@ public class Main {
                     String toPatientResourceId = null;
 
                     String fromVisitId = null;
-                    String fromEpisodeIdUniquekey = null;
+                    String fromEpisodeIdUniqueKey = null;
                     String fromEpisodeIdResourceId = null;
-                    String fromEncounterIdUniquekey = null;
+                    String fromEncounterIdUniqueKey = null;
                     String fromEncounterIdResourceId = null;
 
                     String toVisitId = null;
-                    String toEpisodeIdUniquekey = null;
+                    String toEpisodeIdUniqueKey = null;
                     String toEpisodeIdResourceId = null;
                     String toEncounterIdUniqueKey = null;
                     String toEncounterIdResourceId = null;
@@ -137,9 +143,9 @@ public class Main {
                     //Extract encounterDateTime - ENV:2
                     encounterDateTime = terser.get("/EVN-2");
                     encounterDateTimeForUniqueKey = encounterDateTime.substring(0,4) + "/$H/" + encounterDateTime.substring(4, 6) + "/$H/" + encounterDateTime.substring(6, 8) + "T" + encounterDateTime.substring(8, 10) + ":" + encounterDateTime.substring(10, 12) + ":" + encounterDateTime.substring(12);
-                    //LOG.info("encounterDateTimeForUniqueKey=" + encounterDateTimeForUniqueKey);
 
-                    LOG.info("Found message " + messageType + " for patient " + localPatientId + " done on " + encounterDateTime + " - Message_id=" + messageId);
+                    LOG.info("********************************************************************************************************************************************************************");
+                    LOG.info("Found message " + messageType + " for patient " + localPatientId + " performed on " + encounterDateTime + " - Message_id=" + messageId);
 
                     //Find resource_uuid for from patient
                     if (messageType.compareTo("ADT^A44") == 0) {
@@ -168,23 +174,31 @@ public class Main {
 
                     //Find resource_uuid for from visit
                     if (messageType.compareTo("ADT^A44") == 0) {
-                        fromVisitId = terser.get("/PATIENT/MRG-5");
+                        fromVisitId = terser.get("/PATIENT/MRG-5-1");
                     } else {
-                        fromVisitId = terser.get("/MRG-5");
+                        fromVisitId = terser.get("/MRG-5-1");
                     }
                     if (fromVisitId != null && fromVisitId.length() > 0) {
-                        if (channelId.compareTo("1") == 0) {
-                            fromEpisodeIdUniquekey = "PatIdTypeCode=CNN-PatIdValue=" + fromPatient + "-EpIdAssAuth=HOMERTONFIN-EpIdValue=" + fromVisitId;
-                            fromEpisodeIdResourceId = getResourceId("H", "EpisodeOfCare", fromEpisodeIdUniquekey);
-                            fromEncounterIdUniquekey = "PatIdTypeCode=CNN-PatIdValue=" + fromPatient + "-EpIdAssAuth=HOMERTONFIN-EpIdValue=" + fromVisitId + "-EncounterDateTime=" + encounterDateTimeForUniqueKey;
-                            fromEncounterIdResourceId = getResourceId("H", "Encounter", fromEncounterIdUniquekey);
+                        String useThisPatient = null;
+                        if (messageType.compareTo("ADT^A35") == 0) {
+                            useThisPatient = localPatientId;
                         } else {
-                            fromEpisodeIdUniquekey = "PIdAssAuth=2.16.840.1.113883.3.2540.1-PatIdValue=" + fromPatient + "-EpIdTypeCode=VISITID-EpIdValue=" + fromVisitId;
-                            fromEpisodeIdResourceId = getResourceId("B", "EpisodeOfCare", fromEpisodeIdUniquekey);
-                            fromEncounterIdUniquekey = "PIdAssAuth=2.16.840.1.113883.3.2540.1-PatIdValue=" + fromPatient + "-EpIdTypeCode=VISITID-EpIdValue=" + fromVisitId;
-                            fromEncounterIdResourceId = getResourceId("B", "Encounter", fromEncounterIdUniquekey);
+                            useThisPatient = fromPatient;
+                        }
+
+                        if (channelId.compareTo("1") == 0) {
+                            fromEpisodeIdUniqueKey = createEpisodeIdUniqueKey(channelId, useThisPatient, fromVisitId, encounterDateTimeForUniqueKey);
+                            fromEpisodeIdResourceId = getResourceId("H", "EpisodeOfCare", fromEpisodeIdUniqueKey);
+                            fromEncounterIdUniqueKey = createEncounterIdUniqueKey(channelId, useThisPatient, fromVisitId, encounterDateTimeForUniqueKey);
+                            fromEncounterIdResourceId = getResourceId("H", "Encounter", fromEncounterIdUniqueKey);
+                        } else {
+                            fromEpisodeIdUniqueKey = createEpisodeIdUniqueKey(channelId, useThisPatient, fromVisitId, encounterDateTimeForUniqueKey);
+                            fromEpisodeIdResourceId = getResourceId("B", "EpisodeOfCare", fromEpisodeIdUniqueKey);
+                            fromEncounterIdUniqueKey = createEncounterIdUniqueKey(channelId, useThisPatient, fromVisitId, encounterDateTimeForUniqueKey);
+                            fromEncounterIdResourceId = getResourceId("B", "Encounter", fromEncounterIdUniqueKey);
                             if (fromEncounterIdResourceId == null) {
-                                fromEncounterIdUniqueKey = "PIdAssAuth=2.16.840.1.113883.3.2540.1-PatIdValue=" + fromPatient + "-EpIdTypeCode=VISITID-EpIdValue=" + fromVisitId + "-EncounterDateTime=" + encounterDateTimeForUniqueKey;
+                                LOG.info("From-Encounter ResourceId not found for key " + fromEncounterIdUniqueKey);
+                                fromEncounterIdUniqueKey = createEncounterIdUniqueKeyOld(useThisPatient, fromVisitId, encounterDateTimeForUniqueKey);
                                 fromEncounterIdResourceId = getResourceId("B", "Encounter", fromEncounterIdUniqueKey);
                             }
                         }
@@ -193,26 +207,53 @@ public class Main {
                     //Find resource_uuid for to visit - only used for ADT^A35
                     if (messageType.compareTo("ADT^A35") == 0) {
                         toVisitId = terser.get("/PV1-19");
-                        if (toVisitId != null && toVisitId.length() > 0) {
-                            if (channelId.compareTo("1") == 0) {
-                                toEpisodeIdUniquekey = "PatIdTypeCode=CNN-PatIdValue=" + localPatientId+ "-EpIdAssAuth=HOMERTONFIN-EpIdValue=" + toVisitId;
-                                toEpisodeIdResourceId = getResourceId("H", "EpisodeOfCare", toEpisodeIdUniquekey);
-                                toEncounterIdUniqueKey = "PatIdTypeCode=CNN-PatIdValue=" + localPatientId + "-EpIdAssAuth=HOMERTONFIN-EpIdValue=" + toVisitId + "-EncounterDateTime=" + encounterDateTimeForUniqueKey;
-                                toEncounterIdResourceId = getResourceId("H", "Encounter", toEncounterIdUniqueKey);
-                            } else {
-                                toEpisodeIdUniquekey = "PIdAssAuth=2.16.840.1.113883.3.2540.1-PatIdValue=" + localPatientId + "-EpIdTypeCode=VISITID-EpIdValue=" + toVisitId;
-                                toEpisodeIdResourceId = getResourceId("B", "EpisodeOfCare", toEpisodeIdUniquekey);
-                                toEncounterIdUniqueKey = "PIdAssAuth=2.16.840.1.113883.3.2540.1-PatIdValue=" + localPatientId + "-EpIdTypeCode=VISITID-EpIdValue=" + toVisitId;
+                    } else if (messageType.compareTo("ADT^A44") == 0) {
+                        toVisitId = fromVisitId;
+                    }
+                    if (toVisitId != null && toVisitId.length() > 0) {
+                        if (channelId.compareTo("1") == 0) {
+                            toEpisodeIdUniqueKey = createEpisodeIdUniqueKey(channelId, localPatientId, toVisitId, encounterDateTimeForUniqueKey);
+                            toEpisodeIdResourceId = getResourceId("H", "EpisodeOfCare", toEpisodeIdUniqueKey);
+                            toEncounterIdUniqueKey = createEncounterIdUniqueKey(channelId, localPatientId, toVisitId, encounterDateTimeForUniqueKey);
+                            toEncounterIdResourceId = getResourceId("H", "Encounter", toEncounterIdUniqueKey);
+                        } else {
+                            toEpisodeIdUniqueKey = createEpisodeIdUniqueKey(channelId, localPatientId, toVisitId, encounterDateTimeForUniqueKey);
+                            toEpisodeIdResourceId = getResourceId("B", "EpisodeOfCare", toEpisodeIdUniqueKey);
+                            toEncounterIdUniqueKey = createEncounterIdUniqueKey(channelId, localPatientId, toVisitId, encounterDateTimeForUniqueKey);
+                            toEncounterIdResourceId = getResourceId("B", "Encounter", toEncounterIdUniqueKey);
+                            if (toEncounterIdResourceId == null) {
+                                LOG.info("To-Encounter ResourceId not found for key " + toEncounterIdUniqueKey);
+                                toEncounterIdUniqueKey = createEncounterIdUniqueKeyOld(localPatientId, toVisitId, encounterDateTimeForUniqueKey);
                                 toEncounterIdResourceId = getResourceId("B", "Encounter", toEncounterIdUniqueKey);
-                                if (toEncounterIdResourceId == null) {
-                                    toEncounterIdUniqueKey = "PIdAssAuth=2.16.840.1.113883.3.2540.1-PatIdValue=" + localPatientId + "-EpIdTypeCode=VISITID-EpIdValue=" + toVisitId + "-EncounterDateTime=" + encounterDateTimeForUniqueKey;
-                                    toEncounterIdResourceId = getResourceId("B", "Encounter", toEncounterIdUniqueKey);
-                                }
                             }
                         }
                     }
 
+                    if (verbose) {
+                        LOG.info("fromPatient =" + fromPatient);
+                        LOG.info("fromPatientUniquePatientKey =" + fromPatientUniquePatientKey );
+                        LOG.info("fromPatientResourceId =" + fromPatientResourceId);
+
+                        LOG.info("toPatientUniquePatientKey =" + toPatientUniquePatientKey);
+                        LOG.info("toPatientResourceId =" + toPatientResourceId);
+
+                        LOG.info("fromVisitId =" + fromVisitId);
+                        LOG.info("fromEpisodeIdUniquekey =" + fromEpisodeIdUniqueKey);
+                        LOG.info("fromEpisodeIdResourceId = " + fromEpisodeIdResourceId);
+                        LOG.info("fromEncounterIdUniquekey =" + fromEncounterIdUniqueKey);
+                        LOG.info("fromEncounterIdResourceId =" + fromEncounterIdResourceId);
+
+                        LOG.info("toVisitId =" + toVisitId);
+                        LOG.info("toEpisodeIdUniquekey =" + toEpisodeIdUniqueKey);
+                        LOG.info("toEpisodeIdResourceId =" + toEpisodeIdResourceId);
+                        LOG.info("toEncounterIdUniqueKey =" + toEncounterIdUniqueKey);
+                        LOG.info("toEncounterIdResourceId =" + toEncounterIdResourceId);
+                    }
+
+                    // *********************
                     //Save merge/move record
+                    // *********************
+                    boolean saved = false;
                     if (messageType.compareTo("ADT^A34") == 0) {
                         msgCountA34++;
                         if (fromPatientResourceId == null) {
@@ -221,10 +262,11 @@ public class Main {
                             LOG.info("To-Patient ResourceId not found for key " + toPatientUniquePatientKey + " in message_id " + messageId);
                         } else {
                             msgCountA34Saved++;
-                            LOG.info("Patient merge from " + fromPatient + " (" + fromPatientResourceId + ") to " + localPatientId + "(" + toPatientResourceId + ") on date " + encounterDateTime);
+                            saved = true;
+                            LOG.info("Patient merge from " + fromPatient + " (" + fromPatientResourceId + ") to " + localPatientId + "(" + toPatientResourceId + ") on date " + encounterDateTime + " for service " + globalserviceId);
                             if (!readOnly) {
-                                //dal.recordMerge(UUID.fromString(serviceId), UUID.fromString(fromPatientResourceId), UUID.fromString(toPatientResourceId));
-                                // Save db entry
+                                // Save merge db entry
+                                recordMerge(globalserviceId, UUID.fromString(fromPatientResourceId), UUID.fromString(toPatientResourceId));
                             }
                         }
                     }
@@ -232,15 +274,86 @@ public class Main {
                         msgCountA35++;
                         if (toPatientResourceId == null) {
                             LOG.info("Patient ResourceId not found for key " + toPatientUniquePatientKey + " in message_id " + messageId);
-                        } else if (fromEncounterIdResourceId == null) {
-                            LOG.info("From-Encounter ResourceId not found for key " + fromEncounterIdUniquekey + " in message_id " + messageId);
-                        } else if (toEncounterIdResourceId == null) {
-                            LOG.info("To-Encounter ResourceId not found for key " + toEncounterIdUniqueKey + " in message_id " + messageId);
                         } else {
                             msgCountA35Saved++;
-                            LOG.info("Encounter merge for patient " + localPatientId + "(" + fromPatientResourceId + ") From visit " + fromVisitId + "(" + fromEpisodeIdResourceId + ") to visit " + toVisitId + "(" + toEpisodeIdResourceId + ") on date " + encounterDateTime);
+                            saved = true;
+
+                            if (fromEpisodeIdResourceId == null) {
+                                ResourceId episodeResourceId = new ResourceId();
+                                if (channelId.compareTo("1") == 0) {
+                                    episodeResourceId.setScopeId("H");
+                                } else {
+                                    episodeResourceId.setScopeId("B");
+                                }
+                                episodeResourceId.setResourceType("EpisodeOfCare");
+                                episodeResourceId.setUniqueId(createEpisodeIdUniqueKey(channelId, localPatientId, fromVisitId, encounterDateTimeForUniqueKey));
+                                episodeResourceId.setResourceId(UUID.randomUUID());
+                                fromEpisodeIdResourceId = episodeResourceId.getResourceId().toString();
+                                LOG.info("Create " + episodeResourceId.getResourceType() + " resourceId " + episodeResourceId.getResourceId() + " in scope " + episodeResourceId.getScopeId() + " for key:" + episodeResourceId.getUniqueId());
+                                if (!readOnly) {
+                                    // Create new resource_uuid entry - the from-visit-id under the to-patient-id doesnt exist so to ensure it gets the right resoruce id its created here
+                                    saveResourceId(episodeResourceId);
+                                }
+                            }
+
+                            if (fromEncounterIdResourceId == null) {
+                                ResourceId encounterResourceId = new ResourceId();
+                                if (channelId.compareTo("1") == 0) {
+                                    encounterResourceId.setScopeId("H");
+                                } else {
+                                    encounterResourceId.setScopeId("B");
+                                }
+                                encounterResourceId.setResourceType("Encounter");
+                                encounterResourceId.setUniqueId(createEncounterIdUniqueKey(channelId, localPatientId, fromVisitId, encounterDateTimeForUniqueKey));
+                                encounterResourceId.setResourceId(UUID.randomUUID());
+                                fromEncounterIdResourceId = encounterResourceId.getResourceId().toString();
+                                LOG.info("Create " + encounterResourceId.getResourceType() + " resourceId " + encounterResourceId.getResourceId() + " in scope " + encounterResourceId.getScopeId() + " for key:" + encounterResourceId.getUniqueId());
+                                if (!readOnly) {
+                                    // Create new resource_uuid entry - the from-visit-id under the to-patient-id doesnt exist so to ensure it gets the right resoruce id its created here
+                                    saveResourceId(encounterResourceId);
+                                }
+                            }
+
+                            if (toEpisodeIdResourceId == null) {
+                                ResourceId episodeResourceId = new ResourceId();
+                                if (channelId.compareTo("1") == 0) {
+                                    episodeResourceId.setScopeId("H");
+                                } else {
+                                    episodeResourceId.setScopeId("B");
+                                }
+                                episodeResourceId.setResourceType("EpisodeOfCare");
+                                episodeResourceId.setUniqueId(createEpisodeIdUniqueKey(channelId, localPatientId, toVisitId, encounterDateTimeForUniqueKey));
+                                episodeResourceId.setResourceId(UUID.randomUUID());
+                                toEpisodeIdResourceId = episodeResourceId.getResourceId().toString();
+                                LOG.info("Create " + episodeResourceId.getResourceType() + " resourceId " + episodeResourceId.getResourceId() + " in scope " + episodeResourceId.getScopeId() + " for key:" + episodeResourceId.getUniqueId());
+                                if (!readOnly) {
+                                    // Create new resource_uuid entry - the from-visit-id under the to-patient-id doesnt exist so to ensure it gets the right resoruce id its created here
+                                    saveResourceId(episodeResourceId);
+                                }
+                            }
+
+                            if (toEncounterIdResourceId == null) {
+                                ResourceId encounterResourceId = new ResourceId();
+                                if (channelId.compareTo("1") == 0) {
+                                    encounterResourceId.setScopeId("H");
+                                } else {
+                                    encounterResourceId.setScopeId("B");
+                                }
+                                encounterResourceId.setResourceType("Encounter");
+                                encounterResourceId.setUniqueId(createEncounterIdUniqueKey(channelId, localPatientId, toVisitId, encounterDateTimeForUniqueKey));
+                                encounterResourceId.setResourceId(UUID.randomUUID());
+                                toEncounterIdResourceId = encounterResourceId.getResourceId().toString();
+                                LOG.info("Create " + encounterResourceId.getResourceType() + " resourceId " + encounterResourceId.getResourceId() + " in scope " + encounterResourceId.getScopeId() + " for key:" + encounterResourceId.getUniqueId());
+                                if (!readOnly) {
+                                    // Create new resource_uuid entry - the from-visit-id under the to-patient-id doesnt exist so to ensure it gets the right resoruce id its created here
+                                    saveResourceId(encounterResourceId);
+                                }
+                            }
+
+                            LOG.info("Encounter merge for patient " + localPatientId + "(" + fromPatientResourceId + ") From visit " + fromVisitId + "(" + fromEncounterIdResourceId + ") to visit " + toVisitId + "(" + toEncounterIdResourceId + ") on date " + encounterDateTime);
                             if (!readOnly) {
-                                // Save db entry
+                                // Save merge db entry
+                                recordMerge(globalserviceId, UUID.fromString(fromEncounterIdResourceId), UUID.fromString(toEncounterIdResourceId));
                             }
                         }
                     }
@@ -250,16 +363,98 @@ public class Main {
                             LOG.info("From-Patient ResourceId not found for key " + fromPatientUniquePatientKey + " in message_id " + messageId);
                         } else if (toPatientResourceId == null) {
                             LOG.info("To-Patient ResourceId not found for key " + toPatientUniquePatientKey + " in message_id " + messageId);
-                        } else if (fromEncounterIdResourceId == null) {
-                            LOG.info("Encounter ResourceId not found for key " + fromEncounterIdUniquekey + " in message_id " + messageId);
                         } else {
                             msgCountA44Saved++;
-                            LOG.info("Encounter move. From patient " + fromPatient + "(" + fromPatientResourceId + ") visitId " + fromVisitId + " To patient " + localPatientId + "(" + toPatientResourceId + ") on date " + encounterDateTime);
+                            saved = true;
+
+                            if (fromEpisodeIdResourceId == null) {
+                                ResourceId episodeResourceId = new ResourceId();
+                                if (channelId.compareTo("1") == 0) {
+                                    episodeResourceId.setScopeId("H");
+                                } else {
+                                    episodeResourceId.setScopeId("B");
+                                }
+                                episodeResourceId.setResourceType("EpisodeOfCare");
+                                episodeResourceId.setUniqueId(createEpisodeIdUniqueKey(channelId, localPatientId, fromVisitId, encounterDateTimeForUniqueKey));
+                                episodeResourceId.setResourceId(UUID.randomUUID());
+                                fromEpisodeIdResourceId = episodeResourceId.getResourceId().toString();
+                                LOG.info("Create " + episodeResourceId.getResourceType() + " resourceId " + episodeResourceId.getResourceId() + " in scope " + episodeResourceId.getScopeId() + " for key:" + episodeResourceId.getUniqueId());
+                                if (!readOnly) {
+                                    // Create new resource_uuid entry - the from-visit-id under the to-patient-id doesnt exist so to ensure it gets the right resoruce id its created here
+                                    saveResourceId(episodeResourceId);
+                                }
+                            }
+
+                            if (fromEncounterIdResourceId == null) {
+                                ResourceId encounterResourceId = new ResourceId();
+                                if (channelId.compareTo("1") == 0) {
+                                    encounterResourceId.setScopeId("H");
+                                } else {
+                                    encounterResourceId.setScopeId("B");
+                                }
+                                encounterResourceId.setResourceType("Encounter");
+                                encounterResourceId.setUniqueId(createEncounterIdUniqueKey(channelId, localPatientId, fromVisitId, encounterDateTimeForUniqueKey));
+                                encounterResourceId.setResourceId(UUID.randomUUID());
+                                fromEncounterIdResourceId = encounterResourceId.getResourceId().toString();
+                                LOG.info("Create " + encounterResourceId.getResourceType() + " resourceId " + encounterResourceId.getResourceId() + " in scope " + encounterResourceId.getScopeId() + " for key:" + encounterResourceId.getUniqueId());
+                                if (!readOnly) {
+                                    // Create new resource_uuid entry - the from-visit-id under the to-patient-id doesnt exist so to ensure it gets the right resoruce id its created here
+                                    saveResourceId(encounterResourceId);
+                                }
+                            }
+
+                            if (toEpisodeIdResourceId == null) {
+                                ResourceId episodeResourceId = new ResourceId();
+                                if (channelId.compareTo("1") == 0) {
+                                    episodeResourceId.setScopeId("H");
+                                } else {
+                                    episodeResourceId.setScopeId("B");
+                                }
+                                episodeResourceId.setResourceType("EpisodeOfCare");
+                                episodeResourceId.setUniqueId(createEpisodeIdUniqueKey(channelId, localPatientId, toVisitId, encounterDateTimeForUniqueKey));
+                                episodeResourceId.setResourceId(UUID.randomUUID());
+                                toEpisodeIdResourceId = episodeResourceId.getResourceId().toString();
+                                LOG.info("Create " + episodeResourceId.getResourceType() + " resourceId " + episodeResourceId.getResourceId() + " in scope " + episodeResourceId.getScopeId() + " for key:" + episodeResourceId.getUniqueId());
+                                if (!readOnly) {
+                                    // Create new resource_uuid entry - the from-visit-id under the to-patient-id doesnt exist so to ensure it gets the right resoruce id its created here
+                                    saveResourceId(episodeResourceId);
+                                }
+                            }
+
+                            if (toEncounterIdResourceId == null) {
+                                ResourceId encounterResourceId = new ResourceId();
+                                if (channelId.compareTo("1") == 0) {
+                                    encounterResourceId.setScopeId("H");
+                                } else {
+                                    encounterResourceId.setScopeId("B");
+                                }
+                                encounterResourceId.setResourceType("Encounter");
+                                encounterResourceId.setUniqueId(createEncounterIdUniqueKey(channelId, localPatientId, toVisitId, encounterDateTimeForUniqueKey));
+                                encounterResourceId.setResourceId(UUID.randomUUID());
+                                toEncounterIdResourceId = encounterResourceId.getResourceId().toString();
+                                LOG.info("Create " + encounterResourceId.getResourceType() + " resourceId " + encounterResourceId.getResourceId() + " in scope " + encounterResourceId.getScopeId() + " for key:" + encounterResourceId.getUniqueId());
+                                if (!readOnly) {
+                                    // Create new resource_uuid entry - the from-visit-id under the to-patient-id doesnt exist so to ensure it gets the right resoruce id its created here
+                                    saveResourceId(encounterResourceId);
+                                }
+                            }
+
+                            LOG.info("Patient move from " + fromPatient + " (" + fromPatientResourceId + ") to " + localPatientId + "(" + toPatientResourceId + ") on date " + encounterDateTime);
+                            LOG.info("Encounter move. From visitId " + fromVisitId + "(" + fromEncounterIdResourceId + ") To visitId " + toVisitId + "(" + toEncounterIdResourceId + ") on date " + encounterDateTime);
+
                             if (!readOnly) {
-                                // Save db entry
+                                // Save merge db entry
+                                // recordMerge for patient resources may cause a duplicate if the A44 is part of a patient merge (A34) so duplicate errors should be ignored
+                                recordMerge(globalserviceId, UUID.fromString(fromPatientResourceId), UUID.fromString(toPatientResourceId));
+                                recordMerge(globalserviceId, UUID.fromString(fromEncounterIdResourceId), UUID.fromString(toEncounterIdResourceId));
                             }
                         }
                     }
+
+                    if (verbose && saved == false) {
+                        LOG.info(hapiMsg.printStructure());
+                    }
+
                 }
 
             } finally {
@@ -315,6 +510,7 @@ public class Main {
         return connectionPool.getConnection();
     }
 
+    /*
     private static void executeUpdate(String sql) throws Exception {
 
         Connection connection = getConnection();
@@ -326,10 +522,9 @@ public class Main {
         } finally {
             connection.close();
         }
-    }
+    }*/
 
     private static ResultSet executeQuery(Connection connection, String sql) throws Exception {
-
         Statement statement = connection.createStatement();
         return statement.executeQuery(sql);
     }
@@ -350,4 +545,38 @@ public class Main {
         return ret;
     }
 
+    public static void saveResourceId(ResourceId r) throws SQLException, ClassNotFoundException, IOException {
+        resourceIdInsertStatement.setString(1, r.getScopeId());
+        resourceIdInsertStatement.setString(2, r.getResourceType());
+        resourceIdInsertStatement.setString(3, r.getUniqueId());
+        resourceIdInsertStatement.setObject(4, r.getResourceId());
+
+        if (resourceIdInsertStatement.executeUpdate() != 1) {
+            throw new SQLException("Could not create ResourceId:" + r.getScopeId() + ":" + r.getResourceType() + ":" + r.getUniqueId() + ":" + r.getResourceId().toString());
+        }
+    }
+
+    public static void recordMerge(UUID globalserviceId, UUID fromEncounterIdResourceId, UUID toEncounterIdResourceId) throws Exception {
+        dal.recordMerge(globalserviceId, fromEncounterIdResourceId, toEncounterIdResourceId);
+    }
+
+    public static String createEpisodeIdUniqueKey(String channelId, String localPatientId, String visitId, String encounterDateTimeForUniqueKey) {
+        if (channelId.compareTo("1") == 0) {
+            return "PatIdTypeCode=CNN-PatIdValue=" + localPatientId+ "-EpIdAssAuth=HOMERTONFIN-EpIdValue=" + visitId;
+        } else {
+            return "PIdAssAuth=2.16.840.1.113883.3.2540.1-PatIdValue=" + localPatientId + "-EpIdTypeCode=VISITID-EpIdValue=" + visitId;
+        }
+    }
+
+    public static String createEncounterIdUniqueKey(String channelId, String localPatientId, String visitId, String encounterDateTimeForUniqueKey) {
+        if (channelId.compareTo("1") == 0) {
+            return "PatIdTypeCode=CNN-PatIdValue=" + localPatientId + "-EpIdAssAuth=HOMERTONFIN-EpIdValue=" + visitId + "-EncounterDateTime=" + encounterDateTimeForUniqueKey;
+        } else {
+            return "PIdAssAuth=2.16.840.1.113883.3.2540.1-PatIdValue=" + localPatientId + "-EpIdTypeCode=VISITID-EpIdValue=" + visitId;
+        }
+    }
+
+    public static String createEncounterIdUniqueKeyOld(String localPatientId, String visitId, String encounterDateTimeForUniqueKey) {
+        return "PIdAssAuth=2.16.840.1.113883.3.2540.1-PatIdValue=" + localPatientId + "-EpIdTypeCode=VISITID-EpIdValue=" + visitId + "-EncounterDateTime=" + encounterDateTimeForUniqueKey;
+    }
 }
