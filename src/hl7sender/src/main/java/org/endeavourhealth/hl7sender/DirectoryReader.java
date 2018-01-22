@@ -55,6 +55,7 @@ public class DirectoryReader extends AbstractMessageReader {
             lastSuccessSendMsgId = archiveFileList[archiveFileList.length - 1].getName();
             LOG.info("Skip message (last file):" + lastSuccessSendMsgId );
         }
+        archiveFileList = null;
     }
 
     public boolean hasNext() {

@@ -118,8 +118,6 @@ public class Main
         }
         fileReader.setAuditFile(auditFile);
 
-        fileReader.prepare();
-
         // Audit file
         if (auditFile.exists()) {
             if (restart.compareTo("YES") == 0) {
@@ -137,6 +135,9 @@ public class Main
             }
         }
         FileWriter auditWriter = new FileWriter(auditFile, true);
+
+        LOG.info("Running prepare step");
+        fileReader.prepare();
 
         // Create a HapiContext
         HapiContext context = new DefaultHapiContext();
