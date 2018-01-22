@@ -49,7 +49,7 @@ public class Main {
 
         ConfigManager.Initialize("UtilityMergedbUpdater");
 
-        ResourceMergeDalI mergeDAL = DalProvider.factoryPatientMergeDal();
+        ResourceMergeDalI mergeDAL = DalProvider.factoryResourceMergeDal();
 
         if (args.length < 7) {
             LOG.error("Expecting four parameters:");
