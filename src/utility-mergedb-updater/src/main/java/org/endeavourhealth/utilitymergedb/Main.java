@@ -1,17 +1,12 @@
 package org.endeavourhealth.utilitymergedb;
 
 import ca.uhn.hl7v2.DefaultHapiContext;
-import ca.uhn.hl7v2.HL7Exception;
 import ca.uhn.hl7v2.HapiContext;
 import ca.uhn.hl7v2.model.Message;
-import ca.uhn.hl7v2.model.v23.datatype.CX;
-import ca.uhn.hl7v2.model.v23.segment.MRG;
-import ca.uhn.hl7v2.model.v23.segment.PID;
 import ca.uhn.hl7v2.parser.Parser;
 import ca.uhn.hl7v2.util.Terser;
 import ca.uhn.hl7v2.validation.impl.NoValidation;
 import com.zaxxer.hikari.HikariDataSource;
-import org.apache.commons.lang3.StringUtils;
 import org.endeavourhealth.common.config.ConfigManager;
 import org.endeavourhealth.core.database.dal.DalProvider;
 import org.endeavourhealth.core.database.dal.hl7receiver.Hl7ResourceIdDalI;
@@ -32,7 +27,8 @@ public class Main {
     private static final Logger LOG = LoggerFactory.getLogger(Main.class);
     private static String RESOURCETYPE_ENCOUNTER = "Encounter";
     private static String RESOURCETYPE_PATIENT = "Patient";
-    private static ResourceMergeDalI dal;
+    private static ResourceMergeDalI dalResourceMerge;
+    private static Hl7ResourceIdDalI dalHL7ResourceId;
     private static HikariDataSource connectionPool = null;
     private static HapiContext context;
     private static Parser parser;
@@ -49,7 +45,9 @@ public class Main {
 
         ConfigManager.Initialize("UtilityMergedbUpdater");
 
-        ResourceMergeDalI mergeDAL = DalProvider.factoryResourceMergeDal();
+        dalResourceMerge = DalProvider.factoryResourceMergeDal();
+
+        dalHL7ResourceId = DalProvider.factoryHL7ResourceDal();
 
         if (args.length < 7) {
             LOG.error("Expecting four parameters:");
@@ -376,7 +374,7 @@ public class Main {
                                     episodeResourceId.setScopeId("B");
                                 }
                                 episodeResourceId.setResourceType("EpisodeOfCare");
-                                episodeResourceId.setUniqueId(createEpisodeIdUniqueKey(channelId, localPatientId, fromVisitId, encounterDateTimeForUniqueKey));
+                                episodeResourceId.setUniqueId(createEpisodeIdUniqueKey(channelId, fromPatient, fromVisitId, encounterDateTimeForUniqueKey));
                                 episodeResourceId.setResourceId(UUID.randomUUID());
                                 fromEpisodeIdResourceId = episodeResourceId.getResourceId().toString();
                                 LOG.info("Create " + episodeResourceId.getResourceType() + " resourceId " + episodeResourceId.getResourceId() + " in scope " + episodeResourceId.getScopeId() + " for key:" + episodeResourceId.getUniqueId());
@@ -394,7 +392,7 @@ public class Main {
                                     encounterResourceId.setScopeId("B");
                                 }
                                 encounterResourceId.setResourceType("Encounter");
-                                encounterResourceId.setUniqueId(createEncounterIdUniqueKey(channelId, localPatientId, fromVisitId, encounterDateTimeForUniqueKey));
+                                encounterResourceId.setUniqueId(createEncounterIdUniqueKey(channelId, fromPatient, fromVisitId, encounterDateTimeForUniqueKey));
                                 encounterResourceId.setResourceId(UUID.randomUUID());
                                 fromEncounterIdResourceId = encounterResourceId.getResourceId().toString();
                                 LOG.info("Create " + encounterResourceId.getResourceType() + " resourceId " + encounterResourceId.getResourceId() + " in scope " + encounterResourceId.getScopeId() + " for key:" + encounterResourceId.getUniqueId());
@@ -546,19 +544,49 @@ public class Main {
         return ret;
     }
 
-    public static void saveResourceId(ResourceId r) throws SQLException, ClassNotFoundException, IOException {
-        resourceIdInsertStatement.setString(1, r.getScopeId());
-        resourceIdInsertStatement.setString(2, r.getResourceType());
-        resourceIdInsertStatement.setString(3, r.getUniqueId());
-        resourceIdInsertStatement.setObject(4, r.getResourceId());
-
-        if (resourceIdInsertStatement.executeUpdate() != 1) {
-            throw new SQLException("Could not create ResourceId:" + r.getScopeId() + ":" + r.getResourceType() + ":" + r.getUniqueId() + ":" + r.getResourceId().toString());
+    public static void saveResourceId(ResourceId r) throws Exception {
+        dalHL7ResourceId.saveResourceId(r);
+        /*
+        try {
+            resourceIdInsertStatement.setString(1, r.getScopeId());
+            resourceIdInsertStatement.setString(2, r.getResourceType());
+            resourceIdInsertStatement.setString(3, r.getUniqueId());
+            resourceIdInsertStatement.setObject(4, r.getResourceId());
         }
+        catch (SQLException sq) {
+            throw sq;
+        }
+        try {
+            if (resourceIdInsertStatement.executeUpdate() != 1) {
+                throw new SQLException("Could not create ResourceId:" + r.getScopeId() + ":" + r.getResourceType() + ":" + r.getUniqueId() + ":" + r.getResourceId().toString());
+            }
+        }
+        catch (SQLException sq) {
+            if (sq.getMessage().indexOf("duplicate key") >= 0) {
+                LOG.info("Duplicate key");
+                throw new SQLException("Could not create ResourceId:" + r.getScopeId() + ":" + r.getResourceType() + ":" + r.getUniqueId() + ":" + r.getResourceId().toString(), sq);
+            } else {
+                throw sq;
+            }
+        }
+        */
+
     }
 
     public static void recordMerge(UUID globalserviceId, String resourceType, UUID fromEncounterIdResourceId, UUID toEncounterIdResourceId) throws Exception {
-        dal.recordMerge(globalserviceId, resourceType, fromEncounterIdResourceId, toEncounterIdResourceId);
+        try {
+            dalResourceMerge.upsertMergeRecord(globalserviceId, resourceType, fromEncounterIdResourceId, toEncounterIdResourceId);
+        }
+        catch (Exception sq) {
+            LOG.info("SQL DAL error:" + sq.getMessage());
+            if (sq.getMessage().indexOf("duplicate key") >= 0) {
+                LOG.info("Duplicate key");
+                throw new SQLException("Could not create " + resourceType + " in service " + globalserviceId + " from " + fromEncounterIdResourceId + " to " + toEncounterIdResourceId, sq);
+            } else {
+                throw sq;
+            }
+        }
+
     }
 
     public static String createEpisodeIdUniqueKey(String channelId, String localPatientId, String visitId, String encounterDateTimeForUniqueKey) {
