@@ -457,9 +457,6 @@ public class Main {
                 }
 
             } finally {
-                resultSet.close();
-                connection.close();
-
                 LOG.info("MsgCount=" + msgCount);
                 LOG.info("MsgCountA34=" + msgCountA34);
                 LOG.info("MsgCountA35=" + msgCountA35);
@@ -467,6 +464,20 @@ public class Main {
                 LOG.info("MsgCountA34Saved=" + msgCountA34Saved);
                 LOG.info("MsgCountA35Saved=" + msgCountA35Saved);
                 LOG.info("MsgCountA44Saved=" + msgCountA44Saved);
+                //******************************************************************************
+                // TEST
+                //UUID newUUID = dalResourceMerge.resolveMergeUUID(globalserviceId, "Patient", UUID.fromString("8de0319c-d8a8-450c-b5aa-91c117f8d9e3"));
+                //LOG.info("Test1 reply=" + newUUID + " result=" + (newUUID.toString().compareTo("3ce7aace-5682-43f4-9036-5e4c9f1d8803") == 0));
+                //Create two-step test
+                //UUID fakeUUID = UUID.fromString("3ce7aace-5682-43f4-9036-9999999999");
+                //dalResourceMerge.insertMergeRecord(globalserviceId, "Patient", UUID.fromString("3ce7aace-5682-43f4-9036-5e4c9f1d8803"), fakeUUID);
+                //newUUID = dalResourceMerge.resolveMergeUUID(globalserviceId, "Patient", UUID.fromString("8de0319c-d8a8-450c-b5aa-91c117f8d9e3"));
+                //LOG.info("Test2 reply=" + newUUID + " result=" + (newUUID.toString().compareTo(fakeUUID.toString()) == 0));
+                // Remove fakeUUID manually
+                //******************************************************************************
+                resultSet.close();
+                connection.close();
+
             }
 
         } catch (Exception ex) {
