@@ -1,7 +1,6 @@
 package org.endeavourhealth.hl7transform.transforms.barts.transforms;
 
 import com.google.common.collect.ImmutableList;
-import javafx.util.Pair;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Validate;
 import org.endeavourhealth.common.fhir.FhirUri;
@@ -9,10 +8,7 @@ import org.endeavourhealth.common.fhir.ReferenceHelper;
 import org.endeavourhealth.common.utility.StreamExtension;
 import org.endeavourhealth.hl7parser.ParseException;
 import org.endeavourhealth.hl7parser.datatypes.Pl;
-import org.endeavourhealth.hl7transform.common.ResourceContainer;
-import org.endeavourhealth.hl7transform.common.ResourceTag;
-import org.endeavourhealth.hl7transform.common.ResourceTransformBase;
-import org.endeavourhealth.hl7transform.common.TransformException;
+import org.endeavourhealth.hl7transform.common.*;
 import org.endeavourhealth.hl7transform.common.transform.LocationCommon;
 import org.endeavourhealth.hl7transform.common.transform.OrganisationCommon;
 import org.endeavourhealth.hl7transform.mapper.Mapper;
