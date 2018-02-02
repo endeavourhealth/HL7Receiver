@@ -1,0 +1,19 @@
+version: 0.2
+
+phases:
+  pre_build:
+    commands:
+      - IP=$(curl http://checkip.amazonaws.com)/32
+      - echo $IP of CodeBuild Instance
+  build:
+    commands:
+      - echo Build started on `date`
+      - mvn -B package
+  post_build:
+    commands:
+      - IP=$(curl http://checkip.amazonaws.com)/32
+      - echo $IP of CodeBuild Instance
+      - echo Build completed on `date`
+artifacts:
+  files:
+    - target/**/*
