@@ -1,0 +1,2 @@
+create index ix_message_processing_content_message_id on log.message_processing_content (message_id);
+create index ix_message_status_history_message_id on log.message_status_history (message_id);
