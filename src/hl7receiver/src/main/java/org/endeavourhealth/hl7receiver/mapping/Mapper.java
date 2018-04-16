@@ -1,5 +1,7 @@
 package org.endeavourhealth.hl7receiver.mapping;
 
+import org.endeavourhealth.common.ods.OdsOrganisation;
+import org.endeavourhealth.common.ods.OdsWebService;
 import org.endeavourhealth.hl7receiver.DataLayer;
 import org.endeavourhealth.hl7receiver.model.db.DbCode;
 import org.endeavourhealth.hl7receiver.model.db.DbOrganisation;
@@ -120,7 +122,36 @@ public class Mapper extends org.endeavourhealth.hl7transform.mapper.Mapper {
                             .setCounty(dbOrganisation.getCounty())
                             .setPostcode(dbOrganisation.getPostcode());
                 } else {
-                    mappedOrganisation = OdsRestClient.lookupOrganisationViaRest(odsCode);
+
+                    //the Open ODS code has now moved to the FHIR rep/*mappedOrganisation = OdsRestClient.lookupOrganisationViaRest(odsCode);
+                    OdsOrganisation odsOrg = OdsWebService.lookupOrganisationViaRest(odsCode);
+                    if (odsOrg == null) {
+                        return null;
+                    }
+
+                    //add to our local DB for next time
+                    this.dataLayer.setOrganisation(odsOrg.getOdsCode(),
+                            odsOrg.getOrganisationName(),
+                            odsOrg.getOrganisationClass(),
+                            odsOrg.getOrganisationType(),
+                            odsOrg.getAddressLine1(),
+                            odsOrg.getAddressLine2(),
+                            odsOrg.getTown(),
+                            odsOrg.getCounty(),
+                            odsOrg.getPostcode());
+
+                    mappedOrganisation = new MappedOrganisation()
+                            .setOdsCode(odsOrg.getOdsCode())
+                            .setOrganisationName(odsOrg.getOrganisationName())
+                            .setOrganisationClass(odsOrg.getOrganisationClass())
+                            .setOrganisationType(odsOrg.getOrganisationType())
+                            .setAddressLine1(odsOrg.getAddressLine1())
+                            .setAddressLine2(odsOrg.getAddressLine2())
+                            .setTown(odsOrg.getTown())
+                            .setCounty(odsOrg.getCounty())
+                            .setPostcode(odsOrg.getPostcode());
+
+                    /*mappedOrganisation = OdsRestClient.lookupOrganisationViaRest(odsCode);
 
                     if (mappedOrganisation == null)
                         return null;
@@ -133,7 +164,7 @@ public class Mapper extends org.endeavourhealth.hl7transform.mapper.Mapper {
                             mappedOrganisation.getAddressLine2(),
                             mappedOrganisation.getTown(),
                             mappedOrganisation.getCounty(),
-                            mappedOrganisation.getPostcode());
+                            mappedOrganisation.getPostcode());*/
                 }
 
                 organisationCache.putMappedOrganisation(odsCode, mappedOrganisation);

@@ -1,7 +1,7 @@
 package org.endeavourhealth.hl7transform.common.converters;
 
 import org.apache.commons.lang3.StringUtils;
-import org.endeavourhealth.common.fhir.FhirUri;
+import org.endeavourhealth.common.fhir.FhirIdentifierUri;
 import org.endeavourhealth.hl7parser.datatypes.CxInterface;
 import org.endeavourhealth.hl7transform.common.TransformException;
 import org.endeavourhealth.hl7transform.mapper.Mapper;
@@ -33,7 +33,7 @@ public class IdentifierConverter {
             return null;
 
         return new Identifier()
-                .setSystem(FhirUri.IDENTIFIER_SYSTEM_ODS_CODE)
+                .setSystem(FhirIdentifierUri.IDENTIFIER_SYSTEM_ODS_CODE)
                 .setValue(StringUtils.deleteWhitespace(odsCode.toUpperCase()));
     }
 

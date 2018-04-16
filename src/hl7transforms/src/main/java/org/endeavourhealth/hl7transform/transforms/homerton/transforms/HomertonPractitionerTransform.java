@@ -2,7 +2,7 @@ package org.endeavourhealth.hl7transform.transforms.homerton.transforms;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Validate;
-import org.endeavourhealth.common.fhir.FhirUri;
+import org.endeavourhealth.common.fhir.FhirIdentifierUri;
 import org.endeavourhealth.common.fhir.ReferenceHelper;
 import org.endeavourhealth.common.utility.StreamExtension;
 import org.endeavourhealth.hl7parser.ParseException;
@@ -51,7 +51,7 @@ public class HomertonPractitionerTransform extends ResourceTransformBase {
             String gmcCode = StringUtils.deleteWhitespace(zpd.getGmcCode()).toUpperCase();
 
                 practitioner.addIdentifier(new Identifier()
-                        .setSystem(FhirUri.IDENTIFIER_SYSTEM_GMC_NUMBER)
+                        .setSystem(FhirIdentifierUri.IDENTIFIER_SYSTEM_GMC_NUMBER)
                         .setValue(gmcCode));
         }
 
@@ -140,8 +140,8 @@ public class HomertonPractitionerTransform extends ResourceTransformBase {
     private Organization calculcatePractitionerRoleOrganisationFromDuplicates(Practitioner practitioner, List<Xcn> sources) throws TransformException {
 
         // role - collect identifiers to help determine role
-        String gmcCode = PractitionerCommon.getIdentifierValue(practitioner.getIdentifier(), FhirUri.IDENTIFIER_SYSTEM_GMC_NUMBER);
-        String primaryPersonnelId = PractitionerCommon.getIdentifierValue(practitioner.getIdentifier(), FhirUri.IDENTIFIER_SYSTEM_HOMERTON_PRIMARY_PRACTITIONER_ID);
+        String gmcCode = PractitionerCommon.getIdentifierValue(practitioner.getIdentifier(), FhirIdentifierUri.IDENTIFIER_SYSTEM_GMC_NUMBER);
+        String primaryPersonnelId = PractitionerCommon.getIdentifierValue(practitioner.getIdentifier(), FhirIdentifierUri.IDENTIFIER_SYSTEM_HOMERTON_PRIMARY_PRACTITIONER_ID);
         String postcode = sources  // practitioner's organisation postcode is stored as a identifier
                 .stream()
                 .filter(t -> StringUtils.isNotEmpty(t.getId()))
@@ -157,7 +157,7 @@ public class HomertonPractitionerTransform extends ResourceTransformBase {
 
             // attempt match on primary care provider practitioner GMC code
             if (primaryCareProviderPractitioner != null) {
-                String primaryCarePractitionerGmcCode = PractitionerCommon.getIdentifierValue(primaryCareProviderPractitioner.getIdentifier(), FhirUri.IDENTIFIER_SYSTEM_GMC_NUMBER);
+                String primaryCarePractitionerGmcCode = PractitionerCommon.getIdentifierValue(primaryCareProviderPractitioner.getIdentifier(), FhirIdentifierUri.IDENTIFIER_SYSTEM_GMC_NUMBER);
 
                 if (StringUtils.isNotEmpty(primaryCarePractitionerGmcCode))
                     if (gmcCode.equalsIgnoreCase(primaryCarePractitionerGmcCode))
@@ -193,13 +193,13 @@ public class HomertonPractitionerTransform extends ResourceTransformBase {
 
         String forename = NameConverter.getFirstGivenName(source.getName());
         String surname = NameConverter.getFirstSurname(source.getName());
-        String primaryIdentifier = PractitionerCommon.getIdentifierValue(source.getIdentifier(), FhirUri.IDENTIFIER_SYSTEM_HOMERTON_PRIMARY_PRACTITIONER_ID);
-        String consultantCode = PractitionerCommon.getIdentifierValue(source.getIdentifier(), FhirUri.IDENTIFIER_SYSTEM_CONSULTANT_CODE);
-        String gmcCode = PractitionerCommon.getIdentifierValue(source.getIdentifier(), FhirUri.IDENTIFIER_SYSTEM_GMC_NUMBER);
+        String primaryIdentifier = PractitionerCommon.getIdentifierValue(source.getIdentifier(), FhirIdentifierUri.IDENTIFIER_SYSTEM_HOMERTON_PRIMARY_PRACTITIONER_ID);
+        String consultantCode = PractitionerCommon.getIdentifierValue(source.getIdentifier(), FhirIdentifierUri.IDENTIFIER_SYSTEM_CONSULTANT_CODE);
+        String gmcCode = PractitionerCommon.getIdentifierValue(source.getIdentifier(), FhirIdentifierUri.IDENTIFIER_SYSTEM_GMC_NUMBER);
         String odsCode = "";
 
         if (sourceRoleOrganisation != null)
-            odsCode = PractitionerCommon.getIdentifierValue(sourceRoleOrganisation.getIdentifier(), FhirUri.IDENTIFIER_SYSTEM_ODS_CODE);
+            odsCode = PractitionerCommon.getIdentifierValue(sourceRoleOrganisation.getIdentifier(), FhirIdentifierUri.IDENTIFIER_SYSTEM_ODS_CODE);
 
         if (StringUtils.isBlank(primaryIdentifier)
             && StringUtils.isBlank(consultantCode)

@@ -1,7 +1,6 @@
 package org.endeavourhealth.hl7transform.common.transform;
 
 import org.apache.commons.lang3.StringUtils;
-import org.endeavourhealth.common.fhir.FhirUri;
 import org.endeavourhealth.common.utility.StreamExtension;
 import org.endeavourhealth.hl7parser.datatypes.Cx;
 import org.endeavourhealth.hl7parser.datatypes.XpnInterface;

@@ -1,7 +1,7 @@
 package org.endeavourhealth.hl7transform.common.transform;
 
 import org.apache.commons.lang3.Validate;
-import org.endeavourhealth.common.fhir.FhirUri;
+import org.endeavourhealth.common.fhir.FhirIdentifierUri;
 import org.endeavourhealth.common.fhir.ReferenceHelper;
 import org.endeavourhealth.common.fhir.schema.OrganisationClass;
 import org.endeavourhealth.common.utility.StreamExtension;
@@ -89,7 +89,7 @@ public class LocationCommon {
         return location
                 .getIdentifier()
                 .stream()
-                .filter(t -> FhirUri.IDENTIFIER_SYSTEM_ODS_CODE.equals(t.getSystem()))
+                .filter(t -> FhirIdentifierUri.IDENTIFIER_SYSTEM_ODS_CODE.equals(t.getSystem()))
                 .map(t -> t.getValue())
                 .collect(StreamExtension.firstOrNullCollector());
     }
