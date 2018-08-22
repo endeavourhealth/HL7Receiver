@@ -1,5 +1,6 @@
 package org.endeavourhealth.hl7transform.transforms.homerton.transforms;
 
+import com.google.common.base.Strings;
 import org.apache.commons.lang3.StringUtils;
 import org.endeavourhealth.hl7parser.Hl7DateTime;
 import org.endeavourhealth.hl7parser.ParseException;
@@ -43,6 +44,10 @@ public class HomertonEpisodeOfCareTransform extends ResourceTransformBase {
 
         EpisodeOfCare target = new EpisodeOfCare();
 
+        String idVal = getHomertonPrimaryEpisodeIdentifierValue(source);
+        if (Strings.isNullOrEmpty(idVal)) {
+            return null;
+        }
         setId(source, target);
 
         setIdentifiers(source, target);
