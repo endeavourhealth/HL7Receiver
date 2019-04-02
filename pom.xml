@@ -11,12 +11,12 @@
         <java.version>1.8</java.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 
-        <endeavour-config.version>1.13-SNAPSHOT</endeavour-config.version>
+        <endeavour-config.version>1.26-SNAPSHOT</endeavour-config.version>
         <eds-client.version>1.0-SNAPSHOT</eds-client.version>
-        <eds-fhir.version>1.51-SNAPSHOT</eds-fhir.version>
+        <eds-fhir.version>1.88-SNAPSHOT</eds-fhir.version>
         <eds-postgres.version>1.08-SNAPSHOT</eds-postgres.version>
-        <eds-security.version>1.2-SNAPSHOT</eds-security.version>
-        <eds-utility.version>1.6-SNAPSHOT</eds-utility.version>
+        <eds-security.version>1.16-SNAPSHOT</eds-security.version>
+        <eds-utility.version>1.46-SNAPSHOT</eds-utility.version>
 
         <commons-lang3.version>3.5</commons-lang3.version>
         <fhir-dstu2.version>1.0.1.7108</fhir-dstu2.version>
@@ -24,7 +24,7 @@
         <hapi.version>2.2</hapi.version>
         <hikari.version>2.5.1</hikari.version>
         <httpcore.version>4.4.6</httpcore.version>
-        <keycloak.version>2.0.0.Final</keycloak.version>
+        <keycloak.version>4.8.3.Final</keycloak.version>
         <slack-integration.version>1.2.1</slack-integration.version>
         <slf4j.version>1.7.21</slf4j.version>
     </properties>

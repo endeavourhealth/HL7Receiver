@@ -140,8 +140,9 @@ public class HL7MessageProcessor {
 
     private void initialiseKeycloak() throws HL7Exception {
 
-        if (!lastInitialisedKeycloak.plusHours(KEYCLOAK_REINITIALISATION_WINDOW_HOURS).isBefore(LocalDateTime.now()))
-            return;
+        //tokens only lst for 1 minute so remove this check
+        //if (!lastInitialisedKeycloak.plusHours(KEYCLOAK_REINITIALISATION_WINDOW_HOURS).isBefore(LocalDateTime.now()))
+        //    return;
 
         final DbEds dbEds = configuration.getDbConfiguration().getDbEds();
 
