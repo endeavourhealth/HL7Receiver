@@ -21,7 +21,7 @@ import java.util.UUID;
 public class HL7MessageProcessor {
 
     private static final Logger LOG = LoggerFactory.getLogger(HL7MessageProcessor.class);
-    private static final int KEYCLOAK_REINITIALISATION_WINDOW_HOURS = 1;
+    private static final int KEYCLOAK_REINITIALISATION_WINDOW_MINUTES = 10;
     private static LocalDateTime lastInitialisedKeycloak = LocalDateTime.MIN;
 
     private Configuration configuration;
@@ -140,9 +140,9 @@ public class HL7MessageProcessor {
 
     private void initialiseKeycloak() throws HL7Exception {
 
-        //tokens only lst for 1 minute so remove this check
-        //if (!lastInitialisedKeycloak.plusHours(KEYCLOAK_REINITIALISATION_WINDOW_HOURS).isBefore(LocalDateTime.now()))
-        //    return;
+        //tokens only last for 10 minutes in keycloak config
+        if (!lastInitialisedKeycloak.plusMinutes(KEYCLOAK_REINITIALISATION_WINDOW_MINUTES).isBefore(LocalDateTime.now()))
+            return;
 
         final DbEds dbEds = configuration.getDbConfiguration().getDbEds();
 
