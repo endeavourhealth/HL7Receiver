@@ -32,12 +32,16 @@ public class CodeCache {
         CodeCacheKey codeCacheKey = new CodeCacheKey(context, code, codeSystem, term);
 
         MappedCode ret = hashMap.get(codeCacheKey);
+        if (ret == null) {
+            return null;
+        }
+
         Date cacheTime = hashMapExpiryDates.get(codeCacheKey);
         if (isExpired(cacheTime)) {
             return null;
-        } else {
-            return ret;
         }
+
+        return ret;
     }
 
     private static boolean isExpired(Date cacheTime) {
