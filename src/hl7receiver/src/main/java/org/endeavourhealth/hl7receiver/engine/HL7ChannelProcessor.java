@@ -37,7 +37,7 @@ public class HL7ChannelProcessor implements Runnable {
     }
 
     public void start() {
-        LOG.info("Starting channel processor {}", dbChannel.getChannelName());
+        LOG.info("Starting channel processor " + dbChannel.getChannelName());
 
         if (thread == null) {
             thread = new Thread(this);
@@ -50,7 +50,7 @@ public class HL7ChannelProcessor implements Runnable {
     public void stop() {
         stopRequested = true;
         try {
-            LOG.info("Stopping channel processor {}", dbChannel.getChannelName());
+            LOG.info("Stopping channel processor " + dbChannel.getChannelName());
             thread.join(THREAD_STOP_WAIT_TIMEOUT_MILLIS);
         } catch (Exception e) {
             LOG.error("Error stopping channel processor for channel", e);
@@ -64,16 +64,16 @@ public class HL7ChannelProcessor implements Runnable {
         boolean isPaused = false;
         LocalDateTime lastLockTriedTime = null;
 
-        LOG.trace("Starting processor runnable for " + dbChannel.getChannelName());
+        LOG.trace("Starting processor runnable");
 
         try {
 
             while (!stopRequested) {
-                LOG.trace("In main processor loop for " + dbChannel.getChannelName());
+                LOG.trace("In main processor loop");
 
                 gotLock = getLock(gotLock);
                 lastLockTriedTime = LocalDateTime.now();
-                LOG.trace("gotLock = " + gotLock + " for " + dbChannel.getChannelName());
+                LOG.trace("gotLock = " + gotLock);
 
                 if (isFirstRun && gotLock) {
                     resetNextAttemptDateOnFailedMessages();
@@ -95,14 +95,15 @@ public class HL7ChannelProcessor implements Runnable {
 
                             DbMessage message = getNextMessage();
                             if (message == null) {
-                                LOG.trace("No next message for " + dbChannel.getChannelName());
+                                //LOG.trace("No next message");
                                 Thread.sleep(THREAD_SLEEP_TIME_MILLIS);
                                 continue;
                             }
 
-                            LOG.trace("Going to process message " + message.getMessageId() + " for " + dbChannel.getChannelName());
+                            long msStart = System.currentTimeMillis();
+                            LOG.trace("Going to process message " + message.getMessageId());
                             if (!processMessage(message)) {
-                                LOG.trace("Failed to process message " + message.getMessageId() + " for " + dbChannel.getChannelName());
+                                LOG.trace("Failed to process message " + message.getMessageId());
 
                                 if (stopRequested) {
                                     return;
@@ -110,23 +111,24 @@ public class HL7ChannelProcessor implements Runnable {
 
                                 Thread.sleep(THREAD_SLEEP_TIME_MILLIS);
                             } else {
-                                LOG.trace("Successfully processed message " + message.getMessageId() + " for " + dbChannel.getChannelName());
+                                long msEnd = System.currentTimeMillis();
+                                long msTaken = msEnd - msStart;
+                                LOG.trace("Successfully processed message " + message.getMessageId() + " in " + msTaken + " ms");
                             }
 
                         } else {  // isPaused
-                            LOG.trace("Is paused, so not processing messages for " + dbChannel.getChannelName());
+                            LOG.trace("Is paused, so not processing messages");
                             Thread.sleep(THREAD_SLEEP_TIME_MILLIS);
                         }
                     } else {  // not gotLock
-                        LOG.error("Not got processor lock for " + dbChannel.getChannelName());
+                        LOG.error("Not got processor lock");
                         Thread.sleep(THREAD_SLEEP_TIME_MILLIS);
                     }
                 }
             }
 
         } catch (Throwable t) {
-            String msg = "Exception processing channel " + dbChannel.getChannelName();
-            LOG.error(msg, t);
+            LOG.error("Exception in main processor loop", t);
         }
 
         releaseLock(gotLock);

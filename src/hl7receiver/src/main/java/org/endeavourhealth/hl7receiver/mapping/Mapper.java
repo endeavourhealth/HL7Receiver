@@ -12,12 +12,15 @@ import org.endeavourhealth.hl7transform.mapper.exceptions.MapperException;
 import org.endeavourhealth.hl7transform.mapper.organisation.MappedOrganisation;
 import org.endeavourhealth.hl7transform.mapper.resource.MappedResourceUuid;
 import org.hl7.fhir.instance.model.ResourceType;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
 public class Mapper extends org.endeavourhealth.hl7transform.mapper.Mapper {
+    private static final Logger LOG = LoggerFactory.getLogger(Mapper.class);
 
     private String sendingFacility;
     private DataLayer dataLayer;
@@ -87,7 +90,11 @@ public class Mapper extends org.endeavourhealth.hl7transform.mapper.Mapper {
     @Override
     public List<MappedResourceUuid> getScopedResourceUuidMappings(String uniqueIdentifierPrefix) throws MapperException {
         try {
+            long msStart = System.currentTimeMillis();
             List<DbResourceUuidMapping> resourceUuidMappings = this.dataLayer.getSimilarResourceUuidMappings(this.sendingFacility, uniqueIdentifierPrefix);
+            long msEnd = System.currentTimeMillis();
+            long msTaken = msEnd - msStart;
+            LOG.trace("Took " + msTaken + "ms to get similar mappings to " + uniqueIdentifierPrefix);
 
             return resourceUuidMappings
                     .stream()
