@@ -160,7 +160,8 @@ public class HL7MessageProcessor {
 
                 LOG.trace("Keycloak initialised");
 
-            } catch (IOException e) {
+            //} catch (IOException e) {
+            } catch (Throwable e) { //had a class not found exception which is a throwable, so changed to catch throwable
                 LOG.error("Error initialising keycloak", e);
                 throw new HL7Exception("Error initialising keycloak", e);
             }

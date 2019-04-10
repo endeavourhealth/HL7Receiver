@@ -123,15 +123,10 @@ public class HL7ChannelProcessor implements Runnable {
                     }
                 }
             }
-        }
-        catch (Exception e) {
-            Object[] logArgs = new Object[] {
-                    dbChannel.getChannelName(),
-                    configuration.getMachineName(),
-                    e };
 
+        } catch (Throwable t) {
             String msg = "Exception processing channel " + dbChannel.getChannelName();
-            LOG.error(msg, e);
+            LOG.error(msg, t);
         }
 
         releaseLock(gotLock);
@@ -301,7 +296,7 @@ public class HL7ChannelProcessor implements Runnable {
             long messagesResetCount = dataLayer.reprocessFailedMessages(dbChannel.getChannelId(), configuration.getInstanceId());
 
             if (messagesResetCount > 0) {
-                LOG.info("Reset next attempt date of " + messagesResetCount + " message(s) in error for" + dbChannel.getChannelName());
+                LOG.info("Reset next attempt date of " + messagesResetCount + " message(s) in error for " + dbChannel.getChannelName());
             }
 
         } catch (Exception e) {
