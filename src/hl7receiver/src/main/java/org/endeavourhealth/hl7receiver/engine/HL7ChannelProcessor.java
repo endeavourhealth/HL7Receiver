@@ -64,19 +64,24 @@ public class HL7ChannelProcessor implements Runnable {
         boolean isPaused = false;
         LocalDateTime lastLockTriedTime = null;
 
+        LOG.trace("Starting processor runnable for " + dbChannel.getChannelName());
+
         try {
 
             while (!stopRequested) {
+                LOG.trace("In main processor loop for " + dbChannel.getChannelName());
 
                 gotLock = getLock(gotLock);
                 lastLockTriedTime = LocalDateTime.now();
+                LOG.trace("gotLock = " + gotLock + " for " + dbChannel.getChannelName());
 
-                if (isFirstRun && gotLock)
+                if (isFirstRun && gotLock) {
                     resetNextAttemptDateOnFailedMessages();
-
+                }
                 isFirstRun = false;
 
-                while ((!stopRequested) && (lastLockTriedTime.plusSeconds(LOCK_RECLAIM_INTERVAL_SECONDS).isAfter(LocalDateTime.now()))) {
+                while (!stopRequested
+                        && (lastLockTriedTime.plusSeconds(LOCK_RECLAIM_INTERVAL_SECONDS).isAfter(LocalDateTime.now()))) {
 
                     if (gotLock) {
 
@@ -84,27 +89,36 @@ public class HL7ChannelProcessor implements Runnable {
 
                         if (!isPaused) {
 
-                            DbMessage message = getNextMessage();
-
-                            if (stopRequested)
+                            if (stopRequested) {
                                 return;
+                            }
 
+                            DbMessage message = getNextMessage();
                             if (message == null) {
+                                LOG.trace("No next message for " + dbChannel.getChannelName());
                                 Thread.sleep(THREAD_SLEEP_TIME_MILLIS);
                                 continue;
                             }
 
+                            LOG.trace("Going to process message " + message.getMessageId() + " for " + dbChannel.getChannelName());
                             if (!processMessage(message)) {
+                                LOG.trace("Failed to process message " + message.getMessageId() + " for " + dbChannel.getChannelName());
 
-                                if (stopRequested)
+                                if (stopRequested) {
                                     return;
+                                }
 
                                 Thread.sleep(THREAD_SLEEP_TIME_MILLIS);
+                            } else {
+                                LOG.trace("Successfully processed message " + message.getMessageId() + " for " + dbChannel.getChannelName());
                             }
+
                         } else {  // isPaused
+                            LOG.trace("Is paused, so not processing messages for " + dbChannel.getChannelName());
                             Thread.sleep(THREAD_SLEEP_TIME_MILLIS);
                         }
                     } else {  // not gotLock
+                        LOG.error("Not got processor lock for " + dbChannel.getChannelName());
                         Thread.sleep(THREAD_SLEEP_TIME_MILLIS);
                     }
                 }
@@ -116,7 +130,8 @@ public class HL7ChannelProcessor implements Runnable {
                     configuration.getMachineName(),
                     e };
 
-            LOG.error("Fatal exception in channel processor {} for instance {}", logArgs);
+            String msg = "Exception processing channel " + dbChannel.getChannelName();
+            LOG.error(msg, e);
         }
 
         releaseLock(gotLock);
@@ -285,8 +300,9 @@ public class HL7ChannelProcessor implements Runnable {
         try {
             long messagesResetCount = dataLayer.reprocessFailedMessages(dbChannel.getChannelId(), configuration.getInstanceId());
 
-            if (messagesResetCount > 0)
-                LOG.info("Reset next attempt date of {} message(s) in error", messagesResetCount);
+            if (messagesResetCount > 0) {
+                LOG.info("Reset next attempt date of " + messagesResetCount + " message(s) in error for" + dbChannel.getChannelName());
+            }
 
         } catch (Exception e) {
             Object[] logArgs = new Object[] {
