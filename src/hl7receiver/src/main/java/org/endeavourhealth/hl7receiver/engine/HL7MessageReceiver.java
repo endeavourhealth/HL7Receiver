@@ -7,6 +7,7 @@ import ca.uhn.hl7v2.model.Message;
 import ca.uhn.hl7v2.protocol.ReceivingApplication;
 import ca.uhn.hl7v2.protocol.ReceivingApplicationException;
 import org.apache.commons.lang3.StringUtils;
+import org.endeavourhealth.common.utility.MetricsHelper;
 import org.endeavourhealth.common.utility.StreamExtension;
 import org.endeavourhealth.hl7receiver.Configuration;
 import org.endeavourhealth.hl7receiver.DataLayer;
@@ -96,6 +97,10 @@ class HL7MessageReceiver implements ReceivingApplication {
                         hl7KeyFields.getEncodedMessage(),
                         hl7KeyFieldsResponse.getMessageType(),
                         hl7KeyFieldsResponse.getEncodedMessage());
+
+                //graphite
+                MetricsHelper.recordEvent(dbChannel.getChannelName() + ".message-received");
+
             } catch (Exception e) {
                 throw new TransientMessageProcessingException("Error occurred writing to message log", e);
             }

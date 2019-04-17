@@ -6,6 +6,7 @@ import org.endeavourhealth.common.eds.EdsSender;
 import org.endeavourhealth.common.eds.EdsSenderHttpErrorResponseException;
 import org.endeavourhealth.common.eds.EdsSenderResponse;
 import org.endeavourhealth.common.security.keycloak.client.KeycloakClient;
+import org.endeavourhealth.common.utility.MetricsHelper;
 import org.endeavourhealth.hl7receiver.Configuration;
 import org.endeavourhealth.hl7receiver.mapping.Mapper;
 import org.endeavourhealth.hl7receiver.model.db.*;
@@ -78,6 +79,8 @@ public class HL7MessageProcessor {
                     responseMessage = sendMessage(requestMessage);
                     contentSaver.save(DbProcessingContentType.ONWARD_RESPONSE_MESSAGE, responseMessage);
 
+                    MetricsHelper.recordEvent(dbChannel.getChannelName() + ".post-to-messaging-api-ok");
+
                 } catch (Exception e) {
 
                     if (e instanceof EdsSenderHttpErrorResponseException) {
@@ -85,6 +88,8 @@ public class HL7MessageProcessor {
                         responseMessage = getFormattedEdsSenderResponse(edsSenderResponse);
                         contentSaver.save(DbProcessingContentType.ONWARD_RESPONSE_MESSAGE, responseMessage);
                     }
+
+                    MetricsHelper.recordEvent(dbChannel.getChannelName() + ".post-to-messaging-api-error");
 
                     throw new HL7MessageProcessorException(DbMessageStatus.SEND_FAILURE, e);
                 }

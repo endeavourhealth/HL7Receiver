@@ -50,7 +50,7 @@ public abstract class Transform {
             throw new TransformException(segmentName + " exists more than " + Long.toString(max) + " time(s)");
     }
 
-    protected void validateMinAndMaxSegmentCount(AdtMessage sourceMessage, String segmentName, long min, long max) throws TransformException {
+    private void validateMinAndMaxSegmentCount(AdtMessage sourceMessage, String segmentName, long min, long max) throws TransformException {
         if (sourceMessage.getSegmentCount(segmentName) < min)
             throw new TransformException(segmentName + " segment exists less than " + Long.toString(min) + " time(s)");
 

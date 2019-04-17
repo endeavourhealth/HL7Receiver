@@ -16,7 +16,7 @@
         <eds-fhir.version>1.88-SNAPSHOT</eds-fhir.version>
         <eds-postgres.version>1.08-SNAPSHOT</eds-postgres.version>
         <eds-security.version>1.2-SNAPSHOT</eds-security.version>
-        <eds-utility.version>1.6-SNAPSHOT</eds-utility.version>
+        <eds-utility.version>1.47-SNAPSHOT</eds-utility.version>
 
         <commons-lang3.version>3.5</commons-lang3.version>
         <fhir-dstu2.version>1.0.1.7108</fhir-dstu2.version>
