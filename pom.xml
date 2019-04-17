@@ -27,6 +27,8 @@
         <keycloak.version>2.0.0.Final</keycloak.version>
         <slack-integration.version>1.2.1</slack-integration.version>
         <slf4j.version>1.7.21</slf4j.version>
+        <jackson.version>2.9.8</jackson.version>
+
     </properties>
 
     <repositories>
