@@ -56,3 +56,67 @@ CREATE TABLE last_message
     log_date timestamp,
     CONSTRAINT pk_last_message PRIMARY KEY (channel_id)
 );
+
+create table message
+(
+	message_id integer not null,
+	channel_id integer not null,
+	connection_id integer not null,
+	log_date timestamp not null,
+	message_control_id varchar(100) not null,
+	message_sequence_number varchar(100) null,
+	message_date timestamp not null,
+	pid1 varchar(100) null,
+	pid2 varchar(100) null,
+	inbound_message_type varchar(100) not null,
+	inbound_payload mediumtext not null,
+	outbound_message_type varchar(100) not null,
+	outbound_payload mediumtext null,
+	message_uuid char(36) not null,
+	message_status_id smallint not null,
+	message_status_date timestamp not null,
+	processing_attempt_id smallint not null,
+	next_attempt_date timestamp null,
+    error_message text,
+	constraint log_message_messageid_pk primary key (message_id),
+	constraint log_message_messageid_channelid_uq unique (message_id, channel_id)
+);
+
+
+CREATE TABLE message_queue
+(
+    message_id int NOT NULL,
+    channel_id int NOT NULL,
+    message_date timestamp NOT NULL,
+    log_date timestamp NOT NULL,
+    CONSTRAINT pk_message_queue PRIMARY KEY (message_id)
+);
+
+CREATE TABLE message_status_history
+(
+    message_status_history_id int NOT NULL,
+    message_id int NOT NULL,
+    processing_attempt_id smallint NOT NULL,
+    message_status_id smallint NOT NULL,
+    message_status_date timestamp NOT NULL,
+    is_complete boolean NOT NULL,
+    error_message text,
+    instance_id int NOT NULL,
+    CONSTRAINT pk_message_status_history PRIMARY KEY (message_status_history_id)
+);
+
+CREATE TABLE message_status
+(
+    message_status_id smallint NOT NULL,
+    is_complete boolean NOT NULL,
+    description varchar(100),
+    CONSTRAINT pk_message_status PRIMARY KEY (message_status_id)
+);
+
+insert into message_status values (0, false, 'Message received');
+insert into message_status values (1, false, 'Message processing started');
+insert into message_status values (9, true, 'Message processing complete');
+insert into message_status values (-1, false, 'Transform failure');
+insert into message_status values (-2, false, 'Envelope generation failure');
+insert into message_status values (-3, false, 'Send failure');
+insert into message_status values (-9, false, 'Unexpected error');
