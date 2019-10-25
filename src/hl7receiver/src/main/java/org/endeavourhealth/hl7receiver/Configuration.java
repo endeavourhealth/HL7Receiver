@@ -1,5 +1,6 @@
 package org.endeavourhealth.hl7receiver;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.kstruct.gethostname4j.Hostname;
 import com.zaxxer.hikari.HikariDataSource;
 import org.endeavourhealth.common.config.ConfigManager;
@@ -20,10 +21,6 @@ import java.util.stream.Collectors;
 public final class Configuration {
     // class members //
     private static final Logger LOG = LoggerFactory.getLogger(Configuration.class);
-    private static final String PROGRAM_CONFIG_MANAGER_NAME = "hl7receiver";
-    private static final String POSTGRES_URL_CONFIG_MANAGER_KEY = "postgres-url";
-    private static final String POSTGRES_USERNAME_CONFIG_MANAGER_KEY = "postgres-username";
-    private static final String POSTGRES_PASSWORD_CONFIG_MANAGER_KEY = "postgres-password";
 
     private static Configuration instance = null;
 
@@ -60,16 +57,26 @@ public final class Configuration {
 
     private void initialiseConfigManager() throws ConfigurationException {
         try {
-            ConfigManager.Initialize(PROGRAM_CONFIG_MANAGER_NAME);
+            ConfigManager.Initialize("hl7receiver");
 
-            postgresUrl = ConfigManager.getConfiguration(POSTGRES_URL_CONFIG_MANAGER_KEY);
-            postgresUsername = ConfigManager.getConfiguration(POSTGRES_USERNAME_CONFIG_MANAGER_KEY);
-            postgresPassword = ConfigManager.getConfiguration(POSTGRES_PASSWORD_CONFIG_MANAGER_KEY);
+            //new settings are stored in a single JSON structure, but old settings are stored in three separate records
+            JsonNode json = ConfigManager.getConfigurationAsJson("database");
+            if (json == null) {
+                postgresUrl = ConfigManager.getConfiguration("postgres-url");
+                postgresUsername = ConfigManager.getConfiguration("postgres-username");
+                postgresPassword = ConfigManager.getConfiguration("postgres-password");
 
-        } catch (ConfigManagerException e) {
+            } else {
+                postgresUrl = json.get("url").asText();
+                postgresUsername = json.get("username").asText();
+                postgresPassword = json.get("password").asText();
+            }
+
+        } catch (Exception e) {
             throw new ConfigurationException("Error loading ConfigManager configuration", e);
         }
     }
+
 
     private void addHL7LogAppender() throws ConfigurationException {
         try {
