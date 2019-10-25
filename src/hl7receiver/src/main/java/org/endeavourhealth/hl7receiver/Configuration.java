@@ -61,15 +61,18 @@ public final class Configuration {
 
             //new settings are stored in a single JSON structure, but old settings are stored in three separate records
             JsonNode json = ConfigManager.getConfigurationAsJson("database");
-            if (json == null) {
-                postgresUrl = ConfigManager.getConfiguration("postgres-url");
-                postgresUsername = ConfigManager.getConfiguration("postgres-username");
-                postgresPassword = ConfigManager.getConfiguration("postgres-password");
-
-            } else {
+            if (json != null) {
+                LOG.debug("Got configuration NEW way");
                 postgresUrl = json.get("url").asText();
                 postgresUsername = json.get("username").asText();
                 postgresPassword = json.get("password").asText();
+
+            } else {
+                //legacy support for dev deployments etc.
+                LOG.debug("Got configuration OLD way");
+                postgresUrl = ConfigManager.getConfiguration("postgres-url");
+                postgresUsername = ConfigManager.getConfiguration("postgres-username");
+                postgresPassword = ConfigManager.getConfiguration("postgres-password");
             }
 
         } catch (Exception e) {
