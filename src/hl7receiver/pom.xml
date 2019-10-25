@@ -51,6 +51,11 @@
             <artifactId>utility</artifactId>
             <version>${eds-utility.version}</version>
         </dependency>
+        <dependency>
+            <groupId>mysql</groupId>
+            <artifactId>mysql-connector-java</artifactId>
+            <version>${mysql.version}</version>
+        </dependency>
 
         <!-- hapi -->
         <dependency>
