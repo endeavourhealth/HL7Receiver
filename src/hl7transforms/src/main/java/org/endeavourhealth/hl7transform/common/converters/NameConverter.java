@@ -150,8 +150,13 @@ public class NameConverter {
 
         List<HumanName> officialNames = getNamesByUse(names, HumanName.NameUse.OFFICIAL);
 
-        if (officialNames.size() == 0)
-            throw new TransformException("Person does not have a official name");
+        //very small number of cases where there is no "current" name (just previous and alternative), so
+        //just let these through. Let the lack of an official name be handled downstream
+        if (officialNames.isEmpty()) {
+            return names;
+        }
+        /*if (officialNames.size() == 0)
+            throw new TransformException("Person does not have a official name");*/
 
         // convert 2nd and subsequent official names to usual name - these will have come from the patient alias field
         if (officialNames.size() > 1)
