@@ -2,6 +2,7 @@ package org.endeavourhealth.hl7receiver;
 
 import ch.qos.logback.classic.LoggerContext;
 import org.endeavourhealth.common.config.ConfigManagerException;
+import org.endeavourhealth.common.utility.MetricsHelper;
 import org.endeavourhealth.hl7receiver.engine.HL7Service;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -27,6 +28,9 @@ public class Main {
             hl7Service.start();
 
             LOG.info("Started succesfully...");
+
+            //now we're running, start this
+            MetricsHelper.startHeartbeat();
 
         } catch (ConfigManagerException cme) {
             printToErrorConsole("Fatal exception occurred initializing ConfigManager", cme);
