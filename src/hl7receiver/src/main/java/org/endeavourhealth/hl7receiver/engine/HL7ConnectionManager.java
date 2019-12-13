@@ -3,9 +3,8 @@ package org.endeavourhealth.hl7receiver.engine;
 import ca.uhn.hl7v2.app.Connection;
 import ca.uhn.hl7v2.app.ConnectionListener;
 import ca.uhn.hl7v2.protocol.MetadataKeys;
-import org.endeavourhealth.common.postgres.PgStoredProcException;
 import org.endeavourhealth.hl7receiver.Configuration;
-import org.endeavourhealth.hl7receiver.DataLayer;
+import org.endeavourhealth.hl7receiver.PostgresDataLayer;
 import org.endeavourhealth.hl7receiver.model.db.DbChannel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -19,7 +18,7 @@ class HL7ConnectionManager implements ConnectionListener {
 
     private Configuration configuration;
     private DbChannel dbChannel;
-    private DataLayer dataLayer;
+    private PostgresDataLayer dataLayer;
     private ConcurrentHashMap<HL7Connection, Integer> connectionIds = new ConcurrentHashMap<>();
 
     private HL7ConnectionManager() {
@@ -28,7 +27,7 @@ class HL7ConnectionManager implements ConnectionListener {
     public HL7ConnectionManager(Configuration configuration, DbChannel dbChannel) throws SQLException {
         this.configuration = configuration;
         this.dbChannel = dbChannel;
-        this.dataLayer = new DataLayer(configuration.getDatabaseConnection());
+        this.dataLayer = new PostgresDataLayer();
     }
 
     public void closeConnections() {
@@ -69,7 +68,7 @@ class HL7ConnectionManager implements ConnectionListener {
         try {
             connectionId = dataLayer.openConnection(configuration.getDbConfiguration().getInstanceId(), dbChannel.getChannelId(), dbChannel.getPortNumber(), remoteHost, remotePort);
 
-        } catch (PgStoredProcException e) {
+        } catch (Exception e) {
             LOG.error("Could not write new connection to database for channel {}. Closing inbound connection", new Object[] { dbChannel.getChannelName(), e });
             connection.close();
         }

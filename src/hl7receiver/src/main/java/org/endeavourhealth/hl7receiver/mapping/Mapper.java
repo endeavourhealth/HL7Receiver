@@ -2,7 +2,7 @@ package org.endeavourhealth.hl7receiver.mapping;
 
 import org.endeavourhealth.common.ods.OdsOrganisation;
 import org.endeavourhealth.common.ods.OdsWebService;
-import org.endeavourhealth.hl7receiver.DataLayer;
+import org.endeavourhealth.hl7receiver.PostgresDataLayer;
 import org.endeavourhealth.hl7receiver.model.db.DbCode;
 import org.endeavourhealth.hl7receiver.model.db.DbOrganisation;
 import org.endeavourhealth.hl7receiver.model.db.DbResourceUuidMapping;
@@ -23,12 +23,12 @@ public class Mapper extends org.endeavourhealth.hl7transform.mapper.Mapper {
     private static final Logger LOG = LoggerFactory.getLogger(Mapper.class);
 
     private String sendingFacility;
-    private DataLayer dataLayer;
+    private PostgresDataLayer dataLayer;
     private CodeCache codeCache;
     private ResourceUuidCache resourceUuidCache;
     private OrganisationCache organisationCache;
 
-    public Mapper(String sendingFacility, DataLayer dataLayer) {
+    public Mapper(String sendingFacility, PostgresDataLayer dataLayer) {
         this.sendingFacility = sendingFacility;
         this.dataLayer = dataLayer;
         this.codeCache = new CodeCache(MappedCodeAction.MAPPED_INCLUDE);

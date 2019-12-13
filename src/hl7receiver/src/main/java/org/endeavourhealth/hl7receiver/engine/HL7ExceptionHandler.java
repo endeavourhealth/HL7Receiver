@@ -3,7 +3,7 @@ package org.endeavourhealth.hl7receiver.engine;
 import ca.uhn.hl7v2.HL7Exception;
 import ca.uhn.hl7v2.protocol.ReceivingApplicationExceptionHandler;
 import org.endeavourhealth.hl7receiver.Configuration;
-import org.endeavourhealth.hl7receiver.DataLayer;
+import org.endeavourhealth.hl7receiver.PostgresDataLayer;
 import org.endeavourhealth.hl7receiver.model.db.DbChannel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -18,13 +18,13 @@ class HL7ExceptionHandler implements ReceivingApplicationExceptionHandler {
     private Configuration configuration;
     private HL7ConnectionManager connectionManager;
     private DbChannel dbChannel;
-    private DataLayer dataLayer;
+    private PostgresDataLayer dataLayer;
 
     public HL7ExceptionHandler(Configuration configuration, DbChannel dbChannel, HL7ConnectionManager connectionManager) throws SQLException {
         this.configuration = configuration;
         this.dbChannel = dbChannel;
         this.connectionManager = connectionManager;
-        this.dataLayer = new DataLayer(configuration.getDatabaseConnection());
+        this.dataLayer = new PostgresDataLayer();
     }
 
     public String processException(String incomingMessage, Map<String, Object> incomingMetadata, String outgoingMessage, Exception exception) throws HL7Exception {

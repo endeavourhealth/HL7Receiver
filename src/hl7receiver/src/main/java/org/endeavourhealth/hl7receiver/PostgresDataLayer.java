@@ -7,26 +7,27 @@ import org.endeavourhealth.common.postgres.PgResultSet;
 import org.endeavourhealth.common.postgres.PgStoredProc;
 import org.endeavourhealth.common.postgres.PgStoredProcException;
 import org.endeavourhealth.common.postgres.logdigest.IDBDigestLogger;
+import org.endeavourhealth.core.database.rdbms.ConnectionManager;
 import org.endeavourhealth.hl7receiver.model.db.*;
 
 import javax.sql.DataSource;
+import java.sql.Connection;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
-public class DataLayer implements IDBDigestLogger {
+public class PostgresDataLayer implements IDBDigestLogger {
 
-    private DataSource dataSource;
-
-    public DataLayer(DataSource dataSource)
-    {
-        this.dataSource = dataSource;
+    public PostgresDataLayer() {}
+    
+    private Connection getConnection() throws Exception {
+        return ConnectionManager.getHl7ReceiverConnection();
     }
 
-    public DbConfiguration getConfiguration(String hostname) throws PgStoredProcException {
+    public DbConfiguration getConfiguration(String hostname) throws Exception {
 
-        PgStoredProc pgStoredProc = new PgStoredProc(dataSource)
+        PgStoredProc pgStoredProc = new PgStoredProc(getConnection())
                 .setName("configuration.get_configuration")
                 .addParameter("_hostname", hostname);
 
@@ -108,9 +109,9 @@ public class DataLayer implements IDBDigestLogger {
                 .setDbChannelOptions(dbChannelOptions);
     }
 
-    public String getChannelOption(int channelId, DbChannelOptionType dbChannelOptionType) throws PgStoredProcException {
+    public String getChannelOption(int channelId, DbChannelOptionType dbChannelOptionType) throws Exception {
 
-        PgStoredProc pgStoredProc = new PgStoredProc(dataSource)
+        PgStoredProc pgStoredProc = new PgStoredProc(getConnection())
                 .setName("configuration.get_channel_option")
                 .addParameter("_channel_id", channelId)
                 .addParameter("_channel_option_type", dbChannelOptionType.getValue());
@@ -118,9 +119,9 @@ public class DataLayer implements IDBDigestLogger {
         return pgStoredProc.executeSingleRow((resultSet) -> resultSet.getString("get_channel_option"));
     }
 
-    public int openConnection(int instanceId, int channelId, int localPort, String remoteHost, int remotePort) throws PgStoredProcException {
+    public int openConnection(int instanceId, int channelId, int localPort, String remoteHost, int remotePort) throws Exception {
 
-        PgStoredProc pgStoredProc = new PgStoredProc(dataSource)
+        PgStoredProc pgStoredProc = new PgStoredProc(getConnection())
                 .setName("log.open_connection")
                 .addParameter("_instance_id", instanceId)
                 .addParameter("_channel_id", channelId)
@@ -131,9 +132,9 @@ public class DataLayer implements IDBDigestLogger {
         return pgStoredProc.executeSingleRow((resultSet) -> resultSet.getInt("connection_id"));
     }
 
-    public void closeConnection(int connectionId) throws PgStoredProcException {
+    public void closeConnection(int connectionId) throws Exception {
 
-        PgStoredProc pgStoredProc = new PgStoredProc(dataSource)
+        PgStoredProc pgStoredProc = new PgStoredProc(getConnection())
                 .setName("log.close_connection")
                 .addParameter("_connection_id", connectionId);
 
@@ -151,9 +152,9 @@ public class DataLayer implements IDBDigestLogger {
             String inboundMessageType,
             String inboundPayload,
             String outboundMessageType,
-            String outboundPayload) throws PgStoredProcException {
+            String outboundPayload) throws Exception {
 
-        PgStoredProc pgStoredProc = new PgStoredProc(dataSource)
+        PgStoredProc pgStoredProc = new PgStoredProc(getConnection())
                 .setName("log.log_message")
                 .addParameter("_channel_id", channelId)
                 .addParameter("_connection_id", connectionId)
@@ -193,9 +194,9 @@ public class DataLayer implements IDBDigestLogger {
             String outboundPayload,
             String exception,
             UUID deadLetterUuid,
-            String outboundAckCode) throws PgStoredProcException {
+            String outboundAckCode) throws Exception {
 
-        PgStoredProc pgStoredProc = new PgStoredProc(dataSource)
+        PgStoredProc pgStoredProc = new PgStoredProc(getConnection())
                 .setName("log.log_dead_letter")
                 .addParameter("_instance_id", instanceId)
                 .addParameter("_channel_id", channelId)
@@ -224,9 +225,9 @@ public class DataLayer implements IDBDigestLogger {
         return pgStoredProc.executeSingleRow((resultSet) -> resultSet.getInt("log_dead_letter"));
     }
 
-    public void logErrorDigest(String logClass, String logMethod, String logMessage, String exception) throws PgStoredProcException {
+    public void logErrorDigest(String logClass, String logMethod, String logMessage, String exception) throws Exception {
 
-        PgStoredProc pgStoredProc = new PgStoredProc(dataSource)
+        PgStoredProc pgStoredProc = new PgStoredProc(getConnection())
                 .setName("log.log_error_digest")
                 .addParameter("_log_class", logClass)
                 .addParameter("_log_method", logMethod)
@@ -236,9 +237,9 @@ public class DataLayer implements IDBDigestLogger {
         pgStoredProc.execute();
     }
 
-    public boolean getChannelProcessorLock(int channelId, int instanceId, int breakOthersLockSeconds) throws PgStoredProcException {
+    public boolean getChannelProcessorLock(int channelId, int instanceId, int breakOthersLockSeconds) throws Exception {
 
-        PgStoredProc pgStoredProc = new PgStoredProc(dataSource)
+        PgStoredProc pgStoredProc = new PgStoredProc(getConnection())
                 .setName("log.get_channel_processor_lock")
                 .addParameter("_channel_id", channelId)
                 .addParameter("_instance_id", instanceId)
@@ -247,9 +248,9 @@ public class DataLayer implements IDBDigestLogger {
         return pgStoredProc.executeSingleRow((resultSet) -> resultSet.getBoolean("get_channel_processor_lock"));
     }
 
-    public void releaseChannelProcessorLock(int channelId, int instanceId) throws PgStoredProcException {
+    public void releaseChannelProcessorLock(int channelId, int instanceId) throws Exception {
 
-        PgStoredProc pgStoredProc = new PgStoredProc(dataSource)
+        PgStoredProc pgStoredProc = new PgStoredProc(getConnection())
                 .setName("log.release_channel_processor_lock")
                 .addParameter("_channel_id", channelId)
                 .addParameter("_instance_id", instanceId);
@@ -257,9 +258,9 @@ public class DataLayer implements IDBDigestLogger {
         pgStoredProc.execute();
     }
 
-    public DbMessage getNextUnprocessedMessage(int channelId, int instanceId) throws PgStoredProcException {
+    public DbMessage getNextUnprocessedMessage(int channelId, int instanceId) throws Exception {
 
-        PgStoredProc pgStoredProc = new PgStoredProc(dataSource)
+        PgStoredProc pgStoredProc = new PgStoredProc(getConnection())
                 .setName("log.get_next_unprocessed_message")
                 .addParameter("_channel_id", channelId)
                 .addParameter("_instance_id", instanceId);
@@ -275,9 +276,9 @@ public class DataLayer implements IDBDigestLogger {
                                 .setMessageUuid(UUID.fromString(resultSet.getString("message_uuid"))));
     }
 
-    public int setMessageProcessingStarted(int messageId, int processingInstanceId) throws PgStoredProcException {
+    public int setMessageProcessingStarted(int messageId, int processingInstanceId) throws Exception {
 
-        PgStoredProc pgStoredProc = new PgStoredProc(dataSource)
+        PgStoredProc pgStoredProc = new PgStoredProc(getConnection())
                 .setName("log.set_message_processing_started")
                 .addParameter("_message_id", messageId)
                 .addParameter("_instance_id", processingInstanceId);
@@ -285,9 +286,9 @@ public class DataLayer implements IDBDigestLogger {
         return pgStoredProc.executeSingleRow((resultSet) -> resultSet.getInt("attempt_id"));
     }
 
-    public void setMessageProcessingFailure(int messageId, int attemptId, DbMessageStatus messageStatusId, String errorMessage, int instanceId) throws PgStoredProcException {
+    public void setMessageProcessingFailure(int messageId, int attemptId, DbMessageStatus messageStatusId, String errorMessage, int instanceId) throws Exception {
 
-        PgStoredProc pgStoredProc = new PgStoredProc(dataSource)
+        PgStoredProc pgStoredProc = new PgStoredProc(getConnection())
                 .setName("log.set_message_processing_failure")
                 .addParameter("_message_id", messageId)
                 .addParameter("_attempt_id", attemptId)
@@ -298,9 +299,9 @@ public class DataLayer implements IDBDigestLogger {
         pgStoredProc.execute();
     }
 
-    public void setMessageProcessingSuccess(int messageId, int attemptId, int instanceId) throws PgStoredProcException {
+    public void setMessageProcessingSuccess(int messageId, int attemptId, int instanceId) throws Exception {
 
-        PgStoredProc pgStoredProc = new PgStoredProc(dataSource)
+        PgStoredProc pgStoredProc = new PgStoredProc(getConnection())
                 .setName("log.set_message_processing_success")
                 .addParameter("_message_id", messageId)
                 .addParameter("_attempt_id", attemptId)
@@ -309,9 +310,9 @@ public class DataLayer implements IDBDigestLogger {
         pgStoredProc.execute();
     }
 
-    public long reprocessFailedMessages(int channelId, int instanceId) throws PgStoredProcException {
+    public long reprocessFailedMessages(int channelId, int instanceId) throws Exception {
 
-        PgStoredProc pgStoredProc = new PgStoredProc(dataSource)
+        PgStoredProc pgStoredProc = new PgStoredProc(getConnection())
                 .setName("log.reprocess_failed_messages")
                 .addParameter("_channel_id", channelId)
                 .addParameter("_instance_id", instanceId);
@@ -319,9 +320,9 @@ public class DataLayer implements IDBDigestLogger {
         return pgStoredProc.executeSingleRow((resultSet) -> resultSet.getLong("message_count"));
     }
 
-    public void addMessageProcessingContent(int messageId, int attemptId, DbProcessingContentType processingContentTypeId, String content) throws PgStoredProcException {
+    public void addMessageProcessingContent(int messageId, int attemptId, DbProcessingContentType processingContentTypeId, String content) throws Exception {
 
-        PgStoredProc pgStoredProc = new PgStoredProc(dataSource)
+        PgStoredProc pgStoredProc = new PgStoredProc(getConnection())
                 .setName("log.add_message_processing_content")
                 .addParameter("_message_id", messageId)
                 .addParameter("_attempt_id", attemptId)
@@ -331,9 +332,9 @@ public class DataLayer implements IDBDigestLogger {
         pgStoredProc.execute();
     }
 
-    public UUID getResourceUuid(String scopeName, String resourceType, String uniqueIdentifier) throws PgStoredProcException {
+    public UUID getResourceUuid(String scopeName, String resourceType, String uniqueIdentifier) throws Exception {
 
-        PgStoredProc pgStoredProc = new PgStoredProc(dataSource)
+        PgStoredProc pgStoredProc = new PgStoredProc(getConnection())
                 .setName("mapping.get_resource_uuid")
                 .addParameter("_scope_name", scopeName)
                 .addParameter("_resource_type", resourceType)
@@ -342,9 +343,9 @@ public class DataLayer implements IDBDigestLogger {
         return pgStoredProc.executeSingleRow((resultSet) -> UUID.fromString(resultSet.getString("get_resource_uuid")));
     }
 
-    public List<DbResourceUuidMapping> getSimilarResourceUuidMappings(String scopeName, String uniqueIdentifierPrefix) throws PgStoredProcException {
+    public List<DbResourceUuidMapping> getSimilarResourceUuidMappings(String scopeName, String uniqueIdentifierPrefix) throws Exception {
 
-        PgStoredProc pgStoredProc = new PgStoredProc(dataSource)
+        PgStoredProc pgStoredProc = new PgStoredProc(getConnection())
                 .setName("mapping.get_similar_resource_uuid_mappings")
                 .addParameter("_scope_name", scopeName)
                 .addParameter("_unique_identifier_prefix", uniqueIdentifierPrefix);
@@ -357,9 +358,9 @@ public class DataLayer implements IDBDigestLogger {
                         .setResourceUuid(UUID.fromString(resultSet.getString("resource_uuid"))));
     }
 
-    public DbCode getCode(String scopeName, String sourceCodeContextName, String sourceCode, String sourceCodeSystemIdentifier, String sourceTerm) throws PgStoredProcException {
+    public DbCode getCode(String scopeName, String sourceCodeContextName, String sourceCode, String sourceCodeSystemIdentifier, String sourceTerm) throws Exception {
 
-        PgStoredProc pgStoredProc = new PgStoredProc(dataSource)
+        PgStoredProc pgStoredProc = new PgStoredProc(getConnection())
                 .setName("mapping.get_code_mapping")
                 .addParameter("_scope_name", scopeName)
                 .addParameter("_source_code_context_name", sourceCodeContextName)
@@ -375,9 +376,9 @@ public class DataLayer implements IDBDigestLogger {
                         .setTerm(resultSet.getString("target_term")));
     }
 
-    public DbOrganisation getOrganisation(String odsCode) throws PgStoredProcException {
+    public DbOrganisation getOrganisation(String odsCode) throws Exception {
 
-        PgStoredProc pgStoredProc = new PgStoredProc(dataSource)
+        PgStoredProc pgStoredProc = new PgStoredProc(getConnection())
                 .setName("mapping.get_organisation")
                 .addParameter("_ods_code", odsCode);
 
@@ -394,9 +395,9 @@ public class DataLayer implements IDBDigestLogger {
                         .setPostcode(resultSet.getString("postcode")));
     }
 
-    public void setOrganisation(String odsCode, String organisationName, OrganisationClass organisationClass, OrganisationType organisationType, String addressLine1, String addressLine2, String town, String county, String postcode) throws PgStoredProcException {
+    public void setOrganisation(String odsCode, String organisationName, OrganisationClass organisationClass, OrganisationType organisationType, String addressLine1, String addressLine2, String town, String county, String postcode) throws Exception {
 
-        PgStoredProc pgStoredProc = new PgStoredProc(dataSource)
+        PgStoredProc pgStoredProc = new PgStoredProc(getConnection())
                 .setName("mapping.set_organisation")
                 .addParameter("_ods_code", odsCode)
                 .addParameter("_organisation_name", organisationName)

@@ -4,5 +4,5 @@ import org.endeavourhealth.common.postgres.PgStoredProcException;
 import org.endeavourhealth.hl7receiver.model.db.DbProcessingContentType;
 
 public interface HL7ContentSaver {
-    void save(DbProcessingContentType contentType, String content) throws PgStoredProcException;
+    void save(DbProcessingContentType contentType, String content) throws Exception;
 }

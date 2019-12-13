@@ -6,7 +6,7 @@ import ca.uhn.hl7v2.app.HL7Service;
 import ca.uhn.hl7v2.validation.impl.NoValidation;
 import org.apache.commons.lang3.Validate;
 import org.endeavourhealth.hl7receiver.Configuration;
-import org.endeavourhealth.hl7receiver.DataLayer;
+import org.endeavourhealth.hl7receiver.PostgresDataLayer;
 import org.endeavourhealth.hl7receiver.model.db.DbChannel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -20,7 +20,7 @@ class HL7Channel {
     private HL7Service service;
     private DbChannel dbChannel;
     private Configuration configuration;
-    private DataLayer dataLayer;
+    private PostgresDataLayer dataLayer;
     private HL7ConnectionManager connectionManager;
     private HL7MessageReceiver messageReceiver;
     private HL7ExceptionHandler exceptionHandler;
@@ -37,7 +37,7 @@ class HL7Channel {
         this.dbChannel = dbChannel;
         this.configuration = configuration;
 
-        this.dataLayer = new DataLayer(configuration.getDatabaseConnection());
+        this.dataLayer = new PostgresDataLayer();
 
         context = new DefaultHapiContext();
         context.setValidationContext(new NoValidation());

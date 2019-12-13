@@ -1,10 +1,7 @@
 package org.endeavourhealth.hl7receiver;
 
-import com.fasterxml.jackson.databind.JsonNode;
 import com.kstruct.gethostname4j.Hostname;
-import com.zaxxer.hikari.HikariDataSource;
 import org.endeavourhealth.common.config.ConfigManager;
-import org.endeavourhealth.common.config.ConfigManagerException;
 import org.endeavourhealth.common.postgres.logdigest.LogDigestAsyncAppender;
 import org.endeavourhealth.hl7receiver.model.db.DbChannelOption;
 import org.endeavourhealth.hl7receiver.model.db.DbChannelOptionType;
@@ -13,8 +10,6 @@ import org.endeavourhealth.hl7receiver.model.exceptions.ConfigurationException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.sql.DataSource;
-import java.sql.SQLException;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -34,15 +29,10 @@ public final class Configuration {
     // instance members //
     private DbConfiguration dbConfiguration;
     private String machineName;
-    private String postgresUrl;
-    private String postgresUsername;
-    private String postgresPassword;
-    private DataSource dataSource;
 
     private Configuration() throws ConfigurationException {
         initialiseMachineName();
         initialiseConfigManager();
-        initialiseDBConnectionPool();
         addHL7LogAppender();
         loadDbConfiguration();
     }
@@ -59,22 +49,6 @@ public final class Configuration {
         try {
             ConfigManager.Initialize("hl7receiver");
 
-            //new settings are stored in a single JSON structure, but old settings are stored in three separate records
-            JsonNode json = ConfigManager.getConfigurationAsJson("database");
-            if (json != null) {
-                LOG.debug("Got configuration NEW way");
-                postgresUrl = json.get("url").asText();
-                postgresUsername = json.get("username").asText();
-                postgresPassword = json.get("password").asText();
-
-            } else {
-                //legacy support for dev deployments etc.
-                LOG.debug("Got configuration OLD way");
-                postgresUrl = ConfigManager.getConfiguration("postgres-url");
-                postgresUsername = ConfigManager.getConfiguration("postgres-username");
-                postgresPassword = ConfigManager.getConfiguration("postgres-password");
-            }
-
         } catch (Exception e) {
             throw new ConfigurationException("Error loading ConfigManager configuration", e);
         }
@@ -83,7 +57,7 @@ public final class Configuration {
 
     private void addHL7LogAppender() throws ConfigurationException {
         try {
-            LogDigestAsyncAppender.addLogAppender(new DataLayer(getDatabaseConnection()));
+            LogDigestAsyncAppender.addLogAppender(new PostgresDataLayer());
         } catch (Exception e) {
             throw new ConfigurationException("Error adding HL7 log appender", e);
         }
@@ -91,16 +65,13 @@ public final class Configuration {
 
     private void loadDbConfiguration() throws ConfigurationException {
         try {
-            DataLayer dataLayer = new DataLayer(getDatabaseConnection());
+            PostgresDataLayer dataLayer = new PostgresDataLayer();
             this.dbConfiguration = dataLayer.getConfiguration(getMachineName());
         } catch (Exception e) {
             throw new ConfigurationException("Error loading DB configuration, see inner exception", e);
         }
     }
 
-    public DataSource getDatabaseConnection() throws SQLException {
-        return this.dataSource;
-    }
 
     public String getMachineName()
     {
@@ -143,25 +114,4 @@ public final class Configuration {
         return dbChannelOption.getChannelOptionValue();
     }
 
-    private synchronized void initialiseDBConnectionPool() throws ConfigurationException {
-        try {
-            if (this.dataSource == null) {
-
-                HikariDataSource hikariDataSource = new HikariDataSource();
-                hikariDataSource.setJdbcUrl(postgresUrl);
-                hikariDataSource.setUsername(postgresUsername);
-                hikariDataSource.setPassword(postgresPassword);
-                hikariDataSource.setDriverClassName("org.postgresql.Driver");
-                hikariDataSource.setMaximumPoolSize(15);
-                hikariDataSource.setMinimumIdle(2);
-                hikariDataSource.setIdleTimeout(60000);
-                hikariDataSource.setConnectionTimeout(5000L);
-                hikariDataSource.setPoolName("HL7ReceiverDBConnectionPool");
-
-                this.dataSource = hikariDataSource;
-            }
-        } catch (Exception e) {
-            throw new ConfigurationException("Error creating Hikari connection pool", e);
-        }
-    }
 }

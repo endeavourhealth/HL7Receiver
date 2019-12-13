@@ -3,7 +3,7 @@ package org.endeavourhealth.hl7receiver.engine;
 import org.apache.commons.lang3.StringUtils;
 import org.endeavourhealth.common.utility.SlackHelper;
 import org.endeavourhealth.hl7receiver.Configuration;
-import org.endeavourhealth.hl7receiver.DataLayer;
+import org.endeavourhealth.hl7receiver.PostgresDataLayer;
 import org.endeavourhealth.hl7receiver.mapping.Mapper;
 import org.endeavourhealth.hl7receiver.model.db.*;
 import org.endeavourhealth.hl7receiver.model.exceptions.HL7MessageProcessorException;
@@ -24,7 +24,7 @@ public class HL7ChannelProcessor implements Runnable {
     private Thread thread;
     private Configuration configuration;
     private DbChannel dbChannel;
-    private DataLayer dataLayer;
+    private PostgresDataLayer dataLayer;
     private Mapper mapper;
     private volatile boolean stopRequested = false;
     private boolean firstLockAttempt = true;
@@ -32,7 +32,7 @@ public class HL7ChannelProcessor implements Runnable {
     public HL7ChannelProcessor(Configuration configuration, DbChannel dbChannel) throws SQLException {
         this.configuration = configuration;
         this.dbChannel = dbChannel;
-        this.dataLayer = new DataLayer(configuration.getDatabaseConnection());
+        this.dataLayer = new PostgresDataLayer();
         this.mapper = new Mapper(dbChannel.getSendingFacility(), dataLayer);
     }
 
@@ -129,6 +129,9 @@ public class HL7ChannelProcessor implements Runnable {
 
         } catch (Throwable t) {
             LOG.error("Exception in main processor loop", t);
+
+            //worried that this won't be spotted, so sending to Slack
+            SlackHelper.sendSlackMessage(SlackHelper.Channel.Hl7Receiver, "Exception processing", t);
         }
 
         releaseLock(gotLock);

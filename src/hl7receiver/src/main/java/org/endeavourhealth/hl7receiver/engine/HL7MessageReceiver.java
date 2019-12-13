@@ -10,19 +10,17 @@ import org.apache.commons.lang3.StringUtils;
 import org.endeavourhealth.common.utility.MetricsHelper;
 import org.endeavourhealth.common.utility.StreamExtension;
 import org.endeavourhealth.hl7receiver.Configuration;
-import org.endeavourhealth.hl7receiver.DataLayer;
+import org.endeavourhealth.hl7receiver.PostgresDataLayer;
 import org.endeavourhealth.hl7receiver.engine.messagetypeoptionprocessor.MessageTypeOptionProcessor;
 import org.endeavourhealth.hl7receiver.model.db.DbChannel;
 import org.endeavourhealth.hl7receiver.model.db.DbChannelMessageType;
 import org.endeavourhealth.hl7receiver.model.db.DbChannelMessageTypeOption;
-import org.endeavourhealth.hl7receiver.model.db.DbMessageTypeOptionType;
 import org.endeavourhealth.hl7receiver.model.exceptions.MessageProcessingException;
 import org.endeavourhealth.hl7receiver.model.exceptions.TransientMessageProcessingException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.sql.SQLException;
-import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
@@ -35,7 +33,7 @@ class HL7MessageReceiver implements ReceivingApplication {
     private Configuration configuration;
     private DbChannel dbChannel;
     private HL7ConnectionManager connectionManager;
-    private DataLayer dataLayer;
+    private PostgresDataLayer dataLayer;
 
     private HL7MessageReceiver() {
     }
@@ -44,7 +42,7 @@ class HL7MessageReceiver implements ReceivingApplication {
         this.configuration = configuration;
         this.dbChannel = dbChannel;
         this.connectionManager = connectionManager;
-        this.dataLayer = new DataLayer(configuration.getDatabaseConnection());
+        this.dataLayer = new PostgresDataLayer();
     }
 
     public Message processMessage(Message message, Map<String, Object> map) throws ReceivingApplicationException, HL7Exception {
