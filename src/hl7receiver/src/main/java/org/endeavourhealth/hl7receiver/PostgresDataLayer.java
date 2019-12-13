@@ -22,7 +22,9 @@ public class PostgresDataLayer implements IDBDigestLogger {
     public PostgresDataLayer() {}
     
     private Connection getConnection() throws Exception {
-        return ConnectionManager.getHl7ReceiverConnection();
+        Connection conn = ConnectionManager.getHl7ReceiverConnection();
+        conn.setAutoCommit(true);
+        return conn;
     }
 
     public DbConfiguration getConfiguration(String hostname) throws Exception {
