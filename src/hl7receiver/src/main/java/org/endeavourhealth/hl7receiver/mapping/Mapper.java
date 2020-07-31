@@ -1,5 +1,6 @@
 package org.endeavourhealth.hl7receiver.mapping;
 
+import org.endeavourhealth.common.fhir.schema.OrganisationType;
 import org.endeavourhealth.common.ods.OdsOrganisation;
 import org.endeavourhealth.common.ods.OdsWebService;
 import org.endeavourhealth.hl7receiver.PostgresDataLayer;
@@ -15,7 +16,9 @@ import org.hl7.fhir.instance.model.ResourceType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
@@ -136,11 +139,22 @@ public class Mapper extends org.endeavourhealth.hl7transform.mapper.Mapper {
                         return null;
                     }
 
+                    //new version of ODS API returns multiple types, so attempt to get that down to ONE
+                    OrganisationType organisationType = null;
+
+                    Set<OrganisationType> types = new HashSet<>(odsOrg.getOrganisationTypes());
+                    types.remove(OrganisationType.PRESCRIBING_COST_CENTRE); //always remove so we match to the "better" type
+                    if (types.size() == 1) {
+                        organisationType = types.iterator().next();
+                    } else {
+                        LOG.warn("Could not select type for org " + odsOrg);
+                    }
+
                     //add to our local DB for next time
                     this.dataLayer.setOrganisation(odsOrg.getOdsCode(),
                             odsOrg.getOrganisationName(),
                             odsOrg.getOrganisationClass(),
-                            odsOrg.getOrganisationType(),
+                            organisationType,
                             odsOrg.getAddressLine1(),
                             odsOrg.getAddressLine2(),
                             odsOrg.getTown(),
@@ -151,27 +165,13 @@ public class Mapper extends org.endeavourhealth.hl7transform.mapper.Mapper {
                             .setOdsCode(odsOrg.getOdsCode())
                             .setOrganisationName(odsOrg.getOrganisationName())
                             .setOrganisationClass(odsOrg.getOrganisationClass())
-                            .setOrganisationType(odsOrg.getOrganisationType())
+                            .setOrganisationType(organisationType)
                             .setAddressLine1(odsOrg.getAddressLine1())
                             .setAddressLine2(odsOrg.getAddressLine2())
                             .setTown(odsOrg.getTown())
                             .setCounty(odsOrg.getCounty())
                             .setPostcode(odsOrg.getPostcode());
 
-                    /*mappedOrganisation = OdsRestClient.lookupOrganisationViaRest(odsCode);
-
-                    if (mappedOrganisation == null)
-                        return null;
-
-                    this.dataLayer.setOrganisation(mappedOrganisation.getOdsCode(),
-                            mappedOrganisation.getOrganisationName(),
-                            mappedOrganisation.getOrganisationClass(),
-                            mappedOrganisation.getOrganisationType(),
-                            mappedOrganisation.getAddressLine1(),
-                            mappedOrganisation.getAddressLine2(),
-                            mappedOrganisation.getTown(),
-                            mappedOrganisation.getCounty(),
-                            mappedOrganisation.getPostcode());*/
                 }
 
                 organisationCache.putMappedOrganisation(odsCode, mappedOrganisation);
