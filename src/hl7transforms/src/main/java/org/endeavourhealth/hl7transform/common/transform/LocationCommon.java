@@ -29,7 +29,7 @@ public class LocationCommon {
             throw new TransformException("Could not map HSCSite organisation from OdsSiteCode " + odsSiteCode + " when creating hospital location");
 
         if (mappedOrganisation.getOrganisationClass() != OrganisationClass.HSC_SITE)
-            throw new TransformException("Trying to create a hospital location and OrganisationClass is not HSCSite for" + odsSiteCode);
+            throw new TransformException("Trying to create a hospital location and OrganisationClass is not HSCSite for " + odsSiteCode);
 
         Location location = new Location()
                 .setName(mappedOrganisation.getOrganisationName())
