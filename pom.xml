@@ -57,7 +57,6 @@
         <module>src/hl7test</module>
         <module>src/hl7transforms</module>
         <module>src/hl7sender</module>
-        <module>src/utility-mergedb-updater</module>
     </modules>
 
     <build>
