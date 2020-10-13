@@ -4,7 +4,7 @@ create or replace function mapping.set_organisation
 	_ods_code varchar(10),
 	_organisation_name varchar(100),
 	_organisation_class char(1),
-	_organisation_type char(2),
+	_organisation_type varchar(10),
 	_address_line1 varchar(100),
 	_address_line2 varchar(100),
 	_town varchar(100),

@@ -103,13 +103,14 @@ public class HL7ChannelProcessor implements Runnable {
                             long msStart = System.currentTimeMillis();
                             LOG.trace("Going to process message " + message.getMessageId());
                             if (!processMessage(message)) {
-                                LOG.trace("Failed to process message " + message.getMessageId());
 
                                 if (stopRequested) {
                                     return;
                                 }
 
+                                LOG.trace("Failed to process message " + message.getMessageId());
                                 Thread.sleep(THREAD_SLEEP_TIME_MILLIS);
+
                             } else {
                                 long msEnd = System.currentTimeMillis();
                                 long msTaken = msEnd - msStart;
@@ -138,64 +139,74 @@ public class HL7ChannelProcessor implements Runnable {
     }
 
     private boolean processMessage(DbMessage message) {
-        Integer attemptId = setMessageProcessingStarted(message.getMessageId(), configuration.getInstanceId());
 
-        if (attemptId == null)
+        if (stopRequested) {
             return false;
+        }
+
+        int attemptId = -1; //just assign a default value
 
         try {
+            //update DB to say we're starting processing
+            attemptId = setMessageProcessingStarted(message.getMessageId(), configuration.getInstanceId());
+            final int attemptIdFinal = attemptId; //need a final version of this variable for the below lambda expression
+
+            //transform message
             HL7MessageProcessor messageProcessor = new HL7MessageProcessor(configuration,
                     dbChannel,
-                    (contentType, content) -> dataLayer.addMessageProcessingContent(message.getMessageId(), attemptId, contentType, content),
+                    (contentType, content) -> dataLayer.addMessageProcessingContent(message.getMessageId(), attemptIdFinal, contentType, content),
                     this.mapper);
+            messageProcessor.processMessage(message);
 
-            if (messageProcessor.processMessage(message))
-                return setMessageProcessingSuccess(message.getMessageId(), attemptId);
+            //update DB to record success
+            setMessageProcessingSuccess(message.getMessageId(), attemptId);
 
-        } catch (HL7MessageProcessorException e) {
-            setMessageProcessingFailure(message.getMessageId(), attemptId, e.getMessageStatus(), e);
+            //if we were previously stuck on this message, send an "all clear" message on Slack
+            HL7Checker.sendAllClearMessage(dbChannel.getChannelId());
 
-            if (attemptId.intValue() == 1)
-                sendSlackNotification(message, e);
-        }
-
-        return false;
-    }
-
-    private Integer setMessageProcessingStarted(int messageId, int instanceId) {
-        try {
-            return dataLayer.setMessageProcessingStarted(messageId, instanceId);
-
-        } catch (Exception e) {
-            Object[] logArgs = new Object[] {
-                    messageId,
-                    dbChannel.getChannelName(),
-                    configuration.getMachineName(),
-                    e };
-
-            LOG.error("Error setting message processing started for message id {} in channel processor {} for instance {}", logArgs);
-            return null;
-        }
-    }
-
-    private boolean setMessageProcessingSuccess(int messageId, int attemptId) {
-        try {
-            dataLayer.setMessageProcessingSuccess(messageId, attemptId, configuration.getInstanceId());
             return true;
 
         } catch (Exception e) {
-            Object[] logArgs = new Object[] {
-                    messageId,
-                    dbChannel.getChannelName(),
-                    configuration.getMachineName(),
-                    e };
+            //log the failure to the database
+            setMessageProcessingFailure(message.getMessageId(), attemptId, e);
 
-            LOG.error("Error setting message processing success for message id {} in channel processor {} for instance {}", logArgs);
+            //send the failure to the hospital-specific Slack channel
+            if (attemptId == 1) {
+                HL7Checker.sendErrorAuditMessage(dbChannel.getChannelId(), message, e);
+            }
+
+            //see if the error is a known one and we can move the message to the DLQ
+            boolean wasHandled = HL7Checker.checkIfErrorCanBeHandled(message.getMessageId(), dbChannel.getChannelId());
+
+            //if properly stuck, send a Slack message to the main channel
+            if (!wasHandled) {
+                HL7Checker.sendStuckMessage(message.getMessageId(), dbChannel.getChannelId());
+            }
+
             return false;
         }
     }
 
-    private void setMessageProcessingFailure(int messageId, int attemptId, DbMessageStatus dbMessageStatus, Exception exception) {
+    private int setMessageProcessingStarted(int messageId, int instanceId) throws Exception {
+        return dataLayer.setMessageProcessingStarted(messageId, instanceId);
+    }
+
+    private void setMessageProcessingSuccess(int messageId, int attemptId) throws Exception {
+        dataLayer.setMessageProcessingSuccess(messageId, attemptId, configuration.getInstanceId());
+    }
+
+    private void setMessageProcessingFailure(int messageId, int attemptId, Exception exception) {
+
+        //if an exception thrown on purpose, it'll give us the reason. Otherwise, assume a default reason.
+        DbMessageStatus dbMessageStatus = null;
+        if (exception instanceof HL7MessageProcessorException) {
+            HL7MessageProcessorException hl7Exception = (HL7MessageProcessorException)exception;
+            dbMessageStatus = hl7Exception.getMessageStatus();
+        } else {
+            dbMessageStatus = DbMessageStatus.UNEXPECTED_ERROR;
+        }
+
+        //since we're already in the middle of handling an exception we need to handle any further exceptions within this fn
         try {
             String exceptionMessage = HL7ExceptionHandler.constructFormattedException(exception);
 
@@ -225,33 +236,7 @@ public class HL7ChannelProcessor implements Runnable {
         }
     }
 
-    private void sendSlackNotification(DbMessage dbMessage, Exception exception) {
-        String messageType = dbMessage.getInboundMessageType();
-        String messageControlId = dbMessage.getMessageControlId();
-        int messageId = dbMessage.getMessageId();
-        String channelName = dbChannel.getChannelName();
-        String instanceName = configuration.getMachineName();
 
-        String message = "Error processing " + messageType + " message " + messageControlId + " (DBID " + Integer.toString(messageId) + ") on channel " + channelName + " on instance " + instanceName;
-
-        //changing to use the standard Slack utility, so all Slack config is stored in the same place
-        /*String exceptionMessage = HL7ExceptionHandler.constructFormattedException(exception);
-        SlackNotifier slackNotifier = new SlackNotifier(configuration, dbChannel.getChannelId());
-        slackNotifier.postMessage(message, exceptionMessage);*/
-
-        SlackHelper.Channel channel = null;
-        if (dbChannel.getChannelId() == 1) {
-            channel = SlackHelper.Channel.Hl7ReceiverAlertsHomerton;
-
-        } else if (dbChannel.getChannelId() == 2) {
-            channel = SlackHelper.Channel.Hl7ReceiverAlertsBarts;
-
-        } else {
-            LOG.error("Unknown channel ID " + dbChannel.getChannelId());
-        }
-
-        SlackHelper.sendSlackMessage(channel, message, exception);
-    }
 
     private DbMessage getNextMessage() {
         try {

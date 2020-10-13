@@ -8,7 +8,7 @@ returns table
 	ods_code varchar(10),
 	organisation_name varchar(100),
 	organisation_class char(1),
-	organisation_type char(2),
+	organisation_type varchar(10),
 	address_line1 varchar(100),
 	address_line2 varchar(100),
 	town varchar(100),

@@ -29,7 +29,6 @@ public class HL7MessageProcessor {
     private DbChannel dbChannel;
     private HL7ContentSaver contentSaver;
     private Mapper mapper;
-    private boolean stopRequested = false;
 
     public HL7MessageProcessor(Configuration configuration, DbChannel dbChannel, HL7ContentSaver contentSaver, Mapper mapper) {
         this.configuration = configuration;
@@ -38,7 +37,7 @@ public class HL7MessageProcessor {
         this.mapper = mapper;
     }
 
-    public boolean processMessage(DbMessage dbMessage) throws HL7MessageProcessorException {
+    public void processMessage(DbMessage dbMessage) throws HL7MessageProcessorException {
         // can this be split into generic mesage processing steps?
 
         try {
@@ -51,9 +50,6 @@ public class HL7MessageProcessor {
                 throw new HL7MessageProcessorException(DbMessageStatus.TRANSFORM_FAILURE, e);
             }
 
-            if (stopRequested)
-                return false;
-
             String requestMessage = null;
 
             try {
@@ -63,18 +59,12 @@ public class HL7MessageProcessor {
                 throw new HL7MessageProcessorException(DbMessageStatus.ENVELOPE_GENERATION_FAILURE, e);
             }
 
-            if (stopRequested)
-                return false;
-
             String responseMessage = null;
 
             if (!skipMessageSending())
             {
                 try {
                     initialiseKeycloak();
-
-                    if (stopRequested)
-                        return false;
 
                     responseMessage = sendMessage(requestMessage);
                     contentSaver.save(DbProcessingContentType.ONWARD_RESPONSE_MESSAGE, responseMessage);
@@ -93,10 +83,7 @@ public class HL7MessageProcessor {
 
                     throw new HL7MessageProcessorException(DbMessageStatus.SEND_FAILURE, e);
                 }
-
             }
-
-            return true;
 
         } catch (HL7MessageProcessorException mpe) {
             throw mpe;
