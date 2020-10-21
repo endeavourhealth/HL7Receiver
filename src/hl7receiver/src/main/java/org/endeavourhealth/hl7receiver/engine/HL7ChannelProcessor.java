@@ -101,7 +101,7 @@ public class HL7ChannelProcessor implements Runnable {
                             }
 
                             long msStart = System.currentTimeMillis();
-                            LOG.trace("Going to process message " + message.getMessageId());
+                            LOG.info("Going to process message " + message.getMessageId());
                             if (!processMessage(message)) {
 
                                 if (stopRequested) {
@@ -148,8 +148,10 @@ public class HL7ChannelProcessor implements Runnable {
 
         try {
             //update DB to say we're starting processing
+            LOG.trace("Setting processing started for message " + message.getMessageId());
             attemptId = setMessageProcessingStarted(message.getMessageId(), configuration.getInstanceId());
             final int attemptIdFinal = attemptId; //need a final version of this variable for the below lambda expression
+            LOG.trace("Set processing started for message " + message.getMessageId() + " on attempt " + attemptIdFinal);
 
             //transform message
             HL7MessageProcessor messageProcessor = new HL7MessageProcessor(configuration,
@@ -157,9 +159,11 @@ public class HL7ChannelProcessor implements Runnable {
                     (contentType, content) -> dataLayer.addMessageProcessingContent(message.getMessageId(), attemptIdFinal, contentType, content),
                     this.mapper);
             messageProcessor.processMessage(message);
+            LOG.trace("Processing complete for message " + message.getMessageId() + " on attempt " + attemptIdFinal);
 
             //update DB to record success
             setMessageProcessingSuccess(message.getMessageId(), attemptId);
+            LOG.trace("Set processing success for message " + message.getMessageId() + " on attempt " + attemptIdFinal);
 
             //if we were previously stuck on this message, send an "all clear" message on Slack
             HL7Checker.sendAllClearMessage(dbChannel.getChannelId());
@@ -167,16 +171,21 @@ public class HL7ChannelProcessor implements Runnable {
             return true;
 
         } catch (Exception e) {
+            LOG.error("Error processing message " + message.getMessageId(), e);
+
             //log the failure to the database
             setMessageProcessingFailure(message.getMessageId(), attemptId, e);
+            LOG.trace("Set processing success failure " + message.getMessageId() + " on attempt " + attemptId);
 
             //send the failure to the hospital-specific Slack channel
             if (attemptId == 1) {
                 HL7Checker.sendErrorAuditMessage(dbChannel.getChannelId(), message, e);
+                LOG.trace("Send error audit message for failure of message " + message.getMessageId() + " on attempt " + attemptId);
             }
 
             //see if the error is a known one and we can move the message to the DLQ
             boolean wasHandled = HL7Checker.checkIfErrorCanBeHandled(message.getMessageId(), dbChannel.getChannelId());
+            LOG.trace("Error message was moved to DLQ = " + wasHandled + " for failure of message " + message.getMessageId() + " on attempt " + attemptId);
 
             //if properly stuck, send a Slack message to the main channel
             if (!wasHandled) {
