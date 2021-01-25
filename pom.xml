@@ -17,7 +17,7 @@
         <eds-postgres.version>1.10-SNAPSHOT</eds-postgres.version>
         <eds-security.version>1.2-SNAPSHOT</eds-security.version>
         <eds-utility.version>1.61-SNAPSHOT</eds-utility.version>
-        <eds-core.version>1.570-SNAPSHOT</eds-core.version>
+        <eds-core.version>1.753-SNAPSHOT</eds-core.version>
 
         <mysql.version>8.0.12</mysql.version>
         <commons-lang3.version>3.5</commons-lang3.version>

@@ -33,11 +33,6 @@
         </dependency>
         <dependency>
             <groupId>org.endeavourhealth.common</groupId>
-            <artifactId>eds-client</artifactId>
-            <version>${eds-client.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.endeavourhealth.common</groupId>
             <artifactId>postgres</artifactId>
             <version>${eds-postgres.version}</version>
         </dependency>

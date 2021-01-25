@@ -2,21 +2,22 @@ package org.endeavourhealth.hl7receiver.engine;
 
 import ca.uhn.hl7v2.HL7Exception;
 import org.apache.http.Header;
-import org.endeavourhealth.common.eds.EdsSender;
-import org.endeavourhealth.common.eds.EdsSenderHttpErrorResponseException;
-import org.endeavourhealth.common.eds.EdsSenderResponse;
 import org.endeavourhealth.common.security.keycloak.client.KeycloakClient;
 import org.endeavourhealth.common.utility.MetricsHelper;
 import org.endeavourhealth.hl7receiver.Configuration;
 import org.endeavourhealth.hl7receiver.mapping.Mapper;
 import org.endeavourhealth.hl7receiver.model.db.*;
 import org.endeavourhealth.hl7receiver.model.exceptions.HL7MessageProcessorException;
+import org.endeavourhealth.hl7receiver.sender.EdsSender;
+import org.endeavourhealth.hl7receiver.sender.EdsSenderHttpErrorResponseException;
+import org.endeavourhealth.hl7receiver.sender.EdsSenderResponse;
 import org.endeavourhealth.hl7transform.Hl7v2Transform;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.time.LocalDateTime;
+import java.util.Date;
 import java.util.UUID;
 
 public class HL7MessageProcessor {
@@ -51,9 +52,11 @@ public class HL7MessageProcessor {
             }
 
             String requestMessage = null;
+            Date messageDateTime = null;
 
             try {
                 requestMessage = buildEnvelope(dbMessage, transformedMessage);
+                messageDateTime = java.sql.Timestamp.valueOf(dbMessage.getMessageDate()); //get the message date and convert to the object type we need
                 contentSaver.save(DbProcessingContentType.ONWARD_REQUEST_MESSAGE, requestMessage);
             } catch (Exception e) {
                 throw new HL7MessageProcessorException(DbMessageStatus.ENVELOPE_GENERATION_FAILURE, e);
@@ -66,7 +69,7 @@ public class HL7MessageProcessor {
                 try {
                     initialiseKeycloak();
 
-                    responseMessage = sendMessage(requestMessage);
+                    responseMessage = sendMessage(requestMessage, messageDateTime);
                     contentSaver.save(DbProcessingContentType.ONWARD_RESPONSE_MESSAGE, responseMessage);
 
                     MetricsHelper.recordEvent(dbChannel.getChannelName() + ".post-to-messaging-api-ok");
@@ -106,12 +109,12 @@ public class HL7MessageProcessor {
         return Hl7v2Transform.transform(dbMessage.getInboundPayload(), this.mapper);
     }
 
-    private String sendMessage(String envelope) throws IOException, EdsSenderHttpErrorResponseException {
+    private String sendMessage(String envelope, Date messageDateTime) throws IOException, EdsSenderHttpErrorResponseException {
 
         String edsUrl = configuration.getDbConfiguration().getDbEds().getEdsUrl();
         boolean useKeycloak = configuration.getDbConfiguration().getDbEds().isUseKeycloak();
 
-        EdsSenderResponse edsSenderResponse = EdsSender.notifyEds(edsUrl, useKeycloak, envelope);
+        EdsSenderResponse edsSenderResponse = EdsSender.notifyEds(edsUrl, useKeycloak, envelope, messageDateTime);
         return getFormattedEdsSenderResponse(edsSenderResponse);
     }
 
