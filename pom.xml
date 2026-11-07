@@ -13,7 +13,7 @@
 
         <endeavour-config.version>1.26-SNAPSHOT</endeavour-config.version>
         <eds-client.version>1.0-SNAPSHOT</eds-client.version>
-        <eds-fhir.version>1.148-SNAPSHOT</eds-fhir.version>
+        <eds-fhir.version>1.165-SNAPSHOT</eds-fhir.version>
         <eds-postgres.version>1.10-SNAPSHOT</eds-postgres.version>
         <eds-security.version>1.2-SNAPSHOT</eds-security.version>
         <eds-utility.version>1.61-SNAPSHOT</eds-utility.version>
@@ -40,13 +40,13 @@
             </snapshots>
             <id>central</id>
             <name>libs-release</name>
-            <url>http://maven.endeavourhealth.net:8081/artifactory/libs-release</url>
+            <url>https://maven.endeavourhealth.net/artifactory/libs-release</url>
         </repository>
         <repository>
             <snapshots />
             <id>snapshots</id>
             <name>libs-snapshot</name>
-            <url>http://maven.endeavourhealth.net:8081/artifactory/libs-snapshot</url>
+            <url>https://maven.endeavourhealth.net/artifactory/libs-snapshot</url>
         </repository>
     </repositories>
 

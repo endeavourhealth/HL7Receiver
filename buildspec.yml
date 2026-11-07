@@ -5,6 +5,7 @@ phases:
     commands:
       - IP=$(curl http://checkip.amazonaws.com)/32
       - echo $IP of CodeBuild Instance
+      - aws s3 cp s3://endeavour-codebuild/settings/settings.xml /root/.m2/settings.xml
   build:
     commands:
       - echo Build started on `date`

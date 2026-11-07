@@ -143,7 +143,7 @@ public class Mapper extends org.endeavourhealth.hl7transform.mapper.Mapper {
                     OrganisationType organisationType = null;
 
                     Set<OrganisationType> types = new HashSet<>(odsOrg.getOrganisationTypes());
-                    types.remove(OrganisationType.PRESCRIBING_COST_CENTRE); //always remove so we match to the "better" type
+                    types.remove(OrganisationType.fromCode(OrganisationType.CODE_PRESCRIBING_COST_CENTRE)); //always remove so we match to the "better" type
                     if (types.size() == 1) {
                         organisationType = types.iterator().next();
                     } else {

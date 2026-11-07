@@ -65,7 +65,7 @@ public class HomertonOrganizationTransform extends ResourceTransformBase {
 
         Organization organization = new Organization()
                 .setName(hospitalServiceName)
-                .setType(OrganisationCommon.getOrganisationType(OrganisationType.NHS_TRUST_SERVICE))
+                .setType(OrganisationCommon.getOrganisationType(OrganisationType.fromCode(OrganisationType.CODE_NHS_TRUST_SERVICE)))
                 .setPartOf(ReferenceHelper.createReference(managingOrganisation.getResourceType(), managingOrganisation.getId()));
 
         if (managingOrganisation.getAddress().size() > 0) {
@@ -136,7 +136,7 @@ public class HomertonOrganizationTransform extends ResourceTransformBase {
         if (address != null)
             organization.addAddress(address);
 
-        organization.setType(OrganisationCommon.getOrganisationType(OrganisationType.GP_PRACTICE));
+        organization.setType(OrganisationCommon.getOrganisationType(OrganisationType.fromCode(OrganisationType.CODE_GP_PRACTICE)));
 
         return organization;
     }

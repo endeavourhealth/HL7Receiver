@@ -2,8 +2,6 @@ package org.endeavourhealth.hl7parser;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Validate;
-import org.endeavourhealth.hl7parser.segments.MshSegment;
-import org.endeavourhealth.hl7parser.segments.SegmentName;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -93,6 +91,9 @@ public class Message {
 
     private void parse(String messageText) throws ParseException {
         String cleanedMessageText = normaliseLineEndings(messageText);
+
+        // strips off Special replacement char � - SD-758 which causes SQL fail
+        cleanedMessageText = cleanedMessageText.replace("�", "");
 
         this.seperators = detectSeperators(cleanedMessageText);
         this.segments = parseSegments(cleanedMessageText, seperators, this.zSegmentDefinitions);
